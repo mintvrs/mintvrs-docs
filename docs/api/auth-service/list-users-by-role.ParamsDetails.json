@@ -1,0 +1,1 @@
+{"parameters":[{"name":"role","required":false,"in":"query","description":"Role para filtrar (ex: Admin, TenantAdmin)","schema":{"type":"string"}}]}

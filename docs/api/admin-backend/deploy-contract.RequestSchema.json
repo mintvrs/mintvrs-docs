@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the NFT collection","example":"My NFT Collection"},"symbol":{"type":"string","description":"Symbol of the NFT collection","example":"MNFT"}},"title":"DeployNftDto"}}}}}

@@ -1,0 +1,1 @@
+{"parameters":[{"name":"role","required":true,"in":"query","schema":{"type":"string"}}]}

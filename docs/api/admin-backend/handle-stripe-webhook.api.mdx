@@ -1,0 +1,69 @@
+---
+id: handle-stripe-webhook
+title: "Stripe webhook receiver (público, sem autenticação)"
+description: "Stripe webhook receiver (público, sem autenticação)"
+sidebar_label: "Stripe webhook receiver (público, sem autenticação)"
+hide_title: true
+hide_table_of_contents: true
+api: eJydV01vGzcQ/SuD7UUS5F03BXpQTrbzgSRNI1g2EiAJImqXlgivyA3JVaza+jFBD0XPQS+56o/1Dbm7kuwe2vpiLsn5em9mOLpNTCWt8MroF0UyShZCF6WceKsq+VbOFsZcJ8OkElYspZfWJaP3t4nGB+56qYX2EBsmVn6ulZXQ4G0th4nSOK+EX+DM5Qu5FMnoNvHriuUctOt5stl8ZEFXGe2k4/NHx8f8r5Auh332CbcbL8jKXM5UYSA3TLyYsyswsV5K7Y/mwssvYu0SqDwUj6HQlz0taiUt9art91mpcjMkJ5ckakTjVS62f2x/N324jXgXhiGpjPMBA0QzSrLWVNaozFywkN22cGw4ZmlXLVq1LRlY76tRlpUmF+UCGkc/HR//nNz39mT8goSvRUk9qVeEz0+nJ5Onny7PfyFTUyfdTzbDfc0OqkWl0uV1qqWwN2lulunMPtA/tqaoQ4gJo+9kXlvl1xOmKHIwg7i0vAq8MV/N1rBZPDN2KTz2X769wGZDKnuBryY1TmqAZ9VvIbEeeHFhrqUmiJOZeVBK2hBL0ASwqVxSb/xmckEZSFkAsbnS/ZSe3ozoNDhAcv1yMXuep2maNKm2kKKAi8iMd0cA7eiVXO8lHJDhjcO7na87iX9iA/sEDyO51KudIaSL0l7OLSfLX9L1d3YnMrfS/0fTjdCDzA3b/8L4hrVfmWBV+ZIVv351VtYzOimWStOpyIF3wdn0wMhgwEEu69Kro8YMDFZCaVmSYHGF/AaNK0NRaToYfNAf9A8/MGV7NcObRzQYMK29SFR/NBjQpZOEEALliMdYLdiCLO9zPr1P+rTPiRExo+lBSnWpMA2Kp9OU3sysQm1uv1nFAVhBgpZCQUQgJEdAoDKAzjGO9fYrrjkU1FzwIeyEYPtpDOIiQtEmQO8Qcg5rHCzk0oGTytiOI3mTjsgBNPQ8GL1B09TG9Yewv1KSpl22Tan7ikxP4YVrwnUpnTjKF2IlHTmgS3N06QIahSHQJyzt0mJSo4VHrvtQWpkCSYIOBLjnUjdy2GoAjmIuG6kia294eXQt126aNtSem1K6ltGgP6jnwE9izN54UT4OxqJDWYmgRQuEGxJ3WVhezIywBc1LMxPlkHKjr9S8trjZdlKCis/oeZ9r2Yo3NHRGTx+dPg5mEB+QkDrH0snaUWW336rAZWdYOVNyjkGtqb3FUdDjDri9Hw8eIvRxbxjgVmejsomytWspF8tK6IWArS4GyZF5uf3Ohg37dhgKysDGcoi5R1dKMx6oRlOFitglEcDQ2BEV3qft15UsGx0T4Btctp6xzthlWQpaKZ3XIWSx8+1xm50ACop8gDk8f150NHP/d4ZRhAqFsg+k37UHdEdPQrsIFU53ODpq/roFr1mkBdbBwTs6O798wgYbUg6TNKUz5GQbrefnN7TJzIVC4IoDdVWOQhclv+8RXKQpXD17++g4+/XZBWlB73Ajpcb8OM4C9LyhJPqxS7c4CWSvpc0ZqrGY74M+xP+Qv7AkbxAtUnUh82tkEK+EnUti/K5qXXQmzxhsNdeNrRb6PbUxawN8mSwaHPm4MNrs9HDqdNC1eYRiB3/IuLDcMduJhXc0CsUlI157VaoCTYR6AkOZ27PZauh3GhhAyugUg8U1glQ6KHsiq9KsWdmVyNGx1wH04S6UwGzo6PsAopnwYxFOMX9UlgsEfHveAGM7v63QDpphPHp/3kpKCl1kjpRgE+FebLo7rDBmqgaqSeyzwaDd/ol949B9RVmAvgUO+TXgEQ+kcjGw60yiXM5M6Xb4vxb2WvqqRMUEvXvfNH40js/JCi+IoDa0YDP2ZzBngXv7qHRaJ6HsIqIcnprVqoOvqcRGWMSK5jYCq15c8YwVFOHF5kkyvtY/psfpMXa4GoAfXnx+/HlAXQrN738zV/zvofdgOOiGGI9nLINfmGFgLkydt808/D7pRu9h8qX7wRBnYixG3Y8EjJs8ubLI7e1MOHlpy82Gt7nvY1x7j+VKIMVmPMJgcC6U4zVm8CtROvnAuzxWDRzsnTe/P/q0m0gPvW7nMc3D2EqUNX9hec2T4u6nzObjZm/05wcT89XfQFKjWQ==
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Stripe webhook receiver (público, sem autenticação)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/gateways/webhook/stripe/{tenantId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Stripe webhook receiver (público, sem autenticação)
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./handle-stripe-webhook.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./handle-stripe-webhook.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./handle-stripe-webhook.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

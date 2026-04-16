@@ -1,0 +1,69 @@
+---
+id: profile
+title: "Perfil do usuário autenticado"
+description: "Retorna dados do usuário associado ao JWT (userId, email, name, access_role, tenant_id). Requer Authorization: Bearer `accessToken`."
+sidebar_label: "Perfil do usuário autenticado"
+hide_title: true
+hide_table_of_contents: true
+api: eJzNVktyGzcQvQpqvBEZaijJWdErKqJVcpxY0SdZWC4RnIFIWDPABMAwYihtc4DcQJWFKwuvUjkBb5KT5DWAofiplLyMNuI00P/XrzFPdCUMd1KrkzzpJZXRN7IQSSfJhc2MrOgE8jPhtFGc5TzXluWa1bZePBqpGbdWZxJixjV789MF26mtMCd5h4mSy6LDFC9Fh/EsE9ZeG13gwwnFlbuWeStlZ+LnWhjWr91EG/mrD6XHDgU3kA6D2oW+FWqYIqqKG5hzwtik9/5DJzHCVlpZgc95crC3R//WIz/ajBhWMq0QgqPLvKoKmXmv3Y+WNOaJzSaInX65WSVgQ48+isyRe0PlcjL4C4mu3LPOSDXeKt7J0VrFdi4vT45ayUMn8RV6Xn9A19ZSgC6V9XnV73UpNjWpB89rnuEWywUahwZQ0YSqSxQ9Oa9Rgn5eSgXhhe9k89X8v0Rhkg9wtWz0lxYpKLAdVRcFo2azJ3ct6JCcjyh+Z2rxQNkAP9KInEKLDWkKG1NdDQOQcdKRfnIaoH7kUJQHsvT13v42fDz0GIdlQIbpmkk1XTwWMictGONjQmLCAV8ybkVWG+lmkM2TkQcxAfUBR4DtRNOMjYWHEodGL+mSZvdp7JDBNKAb+DIARzJxrup1u4XOeDHR1vVe7iHQzfL1T08YdzUv2I5QU4bP68P++eD68uwtRb3UJtytWrYwTSGk5W2qEO9dmukyHZktByhXXi8+Lf5A4iuJntOshHFo0o0DRDWOok788VqbkmPsEvAEtSUAgsJIGkAna0SwnabnA+Z8V4htTCAmQEdpZDmWitLFbyNuQA6TlA3ulnQiZm8mo+MsTYlKJNmbCJ4jQGqlVDfawzTi47tvvynqkScmdo6uyGybFtttf7L4pP2o1MQqYBNfJuYFPpXwjRiDzbTdvlJX6sUL9qO0dDIGBRckGliAzDYmF3+yyG+Lx6nAPGjTu1K7rN1+S4m22+g1Ab0LcE54Cw7bbSPGEhOmcYiImrG3pDYopfXucrqI4pGBQLDsq6ZeobSt4OZUGMCSTK0SfpMlhDtSZUUtG5729D5EHMPlxA3DFJd14eRukEbjZ8IKR7H46CkWq0HF0sVyIduwQhAcCBt+fPCA51qMx1qPwVTvqE8w4r0FHPi9VMRKvy7qO9DL4nMlM02y/ZQNT9+dX7AwgV5l6K0PvVefRoXt9os2yOKf335vsLa+leharF0QXKkDgE5NJcf++oK1NsSGtMzTmEXbF38LS6vUUx475Bnu5HCixCo2rtTLlP1Qc4Um6Lhc41SIu0oabjroGEWwkmMMM2SpN8IOldMj7FaMz1RHczbWj9aBbeDi+9yik3t/wO7ZkZ+L0Ll7yHf9X/wXftNtDMySz9Gte9b36wW+HKgLaXM6ebUGIHB+sAntJ8XDg8NXDC45aoP5EQrNRnlqyyqz+Ksi0MdtYhvllWUVfPsS05iUzeLBuIls8fkGIFkPojICLibg/cYaLTlv5rKZjBupkESTp+PhuI/3gnW8i/4ZUXA2xczUhX8wsYyXFQf6fYhgF6L+wCz76V66F58qPKOnCnFUBQYvuX+kRLoMI/pfA7pJWPOnp8//5kkXt4ATd65bFRy0jET9gprHJRnXa2f5OsX+oV1GJ/P5iFtxaYqHBxKT41l4Gk45wOGfCu/pKRKZnvbqrZjFVVLRJp7yoqYItp6Ca1v7eEArywfy9JbZ2G/eejziarZiG2H6Gz5thNqJQfgZgyM8QP4FomESUw==
+sidebar_class_name: "get api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Perfil do usuário autenticado"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/auth/profile"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retorna dados do usuário associado ao JWT (userId, email, name, access_role, tenant_id). Requer Authorization: Bearer `accessToken`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./profile.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./profile.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./profile.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

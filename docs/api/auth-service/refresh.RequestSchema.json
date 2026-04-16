@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"refreshToken":{"type":"string","description":"Refresh token JWT retornado no login","example":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}},"required":["refreshToken"],"title":"RefreshDto"}}}}}

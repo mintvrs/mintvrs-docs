@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"transactionId":{"type":"string","description":"ID da transação (NFT a ser vendido)"},"price":{"type":"number","description":"Preço em centavos (BRL)"}},"required":["transactionId","price"],"title":"CreateListingDto"}}}}}

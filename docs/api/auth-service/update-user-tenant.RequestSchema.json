@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"tenant_id":{"type":"string","description":"ID do tenant (UUID) ou null para desvincular","nullable":true}},"required":["tenant_id"],"title":"UpdateUserTenantDto"}}}}}

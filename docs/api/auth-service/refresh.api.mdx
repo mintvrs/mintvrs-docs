@@ -1,0 +1,69 @@
+---
+id: refresh
+title: "Renovar tokens"
+description: "Troca o refreshToken por um novo par de accessToken e refreshToken. Use quando o accessToken expirar."
+sidebar_label: "Renovar tokens"
+hide_title: true
+hide_table_of_contents: true
+api: eJy9Vt1SGzcUfhXN5ia4Zg1k2pmaKyAkY5oEaiDtDDCsvCtshV1pI2kJxHDbB+gbZHqR6UWuOn0Cv0mfpN+R5D9omk6n072wd4/Oz3f+NU50LQx3UqtekXQTIy6MsKOknRTC5kbWdAL6kdE5Z5rF8yN9KRSrtWFNxZS+0qzmhhWC8TwX1oZjscSdsmMr2NuGq0JD0RLjdS0NNymsQg2vhBPGJt2TszbwvG2Eddu6uEm6Y/8pjQBSZxrRTnKtnFCOjnhdlzL3nnTeWAI9Tmw+EhWnN3dTC7ihB29E7siOIb+dFDaoneNc4LbOSDV8EIt+4GbOg9/74Qh+Om0Uh2NKs1IPpYKQuOZVXZIecbM3GjzP5b7c6x2/762/kj3bU/2v853eN73L+sfXO3vfpmma3N21Fzw8WYaFYDjpvL4I4KnTEAlCttbKBmc21tbobxnzq4Ucedw2+c+it5DKLwdvyzPPY7fJGgtYomJbjRtpI997EF22LbgRhmWeM0u8l/86S3MrB/uHR6zDYasT9VFYOFKIMgaLttP43M/Gopvtz+bGE/oxH9MMQZPjQ+u1wDLxo8hHmjqu1taHlIPeTZaQgWyFuQrNME4aU4Jj5Fzd7XRK9GM5gmz3ydra+sMwH/QYdw0v2WOhrhg+z7e3DnfPj/svmG7YTHoFgV3UbKGaIKTVZaqQges011U6MA8MHBhdNJOPk1/g4RnhzBsj3c0h1Uwoi4FP4KyQKDiR1I4vz7SpOMovQR2AGPNJMPCluBdZqoovVtNfdCK5q2aDK2W717Pain1JrddOJOkbCV4AICWMuqA/nz67026+Py3+eXeTjQvtKzcWy8vvdspm4CufHSLTMhcPXGy1/Mnko/bztaGORaf60DNP8OEJ3/A76ExbrVN1qh49Yq+lpZMhpnxJpF3rBLNTlZNfWRwekw9XoqSR3j1Vq6zVekHBa7VQPxWXZccKNeIrMNhqGTGUaDqNQyBqbDP5YKS2JLZbSevNFcSIhJCC0Djsq2kOQrpWgpkDYS5kSar0TNXcSxAfS5WXjWRZUHNudCky4MjAwpU7l0UWOrhqSidXAzUqRx8KR1g8esJiNcacdDFctMC8ewCHYQg7HjxKfgnjc62HpWD7lCco8dZCbVmdyxBWRPpZ2Vxr5iafaplroq2nLFuYN14k89ozb9W7UXNr32kDL/746edp/U699TXm2RaLLjtVGyhkdSUxsLLPzM1FBRlT3DI/zCzSPvldWMY12yoq+LDNc/AUMKLEYm2cqicp+355X8dOiwu7HaZq9nCmBi/1PdghcnqA9e4vDdNRG+PXR2bttFx8nlfo5NYfsFv21PdFyNwt6Kv+iX/hnbjRMA22k3cO2bplW6QPidEO4xBuczrZXCog1ZRBJ6Tngtsb25sMJjlig/4RCslGeBrLajP5raaiZ0GJnQof+c8F2z7E1CZVZGVoN5FPPl2gSJZB1EbAxEgWMyi4MRmv5njaGRdSwYmpn46H4y3sYut4B/kzouTsCj3TlNQ9nOWYWxzV7yFiutA6CZNlPV1L1+I1gOd0DaC5R/uo4n7BxhHcj6txdm9YGlDj+TXif7slxk3hxLXr1CXH6AZwv8TGcZHGRTvb07Ryad/RyXg84FYcm/LujsgY8eYm3DbhpeQDGs0nZ9AYtwHt3ksBlmQneLp6RPaJvWwIx4PLE+3UIEELqnZ/y7t4GaBOovUYr7uVLkjG8HfkCX67CV60j3y4uBJtnJRcDRs+JN6gk54/Aa+hL0c=
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Renovar tokens"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/refresh"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Troca o refreshToken por um novo par de accessToken e refreshToken. Use quando o accessToken expirar.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./refresh.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./refresh.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./refresh.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

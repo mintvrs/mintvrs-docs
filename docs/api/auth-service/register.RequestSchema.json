@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"name":{"type":"string","example":"Jane Doe"},"email":{"type":"string","example":"jane@example.com"},"password":{"type":"string","example":"StrongPassw0rd!"}},"required":["name","email","password"],"title":"RegisterDto"}}}}}

@@ -1,0 +1,1 @@
+{"responses":{"201":{"description":"Factory deployada"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin"}}}

@@ -1,0 +1,69 @@
+---
+id: update-user-tenant
+title: "Vincular tenant a um usuário (apenas Super Admin)"
+description: "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id."
+sidebar_label: "Vincular tenant a um usuário (apenas Super Admin)"
+hide_title: true
+hide_table_of_contents: true
+api: eJzNVs1WGzcUfhWdyQa7MIakK2dTE0hKmjYUcLoIOVieEbYSWZpIGsfUeNsH6BtwusjpIquePoHfpE/S70oa2+C267LAGun+3+/+zDNTCcu9NPqkzLpZXZXci74T9kJorn22m5XCFVZWRAKCnq+5kj9zZpgPFFeyZKVhtauXd1aanPUdx3fFLWdTqYtaccuisF45kZrxhpPtiFneTR8H34gJlyovzGRNsXfQytkPhikzAqNhL3+6YBCpammXd0w4J9ZG5DCVlE6EF9Zl3bfzTOMDJssST1Z8BJeAj97WYjeT5EzF/RhvrhhDedadZ/6mIg7nrdSjbLF4FxmF84emvCGKh3IKo2GCpydeVUoWIZad946iNd8WbYbvRUFhrSxF3kvhwmvjxrYVDzNwckTxbkLY758ctZipma6VilEHeRN4MNM9HyoRDV4sNkPxdkMvXPXSE13WfwCCI28Qi8jqKqNdtPnx/j793LduDQqekFKCeTf7ev9gm/jCfBAARO0QQUFOSD1d3inZsDzZZulVUODYeY3gBTxlZJfnI0p5xmskFJ44UdRW+psAg6HgVlgc31E+gY+xKWPyi3EADXi6WYd4OzDFus5clouObwoAV9MGUrVVoB17X3U7HWUKrsbG+e6Tfbi3VSqnJzEIALqeMnxeHfbOj6/6Z6/I1xV3C85uSnYQTcbkkw+5hu0zKop8aLcUnFpT1svPy98Qrg2nzwlzMUWN6wmIlNx0tZsOz42dcMA3Q23hMkGPzCDsxALqwRhjkcqgd8vNokAlMh9ySRVqhTdWUxPQq9Kt6WzFNQA0ztnxrMsOg3ombl6Ohy+KPKf6DUU5FryEgZRWqqKzdf0dz/ikIoTeq5dVtRL/tQmvCcjff/dM1UNG9rNzZFEWYsv8dju8LD8bFA6wSNWMKg5hZeEiuB6/4VOUmbfbl/pSP3rE3khHLyN0UUVXxw5Qdo3I5e8s1czybipQoMZ2L/Uea7dfUWDabWCD+l4HJTDmLShst60YSfhk8AiLmsbqiO14Il1QVxIhgk0CeEzAV018YypaUc2psNdSkah1j157icud2FDZIIq5skaJAewYrEI8iG1lUisv9+JtEn4mnPBkS7CebHEGLVD6FC54y4J7MA6NEnqC8dTjN218YcxICfaa8gQhQVvEjTOFjGFFpJ+reobGt/xSycLQ3UHOBqevzy9YrN3AMgjSB0FrcKPizn0yFl789cuvDTYbb0MDCmQpdvHiUj8GSPVUYnQN7qF/hdt7AgaMelLoqw5pX/4pHA2xOO8OeQGaEkq02MTGpX6Ssx9rrpEEpGSzisSskpbbXWSMLNjwMZkZvTQPzI6RM0MMQJTb1CRxLsXvDJl1DVxCnlv0chse2C07CnURM3eL+73wl37imahRMKvmi2zdsh7JQ2KMR6uD25xent4DEIZQlAnuNePh48OnDCo5YoP6ERrJRnhqxyq7/KMi0Kc55xrmjUUi6g4hpjKZNCMR5SaK5ZdrgOS+EZUVUDHGdGmk0YgLYvpNZVxLDScaPz2Pzz3Maed5B/mzQq32GgjirEBP4kB/MBHdhUZF7CwH+X6+n8UVgRe0IlBPq9DxJzwsB6m9vmm2pOQAJ2dWtbrDNyZe9Lf1sInN12vI/3tBS+PFi5nvVIrT9N6Nk2+e5nCa4bilSYzfbljf0jDGlKOJSWTz+ZA70bdqsaBrDAlL4x7HKQekwsaDgV1KR2fMiWuunPiPwO2cpb2oxf7N0nTJ9Q0lmquavnD8IG7inrl4B6o0wEh7fHgWdexdEPuacWtfvLeenPYunn1LYzotnhNTEpPln2ibxf+g2QRHwqwPd/NMcT2q+Yhoo1ACXYjperN8sAMEU//RNwQ5UIT+gkA3roa+Qt4uFn8DKYhQ2w==
+sidebar_class_name: "patch api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Vincular tenant a um usuário (apenas Super Admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"patch"}
+  path={"/auth/users/{id}/tenant"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./update-user-tenant.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./update-user-tenant.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./update-user-tenant.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

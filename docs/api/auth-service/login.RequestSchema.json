@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"email":{"type":"string","description":"Email do usuário","example":"adm@email.com.br"},"password":{"type":"string","description":"Senha (mín. 8 caracteres)","example":"strongPassword123","minLength":8}},"required":["email","password"],"title":"LoginDto"}}}}}

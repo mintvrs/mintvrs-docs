@@ -1,0 +1,5401 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "startup",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação iniciou com sucesso"
+          }
+        },
+        "summary": "Startup probe - verifica se a aplicação iniciou",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "operationId": "liveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação está respondendo"
+          }
+        },
+        "summary": "Liveness probe - verifica se a aplicação está viva",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "readiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação pronta"
+          },
+          "503": {
+            "description": "Dependência indisponível"
+          }
+        },
+        "summary": "Readiness probe - verifica se a aplicação está pronta para receber tráfego",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar um novo usuário",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar usuários (filtrado por role do caller)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter usuário por ID",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar usuário por ID",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/campaigns": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar uma nova campanha (dono = usuário autenticado)",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Campaign"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar campanhas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/active": {
+      "get": {
+        "operationId": "findActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Campaign"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Listar campanhas ativas (público, para marketplace)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/mine": {
+      "get": {
+        "operationId": "findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Campaign"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar minhas campanhas (dono autenticado)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{id}/public": {
+      "get": {
+        "operationId": "findOnePublic",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campanha pública com previews"
+          },
+          "404": {
+            "description": "Campanha não encontrada ou não ativa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Obter campanha pública com accesses e previews",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Obter campanha por ID",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar campanha (apenas dono)",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão para remover esta campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover campanha (SuperAdmin sempre; Admin se for do tenant dele; dono da campanha)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/credits/balance": {
+      "get": {
+        "operationId": "getBalance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Saldo atualizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter saldo de créditos do usuário para o tenant",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/transactions/me": {
+      "get": {
+        "operationId": "getMyTransactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de transações do usuário"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter histórico de transações de créditos do usuário",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/transactions": {
+      "get": {
+        "operationId": "getTenantTransactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de transações do tenant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter todas as transações de créditos do tenant",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/all-transactions": {
+      "get": {
+        "operationId": "getAllTransactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de todas as transações"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter todas as transações de créditos de todos os tenants",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/grant": {
+      "post": {
+        "operationId": "grantCredits",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantCreditsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Créditos concedidos com sucesso"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Conceder créditos manualmente a um usuário",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/refund/me": {
+      "post": {
+        "operationId": "refundMyCredits",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundCreditsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reembolso processado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Usuário solicita reembolso próprio (prazo de 7 dias)",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/refund": {
+      "post": {
+        "operationId": "refundCredits",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundCreditsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reembolso processado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reembolsar créditos (interno ou Stripe)",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/refund-purchase": {
+      "post": {
+        "operationId": "refundKeyPurchase",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundKeyPurchaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reembolso de compra processado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reembolsar compra de chave",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/xion/health": {
+      "get": {
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status da conexão com a blockchain"
+          }
+        },
+        "summary": "Check blockchain connection status",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/address": {
+      "get": {
+        "operationId": "getAddress",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Endereço da wallet admin"
+          }
+        },
+        "summary": "Get the Admin Wallet Address",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/mint": {
+      "post": {
+        "operationId": "mintNft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MintNftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mint an NFT (legacy single-tenant)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/deploy": {
+      "post": {
+        "operationId": "deployContract",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeployNftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Contrato NFT deployado"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deploy a new NFT contract on XION (legacy single-tenant)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/purchases/register": {
+      "post": {
+        "operationId": "registerWeb2Purchase",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterWeb2PurchaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compra registrada on-chain"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou TenantAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar compra Web2 on-chain via CW20 (legacy single-tenant)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/cw20/deploy": {
+      "post": {
+        "operationId": "deployCw20Utility",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "CW20 deployado"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deploy do CW20 utilitário (legacy single-tenant)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/factory/deploy": {
+      "post": {
+        "operationId": "deployFactory",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeployFactoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Factory deployada"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deploy the CW20 Factory contract (one-time setup, SuperAdmin only)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/factory/create-token": {
+      "post": {
+        "operationId": "deployTenantCw20",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeployTenantCw20Dto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "CW20 do tenant criado via factory"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deploy isolated CW20 for a tenant via Factory (SuperAdmin only)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/factory/tenant-token": {
+      "get": {
+        "operationId": "getTenantCw20Address",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endereço do contrato CW20 do tenant"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Query the CW20 contract address for a specific tenant",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/factory/tenants": {
+      "get": {
+        "operationId": "getFactoryTenants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de tenants registrados na factory"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all tenants registered in the factory (SuperAdmin only)",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/factory/token-count": {
+      "get": {
+        "operationId": "getFactoryTokenCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Contagem de tokens deployados"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get total number of deployed tenant tokens",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/tenant/mint": {
+      "post": {
+        "operationId": "mintTenantNft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantMintNftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "NFT mintado para o tenant"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou TenantAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mint NFT for a tenant using their NFT contract",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/xion/tenant/purchases/register": {
+      "post": {
+        "operationId": "registerTenantPurchase",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantRegisterPurchaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compra registrada no CW20 do tenant"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou TenantAdmin"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register Web2 purchase on tenant-specific CW20 ledger",
+        "tags": [
+          "xion"
+        ]
+      }
+    },
+    "/gateways": {
+      "post": {
+        "operationId": "createGateway",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Gateway configurado"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Configurar gateway de pagamento para o tenant",
+        "tags": [
+          "payment-gateways"
+        ]
+      },
+      "get": {
+        "operationId": "findByTenant",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de gateways"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar gateways configurados do tenant",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/{id}": {
+      "delete": {
+        "operationId": "removeGateway",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gateway removido"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover gateway",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/{id}/toggle": {
+      "patch": {
+        "operationId": "toggleGateway",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gateway atualizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ativar/desativar gateway",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/test-connection": {
+      "post": {
+        "operationId": "testConnection",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado do teste de conexão"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Testar conexao com o provider",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/providers": {
+      "get": {
+        "operationId": "listProviders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de providers suportados"
+          }
+        },
+        "summary": "Listar providers de pagamento suportados",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/credits": {
+      "post": {
+        "operationId": "createCheckout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "URL de checkout gerada"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gerar link de checkout para compra de créditos",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/confirm": {
+      "post": {
+        "operationId": "confirmCheckout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status da confirmação do checkout"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar checkout e creditar saldo (polling após retorno do Stripe)",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/key-purchase": {
+      "post": {
+        "operationId": "createKeyPurchaseCheckout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "URL de checkout e sessionId"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gerar link de checkout Stripe para compra direta de chave",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/confirm-key-purchase": {
+      "post": {
+        "operationId": "confirmKeyPurchase",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status da confirmação e hash da transação on-chain"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar compra de chave via Stripe e registrar on-chain",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/webhook/stripe/{tenantId}": {
+      "post": {
+        "operationId": "handleStripeWebhook",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook recebido"
+          }
+        },
+        "summary": "Stripe webhook receiver (público, sem autenticação)",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/payments/charge": {
+      "post": {
+        "operationId": "charge",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Pagamento processado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Processar pagamento via gateway do tenant",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/payments/refund": {
+      "post": {
+        "operationId": "refund",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Estorno processado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Processar estorno via gateway do tenant",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/transactions": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar transações (filtrado por tenant do caller)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/by-buyer": {
+      "get": {
+        "operationId": "listByBuyer",
+        "parameters": [
+          {
+            "name": "email",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar transações por email do comprador",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/register": {
+      "post": {
+        "operationId": "register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar compra Web2 on-chain",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/mock": {
+      "post": {
+        "operationId": "registerMock",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MockTransactionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar transação mock (apenas SuperAdmin)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/purchase": {
+      "post": {
+        "operationId": "purchase",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Compra real pelo usuário final (debita créditos)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/tokens/mine": {
+      "get": {
+        "operationId": "findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Token"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar tokens do usuário autenticado",
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/tokens": {
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Token"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar tokens (filtrado por tenant do caller)",
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/tokens/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter token por ID",
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/tokens/acquire/{campaignId}": {
+      "post": {
+        "operationId": "acquire",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token ou campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adquirir um token disponível da campanha (usuário autenticado)",
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/accesses": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Access"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar forma de acesso para uma campanha",
+        "tags": [
+          "accesses"
+        ]
+      }
+    },
+    "/accesses/campaign/{campaignId}": {
+      "get": {
+        "operationId": "findByCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Access"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar formas de acesso de uma campanha",
+        "tags": [
+          "accesses"
+        ]
+      }
+    },
+    "/accesses/mine": {
+      "get": {
+        "operationId": "findMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Access"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar meus acessos (por campanhas que sou dono)",
+        "tags": [
+          "accesses"
+        ]
+      }
+    },
+    "/accesses/{id}": {
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Access"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar forma de acesso (apenas dono da campanha)",
+        "tags": [
+          "accesses"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover forma de acesso (apenas dono da campanha)",
+        "tags": [
+          "accesses"
+        ]
+      }
+    },
+    "/access-types": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccessTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tipo de acesso criado"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar tipo de acesso",
+        "tags": [
+          "access-types"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de tipos de acesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar tipos de acesso",
+        "tags": [
+          "access-types"
+        ]
+      }
+    },
+    "/access-types/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tipo de acesso encontrado"
+          },
+          "404": {
+            "description": "Tipo de acesso não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter tipo de acesso por ID",
+        "tags": [
+          "access-types"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccessTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tipo de acesso atualizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Tipo de acesso não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar tipo de acesso",
+        "tags": [
+          "access-types"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Tipo de acesso não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover tipo de acesso",
+        "tags": [
+          "access-types"
+        ]
+      }
+    },
+    "/main-stars": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMainStarDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Main star criado"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar main star",
+        "tags": [
+          "main-stars"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de main stars"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar main stars",
+        "tags": [
+          "main-stars"
+        ]
+      }
+    },
+    "/main-stars/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Main star encontrado"
+          },
+          "404": {
+            "description": "Main star não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter main star por ID",
+        "tags": [
+          "main-stars"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMainStarDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Main star atualizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Main star não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar main star",
+        "tags": [
+          "main-stars"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Main star não encontrado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover main star",
+        "tags": [
+          "main-stars"
+        ]
+      }
+    },
+    "/contents": {
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar conteúdos (filtrado por tenant do caller)",
+        "tags": [
+          "contents"
+        ]
+      },
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar conteúdo",
+        "tags": [
+          "contents"
+        ]
+      }
+    },
+    "/contents/campaign/{campaignId}": {
+      "get": {
+        "operationId": "findByCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar conteúdos por campanha",
+        "tags": [
+          "contents"
+        ]
+      }
+    },
+    "/contents/campaign/{campaignId}/preview": {
+      "get": {
+        "operationId": "findPreviewByCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar conteúdos de preview por campanha",
+        "tags": [
+          "contents"
+        ]
+      }
+    },
+    "/contents/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conteúdo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter conteúdo por ID",
+        "tags": [
+          "contents"
+        ]
+      },
+      "put": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conteúdo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar conteúdo",
+        "tags": [
+          "contents"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada"
+          },
+          "404": {
+            "description": "Conteúdo não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover conteúdo",
+        "tags": [
+          "contents"
+        ]
+      }
+    },
+    "/tenants": {
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tenant criado com sucesso"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou Admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar novo tenant (SuperAdmin ou Admin)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de tenants"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar tenants (SuperAdmin: todos ou filtro ownerId; Admin: só seus)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/dashboard": {
+      "get": {
+        "operationId": "globalDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Super Admin: stats global (por Admin). Admin: stats dos seus tenants (por tenant).",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/slug/{slug}": {
+      "get": {
+        "operationId": "findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant encontrado"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buscar tenant por slug (SuperAdmin only)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do tenant"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalhes de um tenant",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant atualizado"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar tenant (SuperAdmin, dono Admin, ou TenantAdmin do proprio tenant — apenas campaignConfig)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "delete": {
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant removido"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Apagar tenant (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/campaign-config": {
+      "get": {
+        "operationId": "getCampaignConfig",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign config do tenant"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retorna configuração de campanha do tenant",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/dashboard": {
+      "get": {
+        "operationId": "tenantDashboard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats do tenant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard de um tenant especifico",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/regenerate-keys": {
+      "post": {
+        "operationId": "regenerateKeys",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Novas credenciais geradas"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Regenerar API Key + Secret (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/marketplace/listings": {
+      "get": {
+        "operationId": "listActive",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Busca por nome de campanha ou vendedor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Preço mínimo em centavos",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Preço máximo em centavos",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "campaignId",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Ordenação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "price_asc",
+                "price_desc",
+                "date_asc",
+                "date_desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceListing"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar anúncios ativos no marketplace P2P",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/my-listings": {
+      "get": {
+        "operationId": "myListings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceListing"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar meus anúncios",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/list": {
+      "post": {
+        "operationId": "createListing",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar anúncio de venda de chave",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/buy/{id}": {
+      "post": {
+        "operationId": "buyListing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Comprar chave de outro usuário",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/cancel/{id}": {
+      "post": {
+        "operationId": "cancelListing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar anúncio de venda",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/splits/my": {
+      "get": {
+        "operationId": "getMySplits",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get splits for the current star user",
+        "tags": [
+          "splits"
+        ]
+      }
+    },
+    "/splits/tenant": {
+      "get": {
+        "operationId": "listForTenant",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List campaigns with splits for the tenant",
+        "tags": [
+          "splits"
+        ]
+      }
+    },
+    "/splits/platform-summary": {
+      "get": {
+        "operationId": "platformSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get platform revenue summary (markup + royalties)",
+        "tags": [
+          "splits"
+        ]
+      }
+    },
+    "/splits/{campaignId}": {
+      "get": {
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get split details for a campaign",
+        "tags": [
+          "splits"
+        ]
+      }
+    },
+    "/splits/{campaignId}/export": {
+      "get": {
+        "operationId": "exportXlsx",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export splits as XLSX",
+        "tags": [
+          "splits"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MKClub Admin Backend API",
+    "description": "**API multi-tenant do painel administrativo MKClub.**\n\n## Autenticação\n\n- **JWT (Bearer):** Use o token retornado pelo Auth Service (`POST /auth/login`) no header `Authorization: Bearer `token``. Obrigatório para a maioria dos endpoints (usuários logados no admin).\n- **Tenant API Key (integrações):** Para acesso por tenant (ex.: sistemas externos), envie `X-API-Key` e `X-API-Secret` nos headers. As chaves são geradas ao criar o tenant (Super Admin) e podem ser regeneradas em `POST /tenants/:id/regenerate-keys`.\n\n## Roles\n\n- **SuperAdmin:** Acesso total; pode criar/listar tenants, ver dashboard global, configurar gateways de qualquer tenant.\n- **Admin:** B2B; cria e gerencia seus próprios tenants, isolado de outros Admins.\n- **TenantAdmin:** Acesso restrito ao próprio tenant; pode gerenciar campanhas, gateways e conteúdo do seu tenant.\n- **User:** Usuário final, escopado por tenant quando aplicável.\n- **Star:** Artista/estrela vinculado a campanhas; acesso a splits de receita.\n\n## Recursos principais\n\n| Recurso | Descrição |\n|--------|-----------|\n| **Tenants** | CRUD de tenants (Super Admin). Cada tenant tem apiKey/secretKey e opcionalmente contratos CW20/NFT na Xion. |\n| **Payment Gateways** | Configurar Stripe/Mercado Pago por tenant, testar conexão, checkout, charge e refund. |\n| **Campaigns** | Campanhas por tenant; criação/edição por dono. |\n| **Contents** | Conteúdos associados a campanhas. |\n| **Tokens** | Tokens de utilidade (aquisição por campanha). |\n| **Xion / Blockchain** | Deploy de factory CW20, criação de token por tenant, registro de compras, mint de NFT. |\n| **Transactions** | Registro e listagem de transações. |\n| **Credits** | Sistema de créditos: saldo, histórico, concessão e reembolso. |\n| **Marketplace** | Marketplace P2P para venda e compra de chaves entre usuários. |\n| **Splits** | Distribuição de receita entre artistas e plataforma. |\n",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "tenants",
+      "description": "Gestão de tenants (Super Admin). Criar, listar, dashboard, regenerar chaves."
+    },
+    {
+      "name": "payment-gateways",
+      "description": "Gateway de gateways: configurar e usar Stripe/Mercado Pago por tenant."
+    },
+    {
+      "name": "campaigns",
+      "description": "Campanhas; escopo por tenant e dono."
+    },
+    {
+      "name": "contents",
+      "description": "Conteúdos por campanha."
+    },
+    {
+      "name": "tokens",
+      "description": "Tokens de utilidade e aquisição por campanha."
+    },
+    {
+      "name": "xion",
+      "description": "Blockchain Xion: factory CW20, tokens por tenant, mint NFT, registro de compras."
+    },
+    {
+      "name": "transactions",
+      "description": "Registro e listagem de transações."
+    },
+    {
+      "name": "credits",
+      "description": "Sistema de créditos: saldo, concessão, histórico e reembolsos."
+    },
+    {
+      "name": "marketplace",
+      "description": "Marketplace P2P: listar, comprar e cancelar listings de chaves."
+    },
+    {
+      "name": "splits",
+      "description": "Splits de receita entre artistas e plataforma."
+    },
+    {
+      "name": "users",
+      "description": "Usuários do admin (sync com Auth Service)."
+    },
+    {
+      "name": "accesses",
+      "description": "Acessos e permissões."
+    },
+    {
+      "name": "access-types",
+      "description": "Tipos de acesso."
+    },
+    {
+      "name": "main-stars",
+      "description": "Main stars."
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3006",
+      "description": "API atual (env API_BASE_URL ou localhost)"
+    },
+    {
+      "url": "https://api.mk.nearx.com.br",
+      "description": "Produção"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "Token JWT obtido no Auth Service (POST /auth/login). Ex: Bearer eyJhbGc...",
+        "in": "header"
+      },
+      "X-API-Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key do tenant (uso em integrações)"
+      },
+      "X-API-Secret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Secret",
+        "description": "Secret do tenant (uso em integrações)"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário",
+            "example": "Alice Souza"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário",
+            "example": "alice@example.com"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Papel de acesso",
+            "enum": [
+              "SuperAdmin",
+              "TenantAdmin",
+              "Admin",
+              "User",
+              "Star"
+            ],
+            "example": "User"
+          },
+          "password": {
+            "type": "string",
+            "description": "Senha (opcional). Mínimo 6 caracteres",
+            "example": "minhaSenha123"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do usuário"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário",
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário",
+            "maxLength": 180
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provedor de autenticação",
+            "enum": [
+              "local",
+              "google"
+            ]
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "ID do provedor OAuth"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Role de acesso",
+            "enum": [
+              "SuperAdmin",
+              "TenantAdmin",
+              "Admin",
+              "User",
+              "Star"
+            ]
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant (null para SuperAdmin)",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "provider",
+          "access_role",
+          "tenantId",
+          "created_at"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "Código HTTP do erro",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "Mensagem de erro",
+            "example": "Bad Request"
+          },
+          "message": {
+            "type": "object",
+            "description": "Detalhes da mensagem",
+            "example": [
+              "email must be an email",
+              "password should not be empty"
+            ]
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário",
+            "example": "Alice Souza"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Papel de acesso",
+            "enum": [
+              "SuperAdmin",
+              "TenantAdmin",
+              "Admin",
+              "User",
+              "Star"
+            ],
+            "example": "User"
+          },
+          "password": {
+            "type": "string",
+            "description": "Nova senha (opcional). Mínimo 6 caracteres",
+            "example": "novaSenha123"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant vinculado (null para desvincular)",
+            "example": "dddddddd-dddd-dddd-dddd-000000000001",
+            "nullable": true
+          }
+        }
+      },
+      "CreateAccessItemDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Controle de acesso (nível)",
+            "example": "Premium"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor do acesso",
+            "example": 49.9
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade disponível",
+            "example": 50
+          },
+          "valid_until": {
+            "type": "string",
+            "description": "Data de validade (ISO 8601). Nulo = indefinida",
+            "example": "2025-12-31T23:59:59.000Z"
+          },
+          "accessTypeId": {
+            "type": "string",
+            "description": "ID do tipo de acesso associado",
+            "example": "uuid-access-type-id"
+          }
+        },
+        "required": [
+          "level"
+        ]
+      },
+      "CampaignStarItemDto": {
+        "type": "object",
+        "properties": {
+          "star_name": {
+            "type": "string",
+            "description": "Nome da estrela"
+          },
+          "percentage": {
+            "type": "number",
+            "description": "Porcentagem relativa da estrela (0-100, proporção do royalty restante após taxa da plataforma)"
+          },
+          "pix_key": {
+            "type": "string",
+            "description": "Chave PIX da estrela"
+          },
+          "user_email": {
+            "type": "string",
+            "description": "Email do usuário vinculado à estrela"
+          }
+        },
+        "required": [
+          "star_name",
+          "percentage",
+          "pix_key"
+        ]
+      },
+      "CreateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "example": "Detalhes e objetivos da campanha"
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de capa",
+            "example": "https://example.com/capa.jpg"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Data de início (YYYY-MM-DD)",
+            "example": "2025-11-01"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2025-12-31"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ],
+            "example": "Inactive"
+          },
+          "goal_value": {
+            "type": "string",
+            "description": "Meta financeira (decimal, ex.: 1000.00)",
+            "example": "1000.00"
+          },
+          "main_star_id": {
+            "type": "string",
+            "description": "ID do artista principal (MainStar) associado",
+            "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant (obrigatório para Admin/SuperAdmin)",
+            "example": "a1b2c3d4-..."
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON livre)"
+          },
+          "accesses": {
+            "description": "Formas de acesso criadas junto com a campanha",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateAccessItemDto"
+            }
+          },
+          "platform_fee": {
+            "type": "number",
+            "description": "Taxa da plataforma (% do royalty de revenda, min 3, max 10, default 3)",
+            "example": 3
+          },
+          "stars": {
+            "description": "Estrelas com split (edição especial multi-estrela)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignStarItemDto"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Campaign": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de capa",
+            "nullable": true
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Data de início",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Data de fim",
+            "nullable": true
+          },
+          "goal_value": {
+            "type": "string",
+            "description": "Valor objetivo (meta financeira)",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ]
+          },
+          "raised": {
+            "type": "string",
+            "description": "Valor arrecadado"
+          },
+          "backers": {
+            "type": "number",
+            "description": "Número de apoiadores"
+          },
+          "nft_contract_address": {
+            "type": "string",
+            "description": "Endereço do contrato NFT",
+            "nullable": true
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "main_star_id": {
+            "type": "string",
+            "description": "ID do artista principal",
+            "nullable": true
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON)",
+            "nullable": true
+          },
+          "platform_fee": {
+            "type": "string",
+            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "nullable": false
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cover_image",
+          "start_date",
+          "end_date",
+          "goal_value",
+          "status",
+          "raised",
+          "backers",
+          "nft_contract_address",
+          "tenantId",
+          "main_star_id",
+          "custom_fields",
+          "platform_fee",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "UpdateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Natal"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "example": "Atualização de escopo"
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de capa",
+            "example": "https://example.com/capa2.jpg"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Data de início (YYYY-MM-DD)",
+            "example": "2025-11-15"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-01-10"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ],
+            "example": "Active"
+          },
+          "goal_value": {
+            "type": "string",
+            "description": "Meta financeira (decimal, ex.: 1000.00)",
+            "example": "1000.00"
+          },
+          "raised": {
+            "type": "string",
+            "description": "Valor arrecadado",
+            "example": "5000.00"
+          },
+          "backers": {
+            "type": "number",
+            "description": "Número de apoiadores",
+            "example": 10
+          },
+          "nft_contract_address": {
+            "type": "string",
+            "description": "Endereço do contrato NFT deployado"
+          },
+          "main_star_id": {
+            "type": "string",
+            "description": "ID do artista principal (MainStar) associado",
+            "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON livre)"
+          },
+          "platform_fee": {
+            "type": "number",
+            "description": "Taxa da plataforma (% do royalty de revenda, min 3, max 10)",
+            "example": 3
+          },
+          "stars": {
+            "description": "Estrelas com split (edição especial multi-estrela)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignStarItemDto"
+            }
+          }
+        }
+      },
+      "GrantCreditsDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário que receberá os créditos"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor em centavos a conceder"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Motivo da concessão"
+          }
+        },
+        "required": [
+          "userId",
+          "amount"
+        ]
+      },
+      "RefundCreditsDto": {
+        "type": "object",
+        "properties": {
+          "originalTransactionId": {
+            "type": "string",
+            "description": "ID da transação original a reembolsar"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor parcial em centavos (omitir para reembolso total)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Motivo do reembolso"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de reembolso: credit (devolve saldo) ou stripe (estorno no cartão)",
+            "enum": [
+              "credit",
+              "stripe"
+            ]
+          }
+        },
+        "required": [
+          "originalTransactionId",
+          "type"
+        ]
+      },
+      "RefundKeyPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (tabela transactions) a reembolsar"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário comprador"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor parcial em centavos (omitir para reembolso total)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Motivo do reembolso"
+          }
+        },
+        "required": [
+          "transactionId",
+          "userId"
+        ]
+      },
+      "MintNftDto": {
+        "type": "object",
+        "properties": {
+          "recipient": {
+            "type": "string",
+            "description": "The recipient address. If empty, mints to admin."
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "Unique Token ID",
+            "example": "1"
+          },
+          "tokenUri": {
+            "type": "string",
+            "description": "Metadata URI",
+            "example": "https://example.com/nft.json"
+          }
+        },
+        "required": [
+          "tokenId",
+          "tokenUri"
+        ]
+      },
+      "DeployNftDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the NFT collection",
+            "example": "My NFT Collection"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol of the NFT collection",
+            "example": "MNFT"
+          }
+        }
+      },
+      "RegisterWeb2PurchaseDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha no MKClub",
+            "example": "1"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "ID do pedido/compra no Web2",
+            "example": "order_123"
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "example": "João da Silva"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email ou id interno do comprador",
+            "example": "joao@example.com"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider Web2 (stripe, asas, etc.)",
+            "example": "stripe"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "description": "Moeda fiat usada no pagamento",
+            "example": "BRL"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "description": "Valor fiat (string). Ex: centavos ou valor textual",
+            "example": "5000"
+          },
+          "tokens": {
+            "type": "string",
+            "description": "Quantidade de tokens na menor unidade (decimals=6 -> *1_000_000)",
+            "example": "50000000"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "description": "Data/hora da compra (ISO)",
+            "example": "2026-01-15T12:00:00Z"
+          }
+        },
+        "required": [
+          "campaignId",
+          "orderId",
+          "buyerName",
+          "provider",
+          "fiatCurrency",
+          "fiatAmount",
+          "tokens",
+          "purchasedAt"
+        ]
+      },
+      "DeployFactoryDto": {
+        "type": "object",
+        "properties": {
+          "cw20CodeId": {
+            "type": "number",
+            "description": "Code ID of the CW20 base contract on XION",
+            "example": 42
+          }
+        },
+        "required": [
+          "cw20CodeId"
+        ]
+      },
+      "DeployTenantCw20Dto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant ID (from database)",
+            "example": "uuid-of-tenant"
+          },
+          "name": {
+            "type": "string",
+            "description": "Token name",
+            "example": "Artista X Ledger"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol",
+            "example": "MKTX"
+          }
+        },
+        "required": [
+          "tenantId",
+          "name",
+          "symbol"
+        ]
+      },
+      "TenantMintNftDto": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant ID"
+          },
+          "nftContractAddress": {
+            "type": "string",
+            "description": "NFT Contract Address for this tenant"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "Unique Token ID",
+            "example": "1"
+          },
+          "tokenUri": {
+            "type": "string",
+            "description": "Metadata URI",
+            "example": "https://example.com/nft.json"
+          },
+          "recipient": {
+            "type": "string",
+            "description": "Recipient address (optional, defaults to admin)"
+          }
+        },
+        "required": [
+          "tenantId",
+          "nftContractAddress",
+          "tokenId",
+          "tokenUri"
+        ]
+      },
+      "TenantRegisterPurchaseDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha no MKClub",
+            "example": "1"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "ID do pedido/compra no Web2",
+            "example": "order_123"
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "example": "João da Silva"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email ou id interno do comprador",
+            "example": "joao@example.com"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider Web2 (stripe, asas, etc.)",
+            "example": "stripe"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "description": "Moeda fiat usada no pagamento",
+            "example": "BRL"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "description": "Valor fiat (string). Ex: centavos ou valor textual",
+            "example": "5000"
+          },
+          "tokens": {
+            "type": "string",
+            "description": "Quantidade de tokens na menor unidade (decimals=6 -> *1_000_000)",
+            "example": "50000000"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "description": "Data/hora da compra (ISO)",
+            "example": "2026-01-15T12:00:00Z"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant ID"
+          },
+          "cw20ContractAddress": {
+            "type": "string",
+            "description": "CW20 contract address for this tenant"
+          }
+        },
+        "required": [
+          "campaignId",
+          "orderId",
+          "buyerName",
+          "provider",
+          "fiatCurrency",
+          "fiatAmount",
+          "tokens",
+          "purchasedAt",
+          "tenantId",
+          "cw20ContractAddress"
+        ]
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da transação"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "ID do pedido"
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provedor de pagamento"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "description": "Moeda fiat"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "description": "Valor fiat"
+          },
+          "tokens": {
+            "type": "string",
+            "description": "Quantidade de tokens"
+          },
+          "purchasedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora da compra"
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain"
+          },
+          "cw20ContractAddress": {
+            "type": "string",
+            "description": "Endereço do contrato CW20"
+          },
+          "mintedTo": {
+            "type": "string",
+            "description": "Endereço de mint"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Memo da transação"
+          },
+          "explorerUrl": {
+            "type": "string",
+            "description": "URL do explorer"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário comprador",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da transação",
+            "enum": [
+              "completed",
+              "pending",
+              "failed",
+              "refunded"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "campaignId",
+          "orderId",
+          "buyerName",
+          "buyerEmail",
+          "provider",
+          "fiatCurrency",
+          "fiatAmount",
+          "tokens",
+          "purchasedAt",
+          "transactionHash",
+          "cw20ContractAddress",
+          "mintedTo",
+          "memo",
+          "explorerUrl",
+          "userId",
+          "status",
+          "createdAt"
+        ]
+      },
+      "RegisterTransactionDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha no MKClub",
+            "example": "1"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "ID do pedido/compra no Web2",
+            "example": "order_123"
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "example": "João da Silva"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "example": "joao@example.com"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider Web2 (stripe, etc.)",
+            "example": "stripe"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "description": "Moeda fiat usada no pagamento",
+            "example": "BRL"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "description": "Valor fiat (string)",
+            "example": "19900"
+          },
+          "tokens": {
+            "type": "string",
+            "description": "Quantidade de tokens na menor unidade",
+            "example": "19900000"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "description": "Data/hora da compra (ISO)",
+            "example": "2026-01-15T12:00:00Z"
+          },
+          "stripeSessionId": {
+            "type": "string",
+            "description": "Stripe checkout session ID (para compra direta)"
+          },
+          "stripePaymentIntent": {
+            "type": "string",
+            "description": "Stripe payment intent ID (para compra direta)"
+          }
+        },
+        "required": [
+          "campaignId",
+          "orderId",
+          "buyerName",
+          "provider",
+          "fiatCurrency",
+          "fiatAmount",
+          "tokens",
+          "purchasedAt"
+        ]
+      },
+      "MockTransactionDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "example": "1"
+          },
+          "orderId": {
+            "type": "string",
+            "example": "order_123"
+          },
+          "buyerName": {
+            "type": "string",
+            "example": "João da Silva"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "example": "joao@example.com"
+          },
+          "provider": {
+            "type": "string",
+            "example": "stripe"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "example": "19900"
+          },
+          "tokens": {
+            "type": "string",
+            "example": "19900000"
+          },
+          "purchasedAt": {
+            "type": "string",
+            "example": "2026-01-15T12:00:00Z"
+          }
+        }
+      },
+      "PurchaseDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha",
+            "example": "c1-uuid..."
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "example": "João Silva"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "example": "joao@email.com"
+          },
+          "fiatAmount": {
+            "type": "string",
+            "description": "Valor em centavos (ex: 1000000 = R$ 10.000,00)",
+            "example": "1000000"
+          },
+          "fiatCurrency": {
+            "type": "string",
+            "description": "Moeda (default: BRL)",
+            "example": "BRL"
+          }
+        },
+        "required": [
+          "campaignId",
+          "buyerName",
+          "fiatAmount"
+        ]
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do token"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Código único do token"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do token",
+            "enum": [
+              "Standard",
+              "Premium",
+              "Experience",
+              "Gift"
+            ]
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Token ativo"
+          },
+          "issued_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de emissão"
+          },
+          "redeemed_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de resgate",
+            "nullable": true
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de expiração",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "code",
+          "type",
+          "active",
+          "issued_at",
+          "redeemed_at",
+          "expires_at"
+        ]
+      },
+      "CreateAccessDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha associada",
+            "example": "uuid-campaign-id"
+          },
+          "level": {
+            "type": "string",
+            "description": "Controle de acesso (nível)",
+            "example": "VIP"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor do acesso",
+            "example": 99.9
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade disponível",
+            "example": 100
+          },
+          "valid_until": {
+            "type": "string",
+            "description": "Data de validade (ISO 8601). Nulo = indefinida",
+            "example": "2025-12-31T23:59:59.000Z"
+          },
+          "accessTypeId": {
+            "type": "string",
+            "description": "ID do tipo de acesso associado",
+            "example": "uuid-access-type-id"
+          }
+        },
+        "required": [
+          "campaignId",
+          "level"
+        ]
+      },
+      "Access": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do acesso"
+          },
+          "level": {
+            "type": "string",
+            "description": "Nível de acesso"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço do acesso",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade disponível",
+            "nullable": true
+          },
+          "valid_until": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Válido até",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "level",
+          "price",
+          "quantity",
+          "valid_until",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "UpdateAccessDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "Controle de acesso (nível)",
+            "example": "VIP"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor do acesso",
+            "example": 99.9
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade disponível",
+            "example": 100
+          },
+          "valid_until": {
+            "type": "string",
+            "description": "Data de validade (ISO 8601). Nulo = indefinida",
+            "example": "2025-12-31T23:59:59.000Z"
+          },
+          "accessTypeId": {
+            "type": "string",
+            "description": "ID do tipo de acesso associado",
+            "example": "uuid-access-type-id"
+          }
+        }
+      },
+      "CreateAccessTypeDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Título do tipo de acesso",
+            "example": "VIP"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do tipo de acesso",
+            "example": "Acesso com benefícios exclusivos"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "UpdateAccessTypeDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Título do tipo de acesso",
+            "example": "VIP"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do tipo de acesso",
+            "example": "Acesso com benefícios exclusivos"
+          }
+        }
+      },
+      "CreateMainStarDto": {
+        "type": "object",
+        "properties": {
+          "profile_photo": {
+            "type": "string",
+            "description": "URL da foto de perfil",
+            "example": "https://example.com/photo.jpg"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do artista principal",
+            "example": "Maria Silva"
+          }
+        },
+        "required": [
+          "profile_photo",
+          "name"
+        ]
+      },
+      "UpdateMainStarDto": {
+        "type": "object",
+        "properties": {
+          "profile_photo": {
+            "type": "string",
+            "description": "URL da foto de perfil",
+            "example": "https://example.com/photo.jpg"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do artista principal",
+            "example": "Maria Silva"
+          }
+        }
+      },
+      "Content": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do conteúdo"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título do conteúdo"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do conteúdo",
+            "enum": [
+              "Image",
+              "Video",
+              "Text",
+              "Link",
+              "File"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL do conteúdo",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do conteúdo",
+            "nullable": true
+          },
+          "is_preview": {
+            "type": "boolean",
+            "description": "Conteúdo de preview"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Conteúdo ativo"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "type",
+          "url",
+          "description",
+          "is_preview",
+          "active",
+          "created_at"
+        ]
+      },
+      "CreateContentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Título do conteúdo",
+            "example": "Bastidores do clipe"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do conteúdo",
+            "enum": [
+              "Image",
+              "Video",
+              "Text",
+              "Link",
+              "File"
+            ],
+            "example": "Video"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL do conteúdo",
+            "example": "https://cdn.exemplo.com/video.mp4"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do conteúdo",
+            "example": "Making of completo"
+          },
+          "campaign_id": {
+            "type": "string",
+            "description": "ID da campanha associada",
+            "example": "uuid-campaign"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Conteúdo ativo",
+            "example": true
+          },
+          "is_preview": {
+            "type": "boolean",
+            "description": "Conteúdo de preview",
+            "example": false
+          }
+        },
+        "required": [
+          "title",
+          "type",
+          "campaign_id"
+        ]
+      },
+      "UpdateContentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Título do conteúdo",
+            "example": "Novo título"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do conteúdo",
+            "enum": [
+              "Image",
+              "Video",
+              "Text",
+              "Link",
+              "File"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL do conteúdo",
+            "example": "https://cdn.exemplo.com/novo.mp4"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do conteúdo",
+            "example": "Detalhes atualizados"
+          },
+          "campaign_id": {
+            "type": "string",
+            "description": "ID da campanha associada",
+            "example": "uuid-campaign"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Conteúdo ativo",
+            "example": false
+          },
+          "is_preview": {
+            "type": "boolean",
+            "description": "Conteúdo de preview",
+            "example": false
+          }
+        }
+      },
+      "CreateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do tenant",
+            "example": "Artista X"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug unico do tenant (gerado automaticamente se omitido)",
+            "example": "tenant-1"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "ID do Admin (user) dono do tenant; só Super Admin pode enviar; Admin usa o próprio id"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do tenant"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Ativar/desativar tenant"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "ID do Admin dono do tenant"
+          },
+          "campaignConfig": {
+            "type": "object",
+            "description": "Configuração padrão de campanhas (template JSONB)"
+          }
+        }
+      },
+      "MarketplaceListing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT à venda)"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "Email do vendedor"
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador",
+            "nullable": true
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "soldAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da venda",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer on-chain",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "buyerId",
+          "buyerEmail",
+          "soldAt",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateListingDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT a ser vendido)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          }
+        },
+        "required": [
+          "transactionId",
+          "price"
+        ]
+      }
+    }
+  }
+}

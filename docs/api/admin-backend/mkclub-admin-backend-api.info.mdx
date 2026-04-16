@@ -1,0 +1,165 @@
+---
+id: mkclub-admin-backend-api
+title: "MKClub Admin Backend API"
+description: "**API multi-tenant do painel administrativo MKClub.**"
+sidebar_label: Introduction
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import Heading from "@theme/Heading";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiExplorer/Export";
+
+<span
+  className={"theme-doc-version-badge badge badge--secondary"}
+  children={"Version: 1.0.0"}
+>
+</span>
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"MKClub Admin Backend API"}
+>
+</Heading>
+
+
+
+**API multi-tenant do painel administrativo MKClub.**
+
+## Autenticação
+
+- **JWT (Bearer):** Use o token retornado pelo Auth Service (`POST /auth/login`) no header `Authorization: Bearer `token``. Obrigatório para a maioria dos endpoints (usuários logados no admin).
+- **Tenant API Key (integrações):** Para acesso por tenant (ex.: sistemas externos), envie `X-API-Key` e `X-API-Secret` nos headers. As chaves são geradas ao criar o tenant (Super Admin) e podem ser regeneradas em `POST /tenants/:id/regenerate-keys`.
+
+## Roles
+
+- **SuperAdmin:** Acesso total; pode criar/listar tenants, ver dashboard global, configurar gateways de qualquer tenant.
+- **Admin:** B2B; cria e gerencia seus próprios tenants, isolado de outros Admins.
+- **TenantAdmin:** Acesso restrito ao próprio tenant; pode gerenciar campanhas, gateways e conteúdo do seu tenant.
+- **User:** Usuário final, escopado por tenant quando aplicável.
+- **Star:** Artista/estrela vinculado a campanhas; acesso a splits de receita.
+
+## Recursos principais
+
+| Recurso | Descrição |
+|--------|-----------|
+| **Tenants** | CRUD de tenants (Super Admin). Cada tenant tem apiKey/secretKey e opcionalmente contratos CW20/NFT na Xion. |
+| **Payment Gateways** | Configurar Stripe/Mercado Pago por tenant, testar conexão, checkout, charge e refund. |
+| **Campaigns** | Campanhas por tenant; criação/edição por dono. |
+| **Contents** | Conteúdos associados a campanhas. |
+| **Tokens** | Tokens de utilidade (aquisição por campanha). |
+| **Xion / Blockchain** | Deploy de factory CW20, criação de token por tenant, registro de compras, mint de NFT. |
+| **Transactions** | Registro e listagem de transações. |
+| **Credits** | Sistema de créditos: saldo, histórico, concessão e reembolso. |
+| **Marketplace** | Marketplace P2P para venda e compra de chaves entre usuários. |
+| **Splits** | Distribuição de receita entre artistas e plataforma. |
+
+
+<div
+  style={{"marginBottom":"2rem"}}
+>
+  <Heading
+    id={"authentication"}
+    as={"h2"}
+    className={"openapi-tabs__heading"}
+    children={"Authentication"}
+  >
+  </Heading><SchemaTabs
+    className={"openapi-tabs__security-schemes"}
+  >
+    <TabItem
+      label={"HTTP: Bearer Auth"}
+      value={"bearer"}
+    >
+      
+      
+      Token JWT obtido no Auth Service (POST /auth/login). Ex: Bearer eyJhbGc...
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                http
+              </td>
+            </tr><tr>
+              <th>
+                HTTP Authorization Scheme:
+              </th><td>
+                bearer
+              </td>
+            </tr><tr>
+              <th>
+                Bearer format:
+              </th><td>
+                JWT
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem><TabItem
+      label={"API Key: X-API-Key"}
+      value={"X-API-Key"}
+    >
+      
+      
+      API Key do tenant (uso em integrações)
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                apiKey
+              </td>
+            </tr><tr>
+              <th>
+                Header parameter name:
+              </th><td>
+                X-API-Key
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem><TabItem
+      label={"API Key: X-API-Secret"}
+      value={"X-API-Secret"}
+    >
+      
+      
+      Secret do tenant (uso em integrações)
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                apiKey
+              </td>
+            </tr><tr>
+              <th>
+                Header parameter name:
+              </th><td>
+                X-API-Secret
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem>
+  </SchemaTabs>
+</div>
+      

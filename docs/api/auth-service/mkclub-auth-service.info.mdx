@@ -1,0 +1,108 @@
+---
+id: mkclub-auth-service
+title: "MKClub Auth Service"
+description: "**Serviço de autenticação e autorização do MKClub.**"
+sidebar_label: Introduction
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import Heading from "@theme/Heading";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiExplorer/Export";
+
+<span
+  className={"theme-doc-version-badge badge badge--secondary"}
+  children={"Version: 1.0.0"}
+>
+</span>
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"MKClub Auth Service"}
+>
+</Heading>
+
+
+
+**Serviço de autenticação e autorização do MKClub.**
+
+## Visão geral
+
+Este serviço é responsável por:
+- **Login** (email/senha) e **registro** de usuários
+- Emissão de **JWT** (access + refresh token)
+- **Perfil** do usuário autenticado (inclui `access_role` e `tenant_id` para multi-tenant)
+- **Reset de senha** (solicitação por email + conclusão com token)
+- **Google OAuth** para login social
+
+## Fluxo típico
+
+1. `POST /auth/login` com `email` e `password` → retorna `accessToken` e `refreshToken`
+2. Enviar `Authorization: Bearer `accessToken`` nas requisições ao Admin Backend e neste serviço
+3. Quando o access token expirar, usar `POST /auth/refresh` com o `refreshToken` para obter novos tokens
+
+## Roles (access_role)
+
+| Role | Descrição |
+|------|-----------|
+| **SuperAdmin** | Acesso total ao admin; `tenant_id` nulo |
+| **Admin** | B2B; cria e gerencia seus próprios tenants |
+| **TenantAdmin** | Admin de um tenant específico; `tenant_id` preenchido |
+| **User** | Usuário final |
+| **Star** | Artista/estrela vinculado a campanhas |
+
+
+<div
+  style={{"marginBottom":"2rem"}}
+>
+  <Heading
+    id={"authentication"}
+    as={"h2"}
+    className={"openapi-tabs__heading"}
+    children={"Authentication"}
+  >
+  </Heading><SchemaTabs
+    className={"openapi-tabs__security-schemes"}
+  >
+    <TabItem
+      label={"HTTP: Bearer Auth"}
+      value={"bearer"}
+    >
+      
+      
+      Access token JWT retornado no login ou no refresh. Ex: Bearer eyJhbGc...
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                http
+              </td>
+            </tr><tr>
+              <th>
+                HTTP Authorization Scheme:
+              </th><td>
+                bearer
+              </td>
+            </tr><tr>
+              <th>
+                Bearer format:
+              </th><td>
+                JWT
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem>
+  </SchemaTabs>
+</div>
+      

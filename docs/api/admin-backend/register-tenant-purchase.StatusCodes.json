@@ -1,0 +1,1 @@
+{"responses":{"201":{"description":"Compra registrada no CW20 do tenant"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin ou TenantAdmin"}}}

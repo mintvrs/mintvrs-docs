@@ -1,0 +1,673 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "startup",
+        "summary": "Startup probe - verifica se a aplicação iniciou",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação iniciou com sucesso"
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "operationId": "liveness",
+        "summary": "Liveness probe - verifica se a aplicação está viva",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação está respondendo"
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "readiness",
+        "summary": "Readiness probe - verifica se a aplicação está pronta para receber tráfego",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplicação pronta"
+          },
+          "503": {
+            "description": "Dependência indisponível"
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "Login com email e senha",
+        "description": "Autentica o usuário e retorna accessToken e refreshToken JWT. Use o accessToken no header Authorization nas chamadas ao Admin Backend e em GET /auth/profile.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email ou senha inválidos"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "operationId": "googleAuth",
+        "summary": "Iniciar login com Google",
+        "description": "Redireciona o usuário para o fluxo OAuth do Google.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "googleCallback",
+        "summary": "Callback OAuth Google",
+        "description": "Chamado pelo Google após o login; retorna os tokens JWT.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "summary": "Renovar tokens",
+        "description": "Troca o refreshToken por um novo par de accessToken e refreshToken. Use quando o accessToken expirar.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Novo par de tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "operationId": "profile",
+        "summary": "Perfil do usuário autenticado",
+        "description": "Retorna dados do usuário associado ao JWT (userId, email, name, access_role, tenant_id). Requer Authorization: Bearer `accessToken`.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dados do usuário",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/users": {
+      "get": {
+        "operationId": "listUsersByRole",
+        "summary": "Listar usuários por role (apenas Super Admin)",
+        "description": "Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown \"Criar tenant para o Admin\".",
+        "parameters": [
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "description": "Role para filtrar (ex: Admin, TenantAdmin)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários (id, email, name)"
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/users/{id}/tenant": {
+      "patch": {
+        "operationId": "updateUserTenant",
+        "summary": "Vincular tenant a um usuário (apenas Super Admin)",
+        "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "tenant_id atualizado"
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "register",
+        "summary": "Registrar novo usuário",
+        "description": "Cria conta com email e senha. O usuário é criado com role User. Para SuperAdmin/TenantAdmin é necessário atualizar no banco ou via processo interno.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado (sem password)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email já cadastrado"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password/request-reset": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "summary": "Solicitar reset de senha",
+        "description": "Envia email com link de recuperação (se o email existir). Por segurança sempre retorna sucesso para não revelar se o email está cadastrado.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solicitação aceita (email enviado se existir)"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password/reset": {
+      "post": {
+        "operationId": "resetPassword",
+        "summary": "Redefinir senha com token",
+        "description": "Conclui o reset de senha usando o token recebido por email. Token válido por tempo limitado (ex.: 15 min).",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha atualizada com sucesso"
+          },
+          "401": {
+            "description": "Token inválido ou expirado"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/users/tenant-admin": {
+      "post": {
+        "operationId": "createOrUpdateTenantAdmin",
+        "summary": "Criar ou atualizar usuário para TenantAdmin (apenas SuperAdmin)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTenantAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado com sucesso"
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "MKClub Auth Service",
+    "description": "**Serviço de autenticação e autorização do MKClub.**\n\n## Visão geral\n\nEste serviço é responsável por:\n- **Login** (email/senha) e **registro** de usuários\n- Emissão de **JWT** (access + refresh token)\n- **Perfil** do usuário autenticado (inclui `access_role` e `tenant_id` para multi-tenant)\n- **Reset de senha** (solicitação por email + conclusão com token)\n- **Google OAuth** para login social\n\n## Fluxo típico\n\n1. `POST /auth/login` com `email` e `password` → retorna `accessToken` e `refreshToken`\n2. Enviar `Authorization: Bearer `accessToken`` nas requisições ao Admin Backend e neste serviço\n3. Quando o access token expirar, usar `POST /auth/refresh` com o `refreshToken` para obter novos tokens\n\n## Roles (access_role)\n\n| Role | Descrição |\n|------|-----------|\n| **SuperAdmin** | Acesso total ao admin; `tenant_id` nulo |\n| **Admin** | B2B; cria e gerencia seus próprios tenants |\n| **TenantAdmin** | Admin de um tenant específico; `tenant_id` preenchido |\n| **User** | Usuário final |\n| **Star** | Artista/estrela vinculado a campanhas |\n",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Login, registro, refresh, perfil, OAuth e recuperação de senha."
+    },
+    {
+      "name": "health",
+      "description": "Health checks do serviço."
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "API atual (env API_BASE_URL ou localhost)"
+    },
+    {
+      "url": "https://auth.mk.nearx.com.br",
+      "description": "Produção"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "Access token JWT retornado no login ou no refresh. Ex: Bearer eyJhbGc...",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email do usuário",
+            "example": "adm@email.com.br"
+          },
+          "password": {
+            "type": "string",
+            "description": "Senha (mín. 8 caracteres)",
+            "example": "strongPassword123",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Access token JWT; usar em Authorization: Bearer `token`"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token; usar em POST /auth/refresh para renovar os tokens"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token JWT retornado no login",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário (UUID)"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role de acesso",
+            "enum": [
+              "SuperAdmin",
+              "TenantAdmin",
+              "Admin",
+              "User"
+            ]
+          },
+          "tenant_id": {
+            "type": "string",
+            "description": "ID do tenant (null para SuperAdmin)",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "role",
+          "tenant_id"
+        ]
+      },
+      "UpdateUserTenantDto": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "description": "ID do tenant (UUID) ou null para desvincular",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenant_id"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongPassw0rd!"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
+        ]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do usuário (UUID)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provedor de login",
+            "enum": [
+              "local",
+              "google"
+            ]
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "ID do provedor OAuth (Google)"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Role de acesso",
+            "enum": [
+              "SuperAdmin",
+              "TenantAdmin",
+              "Admin",
+              "User"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "provider",
+          "access_role",
+          "created_at"
+        ]
+      },
+      "RequestPasswordResetDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email do usuário que deseja redefinir a senha",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token recebido por email no link de reset"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Nova senha (mín. 8 caracteres)",
+            "example": "NewStrongPassw0rd!",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "CreateTenantAdminDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email do TenantAdmin",
+            "example": "admin@tenant.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do TenantAdmin",
+            "example": "Tenant Admin"
+          },
+          "tenant_id": {
+            "type": "string",
+            "description": "ID do tenant (UUID)"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "tenant_id"
+        ]
+      }
+    }
+  }
+}

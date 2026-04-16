@@ -1,0 +1,69 @@
+---
+id: list-users-by-role
+title: "Listar usuários por role (apenas Super Admin)"
+description: "Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown 'Criar tenant para o Admin'."
+sidebar_label: "Listar usuários por role (apenas Super Admin)"
+hide_title: true
+hide_table_of_contents: true
+api: eJzFVktyGzcQvUrXeCPR9FC2s6JXlCOr7DhlWZ9kEbpEcAYiUQKBMYChxVDc5gC5gSoLVxZepXIC3iQnyWtgRhpZySKraKMhPt3vvf5hndlKOhGUNa/LbJhp5cOZl87vr46tllk/K6UvnKr4BPaPZbDOCFJln+RCKE2SjFhIKq2n2tfbG6fwVdgFCXKwQMpcWLcQpcjpzIvSkrEkyoUyVAknqHS2Ku0nQ+PspVPCUZBGmJA2LY345DjLAYRXFjIAWzb8aZ2xVwByCaWTH2vlJChcCO1lP1OM9mMt3eohB4YV7V8oHRx87sirYXLVp9PoP/7YxVVfzMEzG66zsKrYoQ9OmVm22Xxgr76yxkvP+8/29vjffV9voSdIyo42O7fa9aN0u9mmn32z9/Th5VN7KQ2J2ksTJNkaWi63N1qVNl15/vDKqAJ8Tyc1oho5AGg/C2LGomWiDvMMuL0saqfCKgo5lcJJh88PTAkKzy1nwkyGKDpuDLMB3xzUnBisiXTLNgy109ifh1ANBwNtC6Hn1ofh8z0Q+lr40dFrEqEWGoKbJeHn+f7o5OD87Pgts7u9zYp0LXuYZgD54jI3QHuVI7/yqXvg4MjZst5+3v4GgTo0TziGKUgt2XUKLAe0Weo3H684WwPW3/x4isUm6gwDv5qkGwGMdernWDcPaRaF9J5CjB6skEtFk3Jf2xlyH3Tx7eQFUmie0wHybz+6J7l6M58eFnnOOR+zeC5FCYAcSC6mmIsqaAby/XcvdT0lxkMniIoqHpZsrxd3tp8t5yF0RDapQkSZKC5EKuk3MCabea83NmPz6BH9oDzvzNAmNC8deCSjb01uf6emCrY3S6mpsm44Nk+o13vLRHs9xJpzfYAknotdOOz1nJyhLJzFZrcy+NrBQvnoruSDEI8NiCTo41avJO1ucnMkHcqYTdlbU3cssbijTKFrRZNk5pw7xgQ4JqnTnKtykrrBotZBPUmrjfFj6WVgLBE9Y/FWq0KFRi6wbdrgY/Q89hPBc/vrYjy0doae847jBCPRW8oDbwuVZIXSr3R9ZSlsv1SqsLz2NKfJ0buTU0r1F69MovVJ9BppVML7T9aBxV+//NrmWss2tpB4rNEuLYzNMySdWXLDndzL5ts8vGdgQtxVYpP1CPv2T+lJNN2Z9kWBMyVPAtnNjbF5ntP7WhgEASHpVoW8qhQabx8RYwQdjg3MxNJ+BbuZClMMAZTP0jbmfKMfN3bfpkuM8y7vXMcNuqZvY12kyF1j/Un8a/6lbz6Ngrltn4jWNY3YHgJjA1qXaMbXi3sJZGqdbOL23cX9Z/svCC4FtEH9SINgQ57aU+W2f1RxHCQjvr3cGT/Jd5SYy2TRjkaUmyy2Xy6QJPdBVE7CxRzzobXGozyaOWsr40IZkGh5BpG2Ry7woBogfk5qQUvUTK25egQVYlEJZH+EiO7CrT91lqf5Xr6HFWR+EAV65pp7VIUOvhCG21TTLuMQdJ0RyGUTHwc7ojOv6Hbo3mtg62gf5fz/Pj+aQRDkVRhUWvBk7acZtW6mZDNfsRrnJAYQDzNeX6+nwsszpzcbXk7PEp6epfJiqjvPln9n/l8eLf+I9VKu7t5LS6FrPhLn5FKA+pQHCt4AnSfA4QFPwEjq7v3z1biMNJotYVYd0yAdT8TSBfEWQSxZ+N1sNn8DR4axCQ==
+sidebar_class_name: "get api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Listar usuários por role (apenas Super Admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/auth/users"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown "Criar tenant para o Admin".
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./list-users-by-role.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./list-users-by-role.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./list-users-by-role.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      
