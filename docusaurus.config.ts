@@ -6,7 +6,6 @@ import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 const config: Config = {
   title: 'MKClub Docs',
   tagline: 'Documentação da Plataforma de Crowdfunding com NFTs',
-  favicon: 'img/favicon.ico',
 
   url: 'https://docs.mintvrs.com',
   baseUrl: '/',
@@ -101,7 +100,6 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/mkclub-social.png',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
