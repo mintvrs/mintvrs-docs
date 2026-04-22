@@ -6,6 +6,9 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
         steps:
             - uses: actions/checkout@v3
 
@@ -14,10 +17,10 @@ jobs:
               with:
                 image: mintvrs-docs
                 tags: latest
-                registry: ghcr.io/nearxdev
+                registry: ghcr.io/mkclub69
                 dockerfile: Dockerfile
-                username: nearxdev
-                password: ${{ secrets.GH_TOKEN }}
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
 
     deploy:
         needs: build
