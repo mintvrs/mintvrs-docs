@@ -11,13 +11,6 @@ const config: Config = {
   baseUrl: '/',
 
   onBrokenLinks: 'warn',
-  markdown: {
-    mermaid: true,
-    hooks: {
-      onBrokenMarkdownLinks: 'warn',
-    },
-  },
-
   i18n: {
     defaultLocale: 'pt',
     locales: ['pt'],
@@ -25,6 +18,9 @@ const config: Config = {
 
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
   },
 
   themes: [
