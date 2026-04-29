@@ -81,6 +81,10 @@ docker run --rm --network host \
   node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js
 ```
 
+:::tip Infra
+Para referência completa (verificação, fallback, troubleshooting), veja [Migrations (Infra)](/infra/migrations).
+:::
+
 ### 4. Subir a stack
 
 ```bash

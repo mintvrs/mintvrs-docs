@@ -64,6 +64,15 @@ const sidebars: SidebarsConfig = {
         'ambiente/deploy',
       ],
     },
+    {
+      type: 'category',
+      label: 'Infra',
+      collapsed: true,
+      items: [
+        'infra/overview',
+        'infra/migrations',
+      ],
+    },
   ],
 
   // Use plugin-generated sidebars so tag pages are properly linked as category indices

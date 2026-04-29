@@ -114,6 +114,10 @@ cd auth-service && npm run migration:run
 cd admin-backend && npm run migration:run
 ```
 
+:::tip Infra
+Para detalhes operacionais completos, troubleshooting e o comando de produção via Docker, veja [Migrations (Infra)](/infra/migrations).
+:::
+
 ## 5. Popular com dados de seed (opcional)
 
 ```bash

@@ -177,6 +177,13 @@ const config: Config = {
             { label: 'Deploy em Produção', to: '/ambiente/deploy' },
           ],
         },
+        {
+          title: 'Infra',
+          items: [
+            { label: 'Visão Geral (Infra)', to: '/infra/overview' },
+            { label: 'Migrations', to: '/infra/migrations' },
+          ],
+        },
       ],
       copyright: `© ${new Date().getFullYear()} MKClub · My Keys Club. Documentação gerada com Docusaurus.`,
     },
