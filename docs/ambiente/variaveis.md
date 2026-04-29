@@ -74,9 +74,9 @@ As variáveis de blockchain são carregadas primeiro de `.env.blockchain`, depoi
 | `AWS_REGION` | ❌ | Região AWS S3 |
 | `AWS_S3_BUCKET` | ❌ | Nome do bucket S3 para conteúdo |
 
-## Produção (docker-compose)
+## Produção (GKE)
 
-No ambiente de produção, as variáveis são injetadas via `docker-compose.yml` ou secrets do sistema de orquestração. Consulte `acesso-db-mkclub/SERVER-CHECKLIST.md` para o checklist completo.
+No ambiente de produção, as variáveis são injetadas nos pods pelo **External Secrets Operator** (ESO), que lê os valores do **GCP Secret Manager** via `ClusterSecretStore: gcp-secret-manager`. Os mapeamentos ficam nos arquivos `external-secret.yml` de cada serviço no repo `mkclub69/mk-microservice-ops`. Consulte [Visão Geral (Infra)](/infra/overview) para a tabela de env vars por serviço e as chaves correspondentes no Secret Manager.
 
 :::warning Secrets em produção
 Nunca commite valores reais de `JWT_SECRET`, `XION_MNEMONIC`, chaves AWS, ou secrets de gateway no repositório. Use variáveis de ambiente do sistema de CI/CD ou um gerenciador de secrets.
