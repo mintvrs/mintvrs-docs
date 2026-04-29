@@ -6,27 +6,27 @@ sidebar_position: 3
 
 # Deploy em Produção
 
-O MKClub usa **Docker** + **Traefik** para deploy em produção.
+O MKClub usa **GKE** + **ArgoCD** para deploy em produção via GitOps.
+
+:::warning Página em revisão
+Esta página está sendo atualizada para refletir a infraestrutura atual (GKE/ArgoCD). Para operações de infra — serviços, imagens, secrets e migrations — consulte a seção [Infra](/infra/overview).
+:::
 
 ## Infraestrutura
 
-```
-Traefik (reverse proxy + TLS)
-├── api.mk.nearx.com.br → admin-backend (:3006)
-├── auth.mk.nearx.com.br → auth-service (:3001)
-├── admin.mk.nearx.com.br → admin-frontend (:3000)
-└── traefik.mk.nearx.com.br → Traefik Dashboard
-```
+- **Cluster:** GKE `mk` em `southamerica-east1` (projeto GCP `vaulted-program-487919-g2`)
+- **Sincronização:** ArgoCD via `mkclub69/mk-microservice-ops`
+- **Secrets:** GCP Secret Manager + External Secrets Operator
 
 ## Imagens Docker
 
-As imagens são publicadas no GitHub Container Registry:
+As imagens são publicadas no **Google Artifact Registry**, acionado ao criar uma tag `v*`:
 
-| Imagem | Serviço |
-|--------|---------|
-| `ghcr.io/nearxdev/mkbackend` | admin-backend |
-| `ghcr.io/nearxdev/mkauth` | auth-service |
-| `ghcr.io/nearxdev/mkadminweb` | admin-frontend |
+| Serviço | Imagem (GAR) |
+|---------|---|
+| `admin-backend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-backend/mintvrs-admin-backend` |
+| `auth-service` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-auth/mintvrs-auth` |
+| `admin-frontend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-web/mintvrs-admin-web` |
 
 ## Checklist de deploy
 
@@ -65,32 +65,15 @@ O `NEXT_PUBLIC_*` do Next.js é **baked no build**. A imagem Docker do admin-fro
 
 ### 3. Migrations
 
-Antes de subir os containers:
-
-```bash
-# Rodar migrations do auth-service
-docker run --rm --network host \
-  -e DATABASE_URL=postgresql://... \
-  ghcr.io/nearxdev/mkauth \
-  node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js
-
-# Rodar migrations do admin-backend
-docker run --rm --network host \
-  -e DATABASE_URL_ADMIN=postgresql://... \
-  ghcr.io/nearxdev/mkbackend \
-  node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js
-```
+As migrations rodam automaticamente no boot de cada pod (TypeORM `migrationsRun: true`). Não é necessária nenhuma etapa manual no deploy normal.
 
 :::tip Infra
-Para referência completa (verificação, fallback, troubleshooting), veja [Migrations (Infra)](/infra/migrations).
+Para referência completa — verificação, comando manual de emergência e troubleshooting — veja [Migrations (Infra)](/infra/migrations).
 :::
 
-### 4. Subir a stack
+### 4. Deploy
 
-```bash
-cd acesso-db-mkclub
-docker compose up -d
-```
+O deploy é feito via GitOps: o workflow `on_release.yml` atualiza a tag da imagem no `kustomization.yaml` do repo de ops (`mkclub69/mk-microservice-ops`) e o ArgoCD aplica o rolling update no cluster.
 
 ### 5. Verificar saúde
 
@@ -102,13 +85,7 @@ curl https://admin.mk.nearx.com.br/api/health
 
 ## Atualizar para nova versão
 
-```bash
-# Puxar novas imagens
-docker compose pull
-
-# Restart com zero downtime (Traefik mantém as rotas)
-docker compose up -d --remove-orphans
-```
+Crie uma tag `v*` no repositório do serviço. O workflow `on_release.yml` faz build, publica a imagem no GAR e atualiza o `kustomization.yaml` no repo de ops. O ArgoCD aplica o rolling update automaticamente.
 
 ## Monitoramento
 
@@ -124,20 +101,14 @@ Endpoints de health para monitoramento externo:
 
 ```bash
 # Ver logs em tempo real
-docker compose logs -f mkbackend
-docker compose logs -f mkauth
-docker compose logs -f mkadminweb
+kubectl -n mintvrs-admin-backend logs -f deploy/mintvrs-admin-backend
+kubectl -n mintvrs-auth logs -f deploy/mintvrs-auth
+kubectl -n mintvrs-admin-web logs -f deploy/mintvrs-admin-web
 
 # Filtrar por nível
-docker compose logs mkbackend | grep ERROR
+kubectl -n mintvrs-admin-backend logs deploy/mintvrs-admin-backend | grep ERROR
 ```
 
 ## Backup do banco de dados
 
-```bash
-# Backup
-docker exec mkclub-postgres pg_dump -U postgres mkclub_backend > backup_$(date +%Y%m%d).sql
-
-# Restore
-docker exec -i mkclub-postgres psql -U postgres mkclub_backend < backup.sql
-```
+O banco de dados fica no **Cloud SQL** (gerenciado pelo GCP). Backups automáticos são configurados diretamente no console do Cloud SQL. Para exports manuais, usar `gcloud sql export` ou o console GCP.

@@ -6,38 +6,64 @@ sidebar_position: 1
 
 # Visão Geral — Time de Infra
 
-Esta seção é destinada ao time de infraestrutura e DevOps. Aqui você encontra tudo que precisa para operar o ambiente de produção: subir os serviços, rodar migrations e diagnosticar problemas.
+Esta seção é destinada ao time de infraestrutura e DevOps. Aqui você encontra tudo que precisa para operar o ambiente de produção: entender os serviços, as imagens, os segredos e o fluxo de deploy.
 
-## Serviços
+## Cluster
 
-| Serviço | Imagem | Banco de dados |
+| Item | Valor |
+|---|---|
+| Provedor | GKE (Google Kubernetes Engine) |
+| Cluster | `mk` |
+| Região | `southamerica-east1` |
+| Projeto GCP | `vaulted-program-487919-g2` |
+| Sincronização | ArgoCD via GitOps — repo `mkclub69/mk-microservice-ops` |
+
+:::danger Nunca rodar `kubectl apply` diretamente
+O ArgoCD é a única fonte de verdade para o estado do cluster. Aplicar manifests manualmente cria drift e pode ser sobrescrito na próxima sync. Para alterar qualquer recurso, modifique o manifest no repo de ops e faça push.
+:::
+
+## Serviços em produção
+
+| Serviço | Namespace / Deployment | Porta | Banco |
+|---|---|---|---|
+| `admin-backend` | `mintvrs-admin-backend` | 3006 | `mkclub_backend` (Cloud SQL) |
+| `auth-service` | `mintvrs-auth` | 3001 | `authdb` (Cloud SQL) |
+| `admin-frontend` | `mintvrs-admin-web` | 3000 | — |
+| `docs` | `mintvrs-docs` | — | — |
+
+## Imagens Docker
+
+As imagens são publicadas no **Google Artifact Registry** pelo workflow `on_release.yml` de cada repositório, acionado ao criar uma tag `v*`.
+
+| Serviço | Imagem (GAR) |
+|---|---|
+| `admin-backend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-backend/mintvrs-admin-backend` |
+| `auth-service` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-auth/mintvrs-auth` |
+| `admin-frontend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-web/mintvrs-admin-web` |
+
+## Segredos e variáveis de ambiente
+
+Os segredos são gerenciados no **GCP Secret Manager** e injetados nos pods pelo **External Secrets Operator** (ESO), via `ClusterSecretStore: gcp-secret-manager`.
+
+Variáveis de banco de dados por serviço:
+
+| Serviço | Env var no pod | Chave no Secret Manager |
 |---|---|---|
-| `admin-backend` | `ghcr.io/mkclub69/mintvrs-admin-backend` | `mkclub_backend` (Postgres) |
-| `auth-service` | `ghcr.io/mkclub69/mintvrs-auth` | `authdb` (Postgres) |
-| `admin-frontend` | `ghcr.io/mkclub69/mintvrs-admin-web` | — (sem banco próprio) |
+| `admin-backend` | `DATABASE_URL_ADMIN` | `mintvrs-admin-backend-database-url-admin` |
+| `auth-service` | `DATABASE_URL` | `mintvrs-auth-db-url` |
 
-## Variáveis de ambiente por serviço
+:::danger Env vars diferentes por serviço
+`admin-backend` usa `DATABASE_URL_ADMIN`; `auth-service` usa `DATABASE_URL`. Não são intercambiáveis.
+:::
 
-Cada serviço usa um **nome de env var diferente** para a connection string do banco. Não são intercambiáveis.
+## Como o deploy funciona
 
-| Serviço | Variável | Banco esperado |
-|---|---|---|
-| `admin-backend` | `DATABASE_URL_ADMIN` | `mkclub_backend` |
-| `auth-service` | `DATABASE_URL` | `authdb` |
-
-Formato da connection string:
-
-```
-postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DO_BANCO
-```
-
-Para uma lista completa de variáveis de ambiente de cada serviço, veja [Variáveis de Ambiente](/ambiente/variaveis).
+1. O desenvolvedor cria uma tag `v*` no repositório do serviço.
+2. O workflow `on_release.yml` faz build da imagem, publica no GAR com a tag da release e atualiza `images[].newTag` no `kustomization.yaml` do serviço dentro do repo `mkclub69/mk-microservice-ops`.
+3. O ArgoCD detecta a mudança no repo de ops e faz rolling update do Deployment correspondente no cluster.
 
 ## Próximos passos
 
-- [Migrations](/infra/migrations) — como as migrations são aplicadas e como verificar/forçar manualmente.
-- [Deploy em Produção](/ambiente/deploy) — passo a passo para subir a stack.
-
-## Quando algo trava
-
-Se travar no meio da operação, entre em contato com o time de desenvolvimento. O processo de migrations, em especial, tem pontos de atenção documentados na página de [Migrations](/infra/migrations).
+- [Migrations](/infra/migrations) — como as migrations de banco são aplicadas, como verificar e como agir em emergências.
+- [Variáveis de Ambiente](/ambiente/variaveis) — lista completa de env vars de cada serviço.
+- [Deploy em Produção](/ambiente/deploy) — contexto adicional sobre a infraestrutura.
