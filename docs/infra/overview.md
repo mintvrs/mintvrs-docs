@@ -10,13 +10,11 @@ Esta seção é destinada ao time de infraestrutura e DevOps. Aqui você encontr
 
 ## Serviços
 
-| Serviço | Repositório / Imagem | Banco de dados |
+| Serviço | Imagem | Banco de dados |
 |---|---|---|
-| `admin-backend` | `ghcr.io/nearxdev/mkbackend` | `mkclub_backend` (Postgres) |
-| `auth-service` | `ghcr.io/nearxdev/mkauth` | `authdb` (Postgres) |
-| `admin-frontend` | `ghcr.io/nearxdev/mkfrontend` | — (sem banco próprio) |
-
-A stack de produção fica em `acesso-db-mkclub/docker-compose.yml`.
+| `admin-backend` | `ghcr.io/mkclub69/mintvrs-admin-backend` | `mkclub_backend` (Postgres) |
+| `auth-service` | `ghcr.io/mkclub69/mintvrs-auth` | `authdb` (Postgres) |
+| `admin-frontend` | `ghcr.io/mkclub69/mintvrs-admin-web` | — (sem banco próprio) |
 
 ## Variáveis de ambiente por serviço
 
