@@ -44,18 +44,18 @@ Configure no servidor (exemplo via arquivo `.env` ou variáveis do sistema):
 # auth-service
 DATABASE_URL=postgresql://user:pass@localhost:5432/authdb
 JWT_SECRET=chave-super-secreta-producao
-API_BASE_URL=https://auth.mk.nearx.com.br
+API_BASE_URL=https://auth.mintvrs.com
 
 # admin-backend
 DATABASE_URL_ADMIN=postgresql://user:pass@localhost:5432/mkclub_backend
 AUTH_SERVICE_URL=http://mkauth:3001  # Comunicação interna Docker
-CORS_ORIGINS=https://admin.mk.nearx.com.br,https://admin.mintvrs.com,https://docs.mintvrs.com
-API_BASE_URL=https://api.mk.nearx.com.br
+CORS_ORIGINS=https://admin.mintvrs.com,https://docs.mintvrs.com
+API_BASE_URL=https://admin-api.mintvrs.com
 XION_MNEMONIC=...
 
 # admin-frontend (build-time)
-NEXT_PUBLIC_ADMIN_BACKEND_URL=https://api.mk.nearx.com.br
-NEXT_PUBLIC_AUTH_SERVICE_URL=https://auth.mk.nearx.com.br
+NEXT_PUBLIC_ADMIN_BACKEND_URL=https://admin-api.mintvrs.com
+NEXT_PUBLIC_AUTH_SERVICE_URL=https://auth.mintvrs.com
 AUTH_SERVICE_BASE_URL=http://mkauth:3001  # Comunicação interna Docker
 ```
 
@@ -65,11 +65,7 @@ O `NEXT_PUBLIC_*` do Next.js é **baked no build**. A imagem Docker do admin-fro
 
 ### 3. Migrations
 
-As migrations rodam automaticamente no boot de cada pod (TypeORM `migrationsRun: true`). Não é necessária nenhuma etapa manual no deploy normal.
-
-:::tip Infra
-Para referência completa — verificação, comando manual de emergência e troubleshooting — veja [Migrations (Infra)](/infra/migrations).
-:::
+O `auth-service` aplica migrations automaticamente no boot. O `admin-backend` requer um passo via CLI após o deploy — o procedimento completo está em [Migrations (Infra)](/infra/migrations).
 
 ### 4. Deploy
 
@@ -78,9 +74,9 @@ O deploy é feito via GitOps: o workflow `on_release.yml` atualiza a tag da imag
 ### 5. Verificar saúde
 
 ```bash
-curl https://auth.mk.nearx.com.br/health/ready
-curl https://api.mk.nearx.com.br/health/ready
-curl https://admin.mk.nearx.com.br/api/health
+curl https://auth.mintvrs.com/health/ready
+curl https://admin-api.mintvrs.com/health/ready
+curl https://admin.mintvrs.com/api/health
 ```
 
 ## Atualizar para nova versão

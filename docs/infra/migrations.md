@@ -23,9 +23,13 @@ SELECT * FROM typeorm_migrations ORDER BY timestamp;
 
 ## 2. Como as migrations são aplicadas em produção
 
-**As migrations rodam automaticamente no boot de cada pod**, via `migrationsRun: true` configurado no TypeORM (`app.module.ts` de cada serviço). A cada deploy (rolling update), quando um novo pod é iniciado, o TypeORM aplica as migrations pendentes antes do HTTP listener estar pronto.
+Os dois serviços utilizam TypeORM, mas com fluxos ligeiramente diferentes:
 
-A **StartupProbe** de cada serviço segura o pod por tempo suficiente para boot + migration:
+**`auth-service`** — as migrations rodam **automaticamente no boot do pod**, via `migrationsRun: true` configurado no `app.module.ts`. A cada deploy (rolling update), o TypeORM aplica as migrations pendentes antes do HTTP listener ficar pronto.
+
+**`admin-backend`** — as migrations são aplicadas **via CLI após o deploy**, usando `ts-node` dentro do pod. O procedimento está na [seção 4](#4-rodar-migrations-manualmente).
+
+A **StartupProbe** de cada serviço segura o pod por tempo suficiente para o boot:
 
 | Serviço | Tempo máximo (StartupProbe) |
 |---|---|
@@ -41,9 +45,9 @@ Passado esse tempo sem o pod responder como saudável, o Kubernetes mata e reini
 Após um deploy, para confirmar que as migrations foram aplicadas:
 
 ```bash
-# admin-backend
+# admin-backend (usa ts-node — migrations em TypeScript)
 kubectl -n mintvrs-admin-backend exec -it deploy/mintvrs-admin-backend -- \
-  node ./node_modules/typeorm/cli.js migration:show -d dist/data-source.js
+  ts-node ./node_modules/typeorm/cli.js migration:show -d src/data-source.ts
 
 # auth-service
 kubectl -n mintvrs-auth exec -it deploy/mintvrs-auth -- \
@@ -52,14 +56,14 @@ kubectl -n mintvrs-auth exec -it deploy/mintvrs-auth -- \
 
 Migrations aplicadas aparecem marcadas com `[X]`; pendentes aparecem com `[ ]`.
 
-## 4. Rodar migrations manualmente (emergência)
+## 4. Rodar migrations manualmente
 
-Se por qualquer razão as migrations não rodaram no boot (ex: Cloud SQL estava indisponível no momento do deploy e o pod já estabilizou sem aplicar), é possível forçar manualmente:
+Para o `admin-backend`, esse é o procedimento padrão após cada deploy. Para o `auth-service`, use apenas em caso de emergência (ex: Cloud SQL estava indisponível durante o boot).
 
 ```bash
-# admin-backend
+# admin-backend (usa ts-node — migrations em TypeScript)
 kubectl -n mintvrs-admin-backend exec -it deploy/mintvrs-admin-backend -- \
-  node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js
+  ts-node ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts
 
 # auth-service
 kubectl -n mintvrs-auth exec -it deploy/mintvrs-auth -- \
@@ -71,7 +75,7 @@ Para desfazer a última migration aplicada:
 ```bash
 # admin-backend
 kubectl -n mintvrs-admin-backend exec -it deploy/mintvrs-admin-backend -- \
-  node ./node_modules/typeorm/cli.js migration:revert -d dist/data-source.js
+  ts-node ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts
 
 # auth-service
 kubectl -n mintvrs-auth exec -it deploy/mintvrs-auth -- \
@@ -105,11 +109,11 @@ docker compose -f docker-compose.local.yml up -d
 
 ## 6. Pontos de atenção do modelo atual
 
-O modelo atual (auto-run no boot) funciona bem no dia a dia, mas tem aspectos que valem monitorar:
+O modelo atual funciona bem no dia a dia, mas tem aspectos que valem monitorar:
 
 - **Rolling update com `maxSurge: 2`** — dois pods novos podem subir em paralelo e tentar rodar migrations simultaneamente. O TypeORM usa a tabela `typeorm_migrations` como lock implícito; em teoria é seguro, mas se surgirem erros de concorrência nos logs, é sinal de atenção.
 - **`progressDeadlineSeconds: 10` é apertado** — se uma migration específica demorar mais do que o esperado, o Kubernetes pode marcar o rollout como falho mesmo que a migration tenha sido aplicada com sucesso. Verificar com `migration:show` antes de assumir que falhou.
-- **Falha silenciosa de Cloud SQL** — se o banco não estiver acessível no boot, o pod entra em `CrashLoopBackOff`. O pod continua sem as migrations aplicadas até que seja reiniciado com o banco disponível. Sempre verificar com `migration:show` após qualquer incidente de banco.
+- **Falha de Cloud SQL no boot** — se o banco não estiver acessível no boot, o pod entra em `CrashLoopBackOff`. O pod continua sem as migrations aplicadas até que seja reiniciado com o banco disponível. Sempre verificar com `migration:show` após qualquer incidente de banco.
 
 ## 7. Sugestão de melhoria (para discussão com dev)
 
