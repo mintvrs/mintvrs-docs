@@ -52,6 +52,7 @@ const sidebars: SidebarsConfig = {
         'guias/criar-campanha',
         'guias/marketplace-p2p',
         'guias/blockchain',
+        'guias/kyc-aarin',
       ],
     },
     {
