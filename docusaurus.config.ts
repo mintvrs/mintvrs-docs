@@ -133,13 +133,13 @@ const config: Config = {
           label: 'API Auth',
         },
         {
-          href: 'https://api.mintvrs.com/api-docs',
-          label: 'Swagger Admin',
+          href: 'https://admin-api.homolog.mintvrs.com/api-docs',
+          label: 'Swagger Admin (Homolog)',
           position: 'right',
         },
         {
-          href: 'https://auth.mintvrs.com/docs-auth-service',
-          label: 'Swagger Auth',
+          href: 'https://auth.homolog.mintvrs.com/docs-auth-service',
+          label: 'Swagger Auth (Homolog)',
           position: 'right',
         },
       ],
@@ -166,8 +166,8 @@ const config: Config = {
         {
           title: 'Swagger UIs',
           items: [
-            { label: 'Admin Backend', href: 'https://api.mintvrs.com/api-docs' },
-            { label: 'Auth Service', href: 'https://auth.mintvrs.com/docs-auth-service' },
+            { label: 'Admin Backend (Homolog)', href: 'https://admin-api.homolog.mintvrs.com/api-docs' },
+            { label: 'Auth Service (Homolog)', href: 'https://auth.homolog.mintvrs.com/docs-auth-service' },
           ],
         },
         {

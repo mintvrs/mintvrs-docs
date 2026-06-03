@@ -61,6 +61,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'ambiente/setup-local',
         'ambiente/variaveis',
+        'ambiente/homolog',
         'ambiente/deploy',
       ],
     },

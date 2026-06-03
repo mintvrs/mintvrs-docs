@@ -3744,6 +3744,10 @@
   ],
   "servers": [
     {
+      "url": "https://admin-api.homolog.mintvrs.com",
+      "description": "Homologação"
+    },
+    {
       "url": "http://localhost:3006",
       "description": "API atual (env API_BASE_URL ou localhost)"
     },
