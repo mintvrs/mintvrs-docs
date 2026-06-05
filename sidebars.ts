@@ -47,6 +47,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'guias/primeiros-passos',
+        'guias/integracao-mkc',
         'guias/criar-tenant',
         'guias/configurar-pagamento',
         'guias/criar-campanha',

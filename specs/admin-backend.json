@@ -444,7 +444,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Campaign"
+                    "$ref": "#/components/schemas/CampaignActiveDto"
                   }
                 }
               }
@@ -512,7 +512,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Campanha pública com previews"
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignPublicDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "Campanha não encontrada ou não ativa",
@@ -732,7 +739,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Saldo atualizado"
+            "description": "Saldo atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalance"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -752,7 +766,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Lista de transações do usuário"
+            "description": "Lista de transações do usuário",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditTransaction"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1810,7 +1834,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transaction"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
                 }
               }
             }
@@ -1831,7 +1858,7 @@
             "bearer": []
           }
         ],
-        "summary": "Compra real pelo usuário final (debita créditos)",
+        "summary": "Compra real pelo usuário final (debita créditos) — cria N chaves",
         "tags": [
           "transactions"
         ]
@@ -3676,6 +3703,56 @@
           "splits"
         ]
       }
+    },
+    "/kyc/consultar": {
+      "post": {
+        "operationId": "consultar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificarCpfDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dados do CPF consultado"
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas TenantAdmin, Admin ou SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consulta nome e data de nascimento pelo CPF (Receita Federal)",
+        "tags": [
+          "kyc"
+        ]
+      }
     }
   },
   "info": {
@@ -4079,6 +4156,34 @@
           "name"
         ]
       },
+      "MainStar": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do artista principal"
+          },
+          "profile_photo": {
+            "type": "string",
+            "description": "URL da foto de perfil"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do artista"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON livre) — atributos flexíveis da modelo/artista (ex: profession)",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "profile_photo",
+          "name",
+          "custom_fields"
+        ]
+      },
       "Campaign": {
         "type": "object",
         "properties": {
@@ -4143,6 +4248,15 @@
             "description": "ID do tenant",
             "nullable": true
           },
+          "main_star": {
+            "description": "Artista principal (modelo) da campanha",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MainStar"
+              }
+            ]
+          },
           "main_star_id": {
             "type": "string",
             "description": "ID do artista principal",
@@ -4182,11 +4296,273 @@
           "backers",
           "nft_contract_address",
           "tenantId",
+          "main_star",
           "main_star_id",
           "custom_fields",
           "platform_fee",
           "created_at",
           "updated_at"
+        ]
+      },
+      "CampaignActiveDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de capa",
+            "nullable": true
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Data de início",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Data de fim",
+            "nullable": true
+          },
+          "goal_value": {
+            "type": "string",
+            "description": "Valor objetivo (meta financeira)",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ]
+          },
+          "raised": {
+            "type": "string",
+            "description": "Valor arrecadado"
+          },
+          "backers": {
+            "type": "number",
+            "description": "Número de apoiadores"
+          },
+          "nft_contract_address": {
+            "type": "string",
+            "description": "Endereço do contrato NFT",
+            "nullable": true
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "main_star": {
+            "description": "Artista principal (modelo) da campanha",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MainStar"
+              }
+            ]
+          },
+          "main_star_id": {
+            "type": "string",
+            "description": "ID do artista principal",
+            "nullable": true
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON)",
+            "nullable": true
+          },
+          "platform_fee": {
+            "type": "string",
+            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "nullable": false
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 12
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 100
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cover_image",
+          "start_date",
+          "end_date",
+          "goal_value",
+          "status",
+          "raised",
+          "backers",
+          "nft_contract_address",
+          "tenantId",
+          "main_star",
+          "main_star_id",
+          "custom_fields",
+          "platform_fee",
+          "created_at",
+          "updated_at",
+          "currentKeys",
+          "totalKeys"
+        ]
+      },
+      "Content": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do conteúdo"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título do conteúdo"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do conteúdo",
+            "enum": [
+              "Image",
+              "Video",
+              "Text",
+              "Link",
+              "File"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL do conteúdo",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do conteúdo",
+            "nullable": true
+          },
+          "is_preview": {
+            "type": "boolean",
+            "description": "Conteúdo de preview"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Conteúdo ativo"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "type",
+          "url",
+          "description",
+          "is_preview",
+          "active",
+          "created_at"
+        ]
+      },
+      "GalleryItemDto": {
+        "type": "object",
+        "properties": {
+          "mediaType": {
+            "type": "string",
+            "description": "Tipo da mídia",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ],
+            "example": "IMAGE"
+          },
+          "mediaUrl": {
+            "type": "string",
+            "description": "URL da mídia"
+          }
+        },
+        "required": [
+          "mediaType",
+          "mediaUrl"
+        ]
+      },
+      "CampaignPublicDto": {
+        "type": "object",
+        "properties": {
+          "campaign": {
+            "description": "Entidade Campaign completa",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Campaign"
+              }
+            ]
+          },
+          "previews": {
+            "description": "Conteúdos de preview da campanha",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Content"
+            }
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 12
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 100
+          },
+          "totalMediaCount": {
+            "type": "number",
+            "description": "Total de mídias ativas da campanha (não só previews)",
+            "example": 24
+          },
+          "gallery": {
+            "description": "Galeria — previews de imagem/vídeo já formatados",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GalleryItemDto"
+            }
+          }
+        },
+        "required": [
+          "campaign",
+          "previews",
+          "currentKeys",
+          "totalKeys",
+          "totalMediaCount",
+          "gallery"
         ]
       },
       "UpdateCampaignDto": {
@@ -4269,6 +4645,177 @@
             }
           }
         }
+      },
+      "CreditBalance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do saldo"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Saldo total em centavos da moeda configurada"
+          },
+          "lockedBalance": {
+            "type": "number",
+            "description": "Saldo bloqueado em campanhas ativas (em centavos)"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda do saldo"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "userId",
+          "balance",
+          "lockedBalance",
+          "currency",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreditTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da transação"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de transação: add ou subtract",
+            "enum": [
+              "add",
+              "subtract",
+              "refund",
+              "lock",
+              "unlock",
+              "consume",
+              "compensation"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor em centavos"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider do pagamento (ex: stripe)"
+          },
+          "providerTransactionId": {
+            "type": "string",
+            "description": "ID da transação no provider",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da transação",
+            "enum": [
+              "pending",
+              "approved",
+              "failed",
+              "refunded"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata adicional"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha associada",
+            "nullable": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de expiração (para créditos compensatórios)",
+            "nullable": true
+          },
+          "isNonRefundable": {
+            "type": "boolean",
+            "description": "Créditos não reembolsáveis (compensatórios)",
+            "default": false
+          },
+          "refundedTransactionId": {
+            "type": "string",
+            "description": "ID da transação original (em caso de reembolso)",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain na Xion",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer Xion",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "userId",
+          "type",
+          "amount",
+          "currency",
+          "provider",
+          "providerTransactionId",
+          "status",
+          "metadata",
+          "campaignId",
+          "expiresAt",
+          "isNonRefundable",
+          "refundedTransactionId",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "GrantCreditsDto": {
         "type": "object",
@@ -4659,6 +5206,11 @@
             "description": "ID do usuário comprador",
             "nullable": true
           },
+          "accessId": {
+            "type": "string",
+            "description": "ID do tier de acesso (chave) comprado",
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "description": "Status da transação",
@@ -4693,6 +5245,7 @@
           "memo",
           "explorerUrl",
           "userId",
+          "accessId",
           "status",
           "createdAt"
         ]
@@ -4752,6 +5305,10 @@
           "stripePaymentIntent": {
             "type": "string",
             "description": "Stripe payment intent ID (para compra direta)"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "ID do tier de acesso (chave) comprado"
           }
         },
         "required": [
@@ -4833,6 +5390,17 @@
             "type": "string",
             "description": "Moeda (default: BRL)",
             "example": "BRL"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "ID do tier de acesso (chave) comprado",
+            "example": "a1-uuid..."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade de chaves a comprar (default: 1)",
+            "example": 3,
+            "default": 1
           }
         },
         "required": [
@@ -4867,6 +5435,15 @@
               "Gift"
             ]
           },
+          "campaign": {
+            "description": "Campanha do token (inclui main_star quando carregada)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Campaign"
+              }
+            ]
+          },
           "active": {
             "type": "boolean",
             "description": "Token ativo"
@@ -4894,6 +5471,7 @@
           "tenantId",
           "code",
           "type",
+          "campaign",
           "active",
           "issued_at",
           "redeemed_at",
@@ -4960,6 +5538,10 @@
             "description": "Quantidade disponível",
             "nullable": true
           },
+          "sold": {
+            "type": "number",
+            "description": "Quantidade já vendida deste tier"
+          },
           "valid_until": {
             "format": "date-time",
             "type": "string",
@@ -4982,6 +5564,7 @@
           "level",
           "price",
           "quantity",
+          "sold",
           "valid_until",
           "created_at",
           "updated_at"
@@ -5062,6 +5645,10 @@
             "type": "string",
             "description": "Nome do artista principal",
             "example": "Maria Silva"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON livre) — ex: { \"profession\": \"Modelo\" }"
           }
         },
         "required": [
@@ -5081,65 +5668,12 @@
             "type": "string",
             "description": "Nome do artista principal",
             "example": "Maria Silva"
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON livre) — ex: { \"profession\": \"Modelo\" }"
           }
         }
-      },
-      "Content": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID do conteúdo"
-          },
-          "title": {
-            "type": "string",
-            "description": "Título do conteúdo"
-          },
-          "type": {
-            "type": "string",
-            "description": "Tipo do conteúdo",
-            "enum": [
-              "Image",
-              "Video",
-              "Text",
-              "Link",
-              "File"
-            ]
-          },
-          "url": {
-            "type": "string",
-            "description": "URL do conteúdo",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "Descrição do conteúdo",
-            "nullable": true
-          },
-          "is_preview": {
-            "type": "boolean",
-            "description": "Conteúdo de preview"
-          },
-          "active": {
-            "type": "boolean",
-            "description": "Conteúdo ativo"
-          },
-          "created_at": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "type",
-          "url",
-          "description",
-          "is_preview",
-          "active",
-          "created_at"
-        ]
       },
       "CreateContentDto": {
         "type": "object",
@@ -5398,6 +5932,19 @@
         "required": [
           "transactionId",
           "price"
+        ]
+      },
+      "VerificarCpfDto": {
+        "type": "object",
+        "properties": {
+          "cpf": {
+            "type": "string",
+            "example": "123.456.789-09",
+            "description": "CPF no formato 000.000.000-00"
+          }
+        },
+        "required": [
+          "cpf"
         ]
       }
     }

@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"cpf":{"type":"string","example":"123.456.789-09","description":"CPF no formato 000.000.000-00"}},"required":["cpf"],"title":"VerificarCpfDto"}}}}}

@@ -13,8 +13,8 @@
     "gen-api-docs": "docusaurus gen-api-docs all",
     "clean-api-docs": "docusaurus clean-api-docs all",
     "gen-specs": "npm run gen-spec:admin && npm run gen-spec:auth",
-    "gen-spec:admin": "cd ../admin-backend && npm run openapi:export",
-    "gen-spec:auth": "cd ../auth-service && npm run openapi:export",
+    "gen-spec:admin": "cd ../mintvrs-admin-backend && npm run openapi:export",
+    "gen-spec:auth": "cd ../mintvrs-auth && npm run openapi:export",
     "setup": "npm run gen-specs && npm run gen-api-docs",
     "setup:start": "npm run setup && npm run start"
   },
