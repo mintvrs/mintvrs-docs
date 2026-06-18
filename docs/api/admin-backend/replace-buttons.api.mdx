@@ -1,0 +1,69 @@
+---
+id: replace-buttons
+title: "Substituir o layout inteiro de botões interativos (apenas dono/admin)"
+description: "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`) faz a requisição falhar com 400."
+sidebar_label: "Substituir o layout inteiro de botões interativos (apenas dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWs1yJDUSfhVFc+l29J/tAYYm9uCfAQYYxuG2gY1hYlpVJXcLV5VqJFWPG09H8BD7ArN72OCwJ2IvXPtN9kn2S0n107bBEMGFCHMYqquUqfz5MpWZ8nUnESbWsrBS5Z1JZ1pGxkpbSnb2/PiAcZZKYzlLBIuU3fxXGJZwFvOs4PmCs64R2eafuZWxW6JFkfJY9JlMBE9ZwTVniolEWqXZUpqSp70JE/lSCrznWvMVi1VWpMIq9r8f/1HvoTJpZaIMM5t/KbDN1JJ+9plgZRYIl/wHqSAeRAGzlK9UaYfsiEM+YgM6cSXngs1kMmPdXGWCJYpt/hOrXPT6bHY1A7fZCt/Gg93xuDdkpxBD5w03Zni6VEN2UIicQyjQ52pbf1WygyST+egMS3Lrn6dlIbR7BNMDK/LNvyHOBAy+5qlMOJn6RBbQxXA2u1A6kslXKv9mIa0gcwsITNZ4DXu9LoV2+ymGhZxUgAJWc1isS6o5TfqkCP6BEFEq3Ms3MrELelgIOV9YelI6EXrWYxf8BzhWi9elNNLJhlfpgmtyBns0Hg87/Y6CDk7SpwlgETx7WFqrcoPP5NtMWKFNZ/LiupPjB5bJBJ8cYy1AZnUp+h1JuCq4XeDbNtjOz58et+2JBSZeiIx3JtcdccUJGVgWvc93+Qfx48GH8f7+4FG8Hw0e87EYiIu9i93kI7EffXQBUrsqaLWxWubzznr90osijD1UyYpY3pSMLClyS594UaRAMQk2+t6QdNctWQJrFX0vYkvaazKPlcLQ1yhYBY/b+n3pYicgfCuIuqaOsxptEsJIrXqNKg7o+AlcZOZ+OWD9Zk0ww02TP02gsLyAqgliEmgKsfI3th0hDFQqXSDqWCHSAP0ugKKdzRKW8UJI7mMcMTn9+lMSvHFaJuPOut+5aomUl1kk9C2RTlSFwm+ZyLCdjiEjsF9FZpvvo73h+2C7+iNs/34/2w/3h7tgG+KnxTxSKhU8v8X90JttwSOZSgtjsm4iLniZWkbY6jkC99uDDcxdRN4v95dcz0sY9V6Zd/fA1Ef3/VwPUvu7mD4GT5cn7mf5HMsyn/ZzEMgfuDN3m9t4vW7ngxc+QVx1yIEITwSAw8pTQErz2MplyDDHViGAb9BWYdYiPC+QTausFIgclSnwwkfF3nh8R2S2EnwrGD1erLIwDncJIeE9yoZ/UqaQjaKvgjqvfj/mpgJpG4mk2EolnidY4rhErtu8a0DJWd5KrjCM3/OVTzivZMbn4v6UcX76JSs2v0SpO+U5c2TO8RdlDuDjFKOdqoMe9HmZpqRUDf1fzZCHQYkCwRrjFQLJPOS/h/z3kP9u57/fSh53h3b/rpx5RPlAzvOQNU9Drmyy56O7EuYxRSZyzXLzLnWVeVdcDSfsarQKdalgzphU+zNeGlgYfYAvXMUV6tXen5dFUVTZ0hypRNzvpKPNz4mcK/bZ2dkJRbfQestDUJZwj7f6/uTxTOSmyn03GXUOeYIOwtWbFPiZMGY7vdba3LAsMnq68I1VFjZoM37RgVFkyrLSWBbhCMiZe+GKcGPeAK3MLFSZJkhhboXICgt83cRPy2yVxo2YLYA8oU93wWL3Niy+oiTAS6R9wD9RDz7+q/t4/1d8vPnpjv73wd1/dXc/uu3uo2q4kbsZSu7HDcmDs//SzgYvI+JSS3CmgU0kuKYi58VLmpNYPqc5TicOtYErGDJhF4qGP0XpfEgTnElnVK8ZXctkPYrqkZARelnNg0qdYu3C2sJMRiNOs7ABL+RwoTKVqvkQv+1Sm2GsslsG/cyvCdXUut/mBmapimFvZexkfzz+4Hahd/KUcV/diXzJ8PPV4cH0ySvqYlTJaureDc5OTkiYXQ5z2OaKRBtGd5TVWiVlEO1lY9QpYT+Mg4JpQ0C4Ktq/6oeHT5TOOMKo8/k3Z023Q1JQ8+RHaQclrE+nqtv3phRn6lLkDORMRTQppfaLKNgUTpCxYN2T59MzNsLRvIDF5m4U+eRqwg6dAEysPl9En8bDITW3bkC3EJyqXuDk2wGMNvhCtHsMWIZebK+tZW0o7vIG3lPkWjchZd3SKCrDqZqda3Iy+r9es+9UxFrYP7h1ILrdMNPr37E5dqckdtqMC59U4dsa773wLaZr7VxnR82Y68WofWp1T366GPqd3b2mS3lcNxfj9cs1qXShnKohdJ99cZSWkR8ps0MeX1KnCQVvabazQ5bN0F7JQdCNOlUuc5EyF27SWD8VYJ7pcGfnu/y7/L33CCfCjewdiunlgO3sEJa6Hh29yc4OOzc0o7cOZ9oPxqteeBtos5tIm/UIjd5RbLaF4xp/M8d4Nhuy55GWc243P2upfDeNNMolSGjYbXAAJYWCvww5r9y8wzLDKD3QR+zD/ZzdK+Gn8KxCXXfbz6TWidshRtbEbkrXwHDdjKHhe8YNdSxC58r0+uG2YlZD3N0atFE3gxQmqGuG7MCweMGXItxdzAWdnYZxxeA+rlmDRXdN4H3dA9NCUTuJJApzz0Ue6PAqGNiTmdFEJqNqhRWDS7Eys2Fw7SmadVN5tLmGIMUPvM5utvWx28wLNHIXPJUhTJ8hh+MoM4tIcZxM81RFPO3TpcOFpL5cM3hLvOErQ6dofUXhyYMb6k0P9w4/dttAP1gCxQQejSgNK/Tm58L5st5YGpUSxsAWLazGJ8fHbPn2pj5a0FlvFRm44hlYBi2rfXVdtmKvWgfhrlPE5hfaWJFs26ogDLQPB489diFzsgeNhwoXEQ2IYAyah7nB4ebdUqSBxxT2dSKjAoKtRySySDlbyjwuncpNSW0+rtAJQ4GRNX7CEAtpee1mOnSMIiuChUTYO6e/rT6wt+zYpQs//3mLT4PwX/1Az0RSGdZAwLfs6PT8mDYMTtkGabhdC9oiUpjPzSPjAoEiDq4r3BwvzWgCUN9VGXb0zd549NUnZzSS/BYrhixsf8JXtJZ9Glzi5WjgNoV/CzF6JjTN7BDA87bR+/i/wy8N7a6gLaC6EPElEERPXM9RT8F+NKqst6xGIGGvyvQtth61znwjkQQ7Fm5imKuGj6+Ha5E9jhDs8B8Q5x4bz9Zk7vD2RP6RLF5aSXeDeOry1sUc7Vlx6NUcyIBsxA5RzVxCSZk7ZseiSNXKDWZ5jIy9ckbvN6o4z7qM3jYgkgkdFu4r3VVpChAq0OgFPNbIrTnK25gSuZf+tKIU/po4lNbWrfNJt7GVpvGwp5v6POs21JufaGxsJjSMT+C+BT7SaRArl3UoGFwjAjlFFqnUNPZ/xvWlsO5m0vFt/WYneyf+OFniBOGsUs3t6fMzPKfpDjYcKjXXqQs7b1FST0bVxUATiYGY+4imNIJdLb+gws4xwolNxbA/rXeH4+E49E+wH058qjgKVKEZd51TKGbqy3d961bw1yb+Xe4vpwmXvs7u3SwWrpu+7eF6/+F631/vh+LaotIZwauorYFI1w1dh06v3Q32OxPZDJldd0g9FC26vo64Eec6Xa/pNSlEHSYelxx5x90CoXBOpAnFMWQx4jcg2j0NPW+P3fH3AXfKXXUKObUJS56W9AuPl9TDUM3uiu3QOpA0/kNI34MzIm8Ib402qFH0FAdxLAr7m2vbjfPJObV3Ufjrg8wNPDqav6E/ksC/TkblTOAaR/fuupPyfF660UPHs6RkQeV1+1pmu6F0St1pBbjHrXAHDVxUGcUdA2SX9fr/F3qjdA==
+sidebar_class_name: "put api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Substituir o layout inteiro de botões interativos (apenas dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/campaigns/{id}/buttons"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`) faz a requisição falhar com 400.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./replace-buttons.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./replace-buttons.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./replace-buttons.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

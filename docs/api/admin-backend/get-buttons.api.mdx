@@ -1,0 +1,69 @@
+---
+id: get-buttons
+title: "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público."
+description: "Retorna o estado dos botões interativos da campanha: a flag `interactive_buttons_enabled`, a URL pública da imagem de fundo (`button_layout_image`, ou null) e a lista de botões. Cada botão é um círculo com `id` (= nome do ícone que o frontend mapeia para um SVG) e posição `x`/`y` em percentual (0-100). Endpoint público (sem autenticação)."
+sidebar_label: "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público."
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1z2zYa/isY9SJ59GU7bVNl9uCPNE2bNB7L3mYn7VggCUmoSYIBQMVaRz8ms4edHnrK7KVX/bF9XgCkKMsbpzO7t/XFIoj363m/edtKhIm1LKxUeWvUOhdW6ZwzxYSxPFEsUYZFyq7/JQyTuRWaW7nAWcJZzLOC53M+YpxNUz5jE38hxg1xFZXWqtxciZxHqUgmXdy6PH/BivUfUSpjThxkxmciY4lg0zKHsPbEU12lfKlKe+Xeg1KVLC/TtMMEmKQSmhFNUKvPTjh40dM/FFv/xsqMxevfdVymisUqg1rJhLX/wnKVCdjD1r/HKhfsbSlg5lQrKJ0nLOOFkJwVXHPiMP7rMxJXKCPX/yTGk5vJYLKcMOhbCB2L3JY8Ze1hb3847PTZ0zwpFOyv7IMxBld5CeYW5jomnX6r21KFA1HlzxMAPhP22COFVyQ8E8DQtEZvbls5HnBFJnilxdtSagESq0vRbUnyVsHtHO+2XXh5+fy06R5cMPFcZLw1um2JG5ymxDX6ku/zr+LHva/jw8Peo/gw6j3mQ9ET04PpfvKNOIy+mYLULgu6bayW+ay1Wv1CqpgC+gpDDA+GQ/q3rcIL5z7GHUQbT7E2hUl3x+3C+9ShEzt3WOLJi4IChXgOfjXE+LZhSVBMRb+K2BJ2moC10qv1iUhsEEdKpYLnOxCOKc6E5UUzzrbCH9mx/sDmPJKptBR+eQPwVbd1Txw35AY0dzz3QHqUxkkCYIlEmoKesoKM8lFRyzW7LjkORlBAxzhCbpuNe7nWfIlHaUVmPgPd5GFjnicU+FOYkihNaRcSdCcPQaXSucRBIVIqODCw/enEhLBNIGcyJsRvGirlZRYJvaPSWZ3Mr+9P4ybfRwf9L8F2+WfY/u1htl8f9vfB9vNj8djDVocawEnElJepZeTzjiNwz3UQvJMJ6sKDer/gelYC1Ad13j8A07mQs7l9mOtRaj+L6WPwVDoBhwdZvsI1lwYa8SC0/Luvpk1uw9WqWSPf+KJ50yIHomRZaV2sPN+UBV91T61CUbtL+4nicX9qbxKvIeyE6oGc5aG+n4eyGURC5qPho91EPQlVhOXkdpFTQdTI+/9ebUSptaU5UYl4GPqT9cdEzhT77uLijHJWaL2F+6PhkKIZp/rhkvBS5KaqaHcZtY55ws7hBFRWSudMGLNdNGtrtpmeok6nc+EmkiwIaDJ+0wIoMmVZaSyLUNhz5g5cuzXmHWKQmbkq0wSFyd0QWWERNXejogFbZfFGzYbbn9Kru84GL8tn1NZbcQgLFyvo9nMV5gCnESVua1DfGdzKZDWI6gnBCL2oxoNSp7g7t7Ywo8GAJ5nMe7yQ/bnKVKpmfTzbhTZ9zEA7qH3n74REWnWb3MAsVTFAVcaODofDr3Zz/Ox5aO5tkS8YHq+Oj8ZPr6iBYVarqTt3ODs9oWF23c8F1zekWj+6p6JqlZRBtV/I6LjU0i7HFOA+hiOQ+9Lhot4VUH/UDT++VTrjyJXW9z9dbBodaUF9009WRyXQp3ri5N7V4kJdi5yBnKnIUn9CYyIKNoYTZCxY++zV+IINMOPNgdhM5jQH3ozYsVOAieX38+hZ3O/TXOPmtbngVPAQDK97AK33g2i2FyBDB9t3a103FPd5A+eUnigPHDNouzSKKjAVspkmJ6P1dzZyxyLWwv5J0YFod1ai488QviLuU+WkhlR5+cNJWkbsiEKXHfP4mvo9ZO0I2dsjIzM0OdkLYmhe4DIXKXORjwHSz2bMM+3v7f2c/5x/8QW5rDGC02GP7e2RW9veUZ3R3h67NLQNWOdy7ZegaiLZ9vnkrtMnHQoMjxmbbIVUHQoTx3gy6bNXkZYzbtcftVR+pkHZ4hIk3O1aIuwRhnAs1x9wzTDKVHoJOc7YTt8bceGhqAKgvQ05mXXmJMSoUpCGOazykbjpj5gBaKiFEHqDhpcr0+lC/kIKNqmjDQtP9eQ9PYEWJpiL3evIsHjOF6i/hvrVTFCvMoxj9YJJmm3CYlyiB3lf+82KmjrqGeCeiTzQ4SgA7MnMYCSTQXXDit61WJpJP7j2HCOTqTzq+Dv2ZPiRt9kqdIcnTphXaOBWjQoI02Uop2gdZh4pjk4wS1XE0y72xnwqaTrSDN4S7/jSUNd6i5qHFlWRBzfUQo8Pjp84MbAPSKB546cRJcZuvf5YOF/WgqVRqduwEXil1Xjl+Jgt3961B7sXeqtVBHDFM7AMVlZydb2PQFZtg2BuiFj/4VZ70m3bFKSB9ungY49NZU540JBeuIzYBBHAoK2E0ySy/rAQaeAxBr5OZUwcwHpAKouUs4XMsZMTk82uZJ5U0QmgwMgaP+fFArNu7Waq/0YRimAhkfbO6e+rF+w9O3Xlwk/h7/GqF/7qH/SbSCpgDRR8z07OL09JYHDKdpCGDwvBWkvbvCuTA+MSgTIOrivcNpVi9LAeXIQpVD356WA4+PHbC1oMX+NGnwXxZ3xJd9mz4BKvxybcxvBvIQYvMTwTVGd81gS9i/8ufml1uoG1CNW5iK8RQfQLEz3mF+BHC2MtshpEg6wK+gZbH7UOvgGWS49j4fa2XG34+PmzVtnHEZId/kPEuZ8bz9Zkro96Iv+TEC8t1pkERYS1OWYs05BZcejUHAhANmDHGCyuYaTMHbNTUaRq6dZjDOtKLx3o3Y0pzrOuojcBRDGhZuHeYv4oNCUIzUp0AI9t9NYc42RMhdxrf15Rhg8WYZS17p4vuhusNC3pnm7s66wTqNe/0fJuUH15msB9c7ykbhArV3UoGdzgDz1FFqnUbPB/yfW1sEWKjHF8G8/s7ODMt5MFOghnlWlOpq/P8JwG7lVTqbmOXdp5RMk8GZWyhi9kYiDmPqOpjECq5VOasRwjdGyaS3233u8P+8OwrwA/dHxq/gUGwoy7TSXMFa8itJ2Hvi7+549GgRBhcha+ufXvDg63m53p/582//efNsM0aTFPDBAgGCbhdzf+34bVprn+dFsjuVmo3TpESwNdur2NuBGXOl2t6JhaLiblN/i54Mhu98ULG1AiTfiMMuWpEZ9wfvs8bHIdds/30Xv1rkbjnObiBU9LesLPaxra6fvC6hf3WcTNyqSNf3EUx6KwDZKdVX3V3PuePb3AaPxvPOZRKQ==
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Obter botões interativos da campanha (flag, imagem de fundo e botões). Público."}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/{id}/buttons"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retorna o estado dos botões interativos da campanha: a flag `interactive_buttons_enabled`, a URL pública da imagem de fundo (`button_layout_image`, ou null) e a lista de botões. Cada botão é um círculo com `id` (= nome do ícone que o frontend mapeia para um SVG) e posição `x`/`y` em percentual (0-100). Endpoint público (sem autenticação).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-buttons.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-buttons.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-buttons.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -41,6 +41,13 @@ Referência completa de todas as variáveis de ambiente dos serviços.
 | `API_BASE_URL` | ❌ | `http://localhost:3006` | URL base para Swagger server |
 | `BCRYPT_SALT_ROUNDS` | ❌ | `10` | Rounds para hash de senhas/secrets |
 | `LOG_LEVEL` | ❌ | `log` | Nível de log |
+| `AWS_REGION` | ⚠️¹ | — | Região AWS S3 |
+| `AWS_ACCESS_KEY_ID` | ⚠️¹ | — | Access key AWS |
+| `AWS_SECRET_ACCESS_KEY` | ⚠️¹ | — | Secret key AWS |
+| `S3_PUBLIC_BUCKET` | ⚠️¹ | — | Bucket público (imagem de fundo dos botões interativos) |
+| `S3_PUBLIC_URL_BASE` | ⚠️¹ | — | URL base pública do bucket (ex.: `https://<bucket>.s3.<region>.amazonaws.com`) |
+
+> ¹ Obrigatórias **apenas** para o upload da imagem de fundo dos [Botões Interativos](../guias/botoes-interativos.md) (`POST /campaigns/:id/button-layout-image`). Use a mesma credencial/bucket do admin-frontend. Sem elas, o restante do serviço sobe normalmente; só o upload de layout falha.
 
 ### .env.blockchain
 

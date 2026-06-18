@@ -1,1 +1,0 @@
-{"parameters":[{"name":"X-Tenant-Slug","in":"header","description":"Slug público do tenant","required":true,"schema":{"type":"string"}}]}

@@ -1,0 +1,69 @@
+---
+id: set-button-layout-image
+title: "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)"
+description: "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Formatos: jpg, jpeg, png, gif, webp. Tamanho máximo: 5MB. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin)."
+sidebar_label: "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/campaigns/{id}/button-layout-image"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Formatos: jpg, jpeg, png, gif, webp. Tamanho máximo: 5MB. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./set-button-layout-image.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./set-button-layout-image.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./set-button-layout-image.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

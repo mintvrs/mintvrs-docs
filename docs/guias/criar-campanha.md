@@ -123,6 +123,13 @@ curl https://api.mk.nearx.com.br/campaigns/{campaignId}/public
 | `Scheduled` | Agendada para futura ativação |
 | `Ended` | Encerrada |
 
+## Botões interativos (opcional)
+
+A campanha pode ter **botões clicáveis posicionados sobre uma imagem de fundo**, com coordenadas em
+percentual (responsivo). É opcional: ative com `interactive_buttons_enabled: true` (no `POST`/`PATCH`),
+envie a imagem de fundo (`POST /campaigns/:id/button-layout-image`) e salve o layout
+(`PUT /campaigns/:id/buttons`). Veja o guia dedicado: [Botões Interativos](./botoes-interativos.md).
+
 ## Splits de receita
 
 Quando há `stars` na campanha, a receita é distribuída automaticamente:

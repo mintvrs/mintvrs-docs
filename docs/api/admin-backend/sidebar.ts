@@ -220,6 +220,24 @@ const sidebar: SidebarsConfig = {
           label: "Remover campanha (SuperAdmin sempre; Admin se for do tenant dele; dono da campanha)",
           className: "api-method delete",
         },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-buttons",
+          label: "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público.",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/replace-buttons",
+          label: "Substituir o layout inteiro de botões interativos (apenas dono/admin)",
+          className: "api-method put",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/set-button-layout-image",
+          label: "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)",
+          className: "api-method post",
+        },
       ],
     },
     {
@@ -431,7 +449,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/purchase",
-          label: "Compra real pelo usuário final (debita créditos)",
+          label: "Compra real pelo usuário final (debita créditos) — cria N chaves",
           className: "api-method post",
         },
       ],
@@ -761,6 +779,18 @@ const sidebar: SidebarsConfig = {
           id: "api/admin-backend/readiness",
           label: "Readiness probe - verifica se a aplicação está pronta para receber tráfego",
           className: "api-method get",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "kyc",
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/consultar",
+          label: "Consulta nome e data de nascimento pelo CPF (Receita Federal)",
+          className: "api-method post",
         },
       ],
     },

@@ -733,6 +733,242 @@
         ]
       }
     },
+    "/campaigns/{id}/buttons": {
+      "get": {
+        "description": "Retorna o estado dos botões interativos da campanha: a flag `interactive_buttons_enabled`, a URL pública da imagem de fundo (`button_layout_image`, ou null) e a lista de botões. Cada botão é um círculo com `id` (= nome do ícone que o frontend mapeia para um SVG) e posição `x`/`y` em percentual (0-100). Endpoint público (sem autenticação).",
+        "operationId": "getButtons",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Layout atual de botões (flag, imagem de fundo e lista).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignButtonsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público.",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "put": {
+        "description": "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`) faz a requisição falhar com 400.",
+        "operationId": "replaceButtons",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateButtonsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Layout salvo (substituição total aplicada).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignButtonsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos (ex.: x/y fora de 0-100, id ausente, campo extra)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Substituir o layout inteiro de botões interativos (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{id}/button-layout-image": {
+      "post": {
+        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Formatos: jpg, jpeg, png, gif, webp. Tamanho máximo: 5MB. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).",
+        "operationId": "setButtonLayoutImage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem de fundo (jpg, jpeg, png, gif ou webp; máx 5MB)"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imagem salva; retorna a URL pública.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "button_layout_image": {
+                      "type": "string",
+                      "example": "https://bucket.s3.amazonaws.com/campaigns/`id`/button-layout-123.png"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente, extensão inválida ou maior que 5MB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/credits/balance": {
       "get": {
         "operationId": "getBalance",
@@ -4132,6 +4368,11 @@
             "type": "object",
             "description": "Campos customizados (JSON livre)"
           },
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Habilita a etapa de botões interativos sobre imagem (default false)",
+            "example": false
+          },
           "accesses": {
             "description": "Formas de acesso criadas junto com a campanha",
             "type": "array",
@@ -4267,6 +4508,24 @@
             "description": "Campos customizados (JSON)",
             "nullable": true
           },
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Habilita a etapa de botões interativos sobre imagem",
+            "default": false
+          },
+          "button_layout_image": {
+            "type": "string",
+            "description": "URL pública da imagem de fundo usada para posicionar os botões interativos",
+            "nullable": true
+          },
+          "interactive_buttons": {
+            "type": "array",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "nullable": true,
+            "items": {
+              "type": "object"
+            }
+          },
           "platform_fee": {
             "type": "string",
             "description": "Taxa da plataforma no royalty de revenda (%)",
@@ -4299,6 +4558,9 @@
           "main_star",
           "main_star_id",
           "custom_fields",
+          "interactive_buttons_enabled",
+          "button_layout_image",
+          "interactive_buttons",
           "platform_fee",
           "created_at",
           "updated_at"
@@ -4387,6 +4649,24 @@
             "description": "Campos customizados (JSON)",
             "nullable": true
           },
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Habilita a etapa de botões interativos sobre imagem",
+            "default": false
+          },
+          "button_layout_image": {
+            "type": "string",
+            "description": "URL pública da imagem de fundo usada para posicionar os botões interativos",
+            "nullable": true
+          },
+          "interactive_buttons": {
+            "type": "array",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "nullable": true,
+            "items": {
+              "type": "object"
+            }
+          },
           "platform_fee": {
             "type": "string",
             "description": "Taxa da plataforma no royalty de revenda (%)",
@@ -4429,6 +4709,9 @@
           "main_star",
           "main_star_id",
           "custom_fields",
+          "interactive_buttons_enabled",
+          "button_layout_image",
+          "interactive_buttons",
           "platform_fee",
           "created_at",
           "updated_at",
@@ -4632,6 +4915,11 @@
             "type": "object",
             "description": "Campos customizados (JSON livre)"
           },
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Habilita a etapa de botões interativos sobre imagem",
+            "example": true
+          },
           "platform_fee": {
             "type": "number",
             "description": "Taxa da plataforma (% do royalty de revenda, min 3, max 10)",
@@ -4645,6 +4933,92 @@
             }
           }
         }
+      },
+      "InteractiveButtonDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do botão = nome do ícone escolhido pelo dono (o frontend mapeia para um SVG)",
+            "example": "mic"
+          },
+          "x": {
+            "type": "number",
+            "description": "Posição X em percentual (0-100)",
+            "example": 42.5
+          },
+          "y": {
+            "type": "number",
+            "description": "Posição Y em percentual (0-100)",
+            "example": 73.1
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Botão habilitado (default true)",
+            "default": true
+          },
+          "width": {
+            "type": "number",
+            "description": "Largura em percentual (0-100)",
+            "example": 12
+          },
+          "height": {
+            "type": "number",
+            "description": "Altura em percentual (0-100)",
+            "example": 8
+          },
+          "order": {
+            "type": "number",
+            "description": "Ordem de renderização",
+            "example": 0
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y"
+        ]
+      },
+      "CampaignButtonsResponseDto": {
+        "type": "object",
+        "properties": {
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Se a etapa de botões interativos está habilitada na campanha"
+          },
+          "button_layout_image": {
+            "type": "string",
+            "description": "URL pública da imagem de fundo usada no editor",
+            "nullable": true
+          },
+          "buttons": {
+            "description": "Botões posicionados",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InteractiveButtonDto"
+            }
+          }
+        },
+        "required": [
+          "interactive_buttons_enabled",
+          "button_layout_image",
+          "buttons"
+        ]
+      },
+      "UpdateButtonsDto": {
+        "type": "object",
+        "properties": {
+          "buttons": {
+            "description": "Lista completa de botões (substitui o layout inteiro)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InteractiveButtonDto"
+            }
+          }
+        },
+        "required": [
+          "buttons"
+        ]
       },
       "CreditBalance": {
         "type": "object",
