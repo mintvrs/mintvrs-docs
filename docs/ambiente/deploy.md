@@ -6,27 +6,28 @@ sidebar_position: 3
 
 # Deploy em Produção
 
-O MKClub usa **GKE** + **ArgoCD** para deploy em produção via GitOps.
+O MKClub usa **EKS** + **ArgoCD** para deploy em produção via GitOps.
 
 :::warning Página em revisão
-Esta página está sendo atualizada para refletir a infraestrutura atual (GKE/ArgoCD). Para operações de infra — serviços, imagens, secrets e migrations — consulte a seção [Infra](/infra/overview).
+Esta página está sendo atualizada para refletir a infraestrutura atual (EKS/ArgoCD). Para operações de infra — serviços, imagens, secrets e migrations — consulte a seção [Infra](/infra/overview).
 :::
 
 ## Infraestrutura
 
-- **Cluster:** GKE `mk` em `southamerica-east1` (projeto GCP `vaulted-program-487919-g2`)
+- **Cluster:** EKS `mk` em `us-east-1` (conta AWS `245111010865`), Kubernetes 1.35, CNI Cilium
 - **Sincronização:** ArgoCD via `mkclub69/mk-microservice-ops`
-- **Secrets:** GCP Secret Manager + External Secrets Operator
+- **Secrets:** AWS Secrets Manager + External Secrets Operator (autenticação via IRSA)
+- **Borda / Ingress:** ALB + WAF + ACM (TLS) para tráfego externo; ingress-nginx para roteamento interno
 
 ## Imagens Docker
 
-As imagens são publicadas no **Google Artifact Registry**, acionado ao criar uma tag `v*`:
+As imagens são publicadas no **Amazon ECR**, acionado ao criar uma tag `v*`:
 
-| Serviço | Imagem (GAR) |
+| Serviço | Imagem (ECR) |
 |---------|---|
-| `admin-backend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-backend/mintvrs-admin-backend` |
-| `auth-service` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-auth/mintvrs-auth` |
-| `admin-frontend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-web/mintvrs-admin-web` |
+| `admin-backend` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-admin-backend` |
+| `auth-service` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-auth` |
+| `admin-frontend` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-admin-web` |
 
 ## Checklist de deploy
 
@@ -81,7 +82,7 @@ curl https://admin.mintvrs.com/api/health
 
 ## Atualizar para nova versão
 
-Crie uma tag `v*` no repositório do serviço. O workflow `on_release.yml` faz build, publica a imagem no GAR e atualiza o `kustomization.yaml` no repo de ops. O ArgoCD aplica o rolling update automaticamente.
+Crie uma tag `v*` no repositório do serviço. O workflow `on_release.yml` faz build, publica a imagem no ECR e atualiza o `kustomization.yaml` no repo de ops. O ArgoCD aplica o rolling update automaticamente.
 
 ## Monitoramento
 
@@ -107,4 +108,6 @@ kubectl -n mintvrs-admin-backend logs deploy/mintvrs-admin-backend | grep ERROR
 
 ## Backup do banco de dados
 
-O banco de dados fica no **Cloud SQL** (gerenciado pelo GCP). Backups automáticos são configurados diretamente no console do Cloud SQL. Para exports manuais, usar `gcloud sql export` ou o console GCP.
+**Produção** usa **Aurora Serverless v2 (PostgreSQL)**: backups automáticos são configurados no console RDS/Aurora (snapshots automáticos e point-in-time recovery). Para exports manuais, use ferramentas padrão PostgreSQL (ex.: `pg_dump`) a partir de um pod com acesso ao banco, ou gere um snapshot manual via console AWS / AWS CLI.
+
+**Homolog** usa **PostgreSQL in-cluster** (chart `postgres-homolog` no repo `mk-mono-ops`): para backup, use `pg_dump` diretamente a partir do pod ou de qualquer pod com acesso ao serviço interno.
