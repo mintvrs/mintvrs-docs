@@ -76,7 +76,7 @@ jobs:
       - uses: widesoftware-dev/github-workflows/.github/actions/gitops-bump@v1.16.8
         with:
           gitops-repo: 'mkclub69/mk-microservice-ops'
-          gitops-branch: 'aws'
+          gitops-branch: 'main'
           path-template: '{repo}/kustomization.yaml'
           app-id: ${{ vars.APP_ID }}
           app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
