@@ -10,6 +10,12 @@ const config: Config = {
   url: 'https://docs.mintvrs.com',
   baseUrl: '/',
 
+  // Serve os specs OpenAPI crus na raiz do site (além do diretório `static` padrão):
+  //   /admin-backend.json  e  /auth-service.json
+  // Permite baixar o contrato inteiro da API em 1 request (mais barato em tokens
+  // que crawlear as páginas geradas endpoint por endpoint).
+  staticDirectories: ['static', 'specs'],
+
   onBrokenLinks: 'warn',
   i18n: {
     defaultLocale: 'pt',
@@ -168,6 +174,8 @@ const config: Config = {
           items: [
             { label: 'Admin Backend (Homolog)', href: 'https://admin-api.homolog.mintvrs.com/api-docs' },
             { label: 'Auth Service (Homolog)', href: 'https://auth.homolog.mintvrs.com/docs-auth-service' },
+            { label: 'Admin Backend (OpenAPI JSON)', href: 'pathname:///admin-backend.json' },
+            { label: 'Auth Service (OpenAPI JSON)', href: 'pathname:///auth-service.json' },
           ],
         },
         {
