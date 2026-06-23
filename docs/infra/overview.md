@@ -12,10 +12,12 @@ Esta seção é destinada ao time de infraestrutura e DevOps. Aqui você encontr
 
 | Item | Valor |
 |---|---|
-| Provedor | GKE (Google Kubernetes Engine) |
+| Provedor | EKS (Amazon Elastic Kubernetes Service) |
 | Cluster | `mk` |
-| Região | `southamerica-east1` |
-| Projeto GCP | `vaulted-program-487919-g2` |
+| Versão Kubernetes | 1.35 |
+| CNI | Cilium |
+| Região AWS | `us-east-1` |
+| Conta AWS | `245111010865` |
 | Sincronização | ArgoCD via GitOps — repo `mkclub69/mk-microservice-ops` |
 
 :::danger Nunca rodar `kubectl apply` diretamente
@@ -26,28 +28,28 @@ O ArgoCD é a única fonte de verdade para o estado do cluster. Aplicar manifest
 
 | Serviço | Namespace / Deployment | Porta | Banco |
 |---|---|---|---|
-| `admin-backend` | `mintvrs-admin-backend` | 3006 | `mkclub_backend` (Cloud SQL) |
-| `auth-service` | `mintvrs-auth` | 3001 | `authdb` (Cloud SQL) |
+| `admin-backend` | `mintvrs-admin-backend` | 3006 | `mkclub_backend` (Aurora Serverless v2 — PostgreSQL) |
+| `auth-service` | `mintvrs-auth` | 3001 | `authdb` (Aurora Serverless v2 — PostgreSQL) |
 | `admin-frontend` | `mintvrs-admin-web` | 3000 | — |
 | `docs` | `mintvrs-docs` | — | — |
 
 ## Imagens Docker
 
-As imagens são publicadas no **Google Artifact Registry** pelo workflow `on_release.yml` de cada repositório, acionado ao criar uma tag `v*`.
+As imagens são publicadas no **Amazon ECR** pelo workflow `on_release.yml` de cada repositório, acionado ao criar uma tag `v*`.
 
-| Serviço | Imagem (GAR) |
+| Serviço | Imagem (ECR) |
 |---|---|
-| `admin-backend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-backend/mintvrs-admin-backend` |
-| `auth-service` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-auth/mintvrs-auth` |
-| `admin-frontend` | `southamerica-east1-docker.pkg.dev/vaulted-program-487919-g2/mintvrs-admin-web/mintvrs-admin-web` |
+| `admin-backend` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-admin-backend` |
+| `auth-service` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-auth` |
+| `admin-frontend` | `245111010865.dkr.ecr.us-east-1.amazonaws.com/mintvrs-admin-web` |
 
 ## Segredos e variáveis de ambiente
 
-Os segredos são gerenciados no **GCP Secret Manager** e injetados nos pods pelo **External Secrets Operator** (ESO), via `ClusterSecretStore: gcp-secret-manager`.
+Os segredos são gerenciados no **AWS Secrets Manager** e injetados nos pods pelo **External Secrets Operator** (ESO), via `ClusterSecretStore: aws-secrets-manager`. A autenticação do ESO ao Secrets Manager é feita por **IRSA** (IAM Roles for Service Accounts).
 
 Variáveis de banco de dados por serviço:
 
-| Serviço | Env var no pod | Chave no Secret Manager |
+| Serviço | Env var no pod | Chave no Secrets Manager |
 |---|---|---|
 | `admin-backend` | `DATABASE_URL_ADMIN` | `mintvrs-admin-backend-database-url-admin` |
 | `auth-service` | `DATABASE_URL` | `mintvrs-auth-db-url` |
@@ -59,7 +61,7 @@ Variáveis de banco de dados por serviço:
 ## Como o deploy funciona
 
 1. O desenvolvedor cria uma tag `v*` no repositório do serviço.
-2. O workflow `on_release.yml` faz build da imagem, publica no GAR com a tag da release e atualiza `images[].newTag` no `kustomization.yaml` do serviço dentro do repo `mkclub69/mk-microservice-ops`.
+2. O workflow `on_release.yml` faz build da imagem, publica no ECR com a tag da release e atualiza `images[].newTag` no `kustomization.yaml` do serviço dentro do repo `mkclub69/mk-microservice-ops`.
 3. O ArgoCD detecta a mudança no repo de ops e faz rolling update do Deployment correspondente no cluster.
 
 ## Próximos passos

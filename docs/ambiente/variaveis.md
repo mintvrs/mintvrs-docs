@@ -81,9 +81,9 @@ As variáveis de blockchain são carregadas primeiro de `.env.blockchain`, depoi
 | `AWS_REGION` | ❌ | Região AWS S3 |
 | `AWS_S3_BUCKET` | ❌ | Nome do bucket S3 para conteúdo |
 
-## Produção (GKE)
+## Produção (EKS)
 
-No ambiente de produção, as variáveis são injetadas nos pods pelo **External Secrets Operator** (ESO), que lê os valores do **GCP Secret Manager** via `ClusterSecretStore: gcp-secret-manager`. Os mapeamentos ficam nos arquivos `external-secret.yml` de cada serviço no repo `mkclub69/mk-microservice-ops`. Consulte [Visão Geral (Infra)](/infra/overview) para a tabela de env vars por serviço e as chaves correspondentes no Secret Manager.
+No ambiente de produção, as variáveis são injetadas nos pods pelo **External Secrets Operator** (ESO), que lê os valores do **AWS Secrets Manager** via `ClusterSecretStore: aws-secrets-manager`. A autenticação do ESO ao Secrets Manager é feita por **IRSA** (IAM Roles for Service Accounts). Os mapeamentos ficam nos arquivos `external-secret.yml` de cada serviço no repo `mkclub69/mk-microservice-ops`. Consulte [Visão Geral (Infra)](/infra/overview) para a tabela de env vars por serviço e as chaves correspondentes no Secrets Manager.
 
 :::warning Secrets em produção
 Nunca commite valores reais de `JWT_SECRET`, `XION_MNEMONIC`, chaves AWS, ou secrets de gateway no repositório. Use variáveis de ambiente do sistema de CI/CD ou um gerenciador de secrets.
