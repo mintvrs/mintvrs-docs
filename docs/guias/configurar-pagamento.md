@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Configurar Gateway de Pagamento
 
-O MKClub suporta **Stripe** e **Mercado Pago** como gateways de pagamento. Cada tenant configura seu próprio gateway.
+O MKClub usa **Stripe** como gateway de pagamento. Cada tenant configura seu próprio gateway.
 
 ## Provedores suportados
 
@@ -15,7 +15,7 @@ curl https://api.mk.nearx.com.br/gateways/providers
 ```
 
 ```json
-["stripe", "mercadopago"]
+["stripe"]
 ```
 
 ## Configurar Stripe
@@ -121,7 +121,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/checkout/confirm-key-purchase 
 ## Reembolsos
 
 ```bash
-# Reembolso via gateway (Stripe/Mercado Pago)
+# Reembolso via gateway (Stripe)
 curl -X POST https://api.mk.nearx.com.br/gateways/payments/refund \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \

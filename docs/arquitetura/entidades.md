@@ -214,6 +214,6 @@ Quando um usuário lista uma chave para venda P2P:
 ### TenantGateway
 
 Configuração do gateway de pagamento por tenant:
-- Provider: `stripe` ou `mercadopago`
+- Provider: `stripe`
 - API key criptografada
 - Cada tenant pode ter múltiplos gateways (mas apenas um ativo por provider)

@@ -35,7 +35,6 @@ graph TB
     subgraph "Externos"
         XION["Xion Blockchain\n(Cosmos/CosmWasm)"]
         STRIPE["Stripe"]
-        MP["Mercado Pago"]
         S3["AWS S3"]
     end
 
@@ -48,7 +47,6 @@ graph TB
     BACK --> BACKDB
     BACK --> XION
     BACK --> STRIPE
-    BACK --> MP
     FE --> S3
 ```
 
@@ -70,7 +68,7 @@ O admin-backend **não valida JWTs diretamente** — delega para o auth-service 
 Serviço principal com **toda a lógica de negócio**:
 - Multi-tenancy (cada request é escopado a um tenant)
 - CRUD de campanhas, conteúdos, tokens, acessos
-- Sistema de créditos e pagamentos (Stripe, Mercado Pago)
+- Sistema de créditos e pagamentos (Stripe)
 - Marketplace P2P entre usuários
 - Integração com blockchain Xion (mint de NFTs, CW20)
 - Splits de receita para artistas

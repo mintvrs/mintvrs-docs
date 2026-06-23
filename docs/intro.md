@@ -21,7 +21,7 @@ sidebar_position: 1
 
 - **Campanhas NFT** — Criadores configuram campanhas com tiers de acesso, preços e conteúdos exclusivos
 - **Marketplace P2P** — Usuários revendem suas chaves entre si
-- **Sistema de Créditos** — Moeda interna da plataforma; compra via Stripe/Mercado Pago
+- **Sistema de Créditos** — Moeda interna da plataforma; compra via Stripe
 - **Splits de Receita** — Distribuição automática de receita entre artistas e plataforma
 - **Blockchain Xion** — NFTs e tokens CW20 na rede Xion (Cosmos)
 - **Multi-tenant** — Uma instância do backend serve múltiplos tenants isolados
