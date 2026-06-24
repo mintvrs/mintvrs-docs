@@ -11,7 +11,7 @@ O MKClub usa **Stripe** como gateway de pagamento. Cada tenant configura seu pr�
 ## Provedores suportados
 
 ```bash
-curl https://api.mk.nearx.com.br/gateways/providers
+curl https://admin-api.homolog.mintvrs.com/gateways/providers
 ```
 
 ```json
@@ -23,7 +23,7 @@ curl https://api.mk.nearx.com.br/gateways/providers
 ### 1. Registrar o gateway
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/gateways \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -37,7 +37,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways \
 ### 2. Configurar webhook no Stripe Dashboard
 
 No Stripe Dashboard → Webhooks → Adicionar endpoint:
-- **URL**: `https://api.mk.nearx.com.br/gateways/webhook/stripe/{tenantId}`
+- **URL**: `https://admin-api.homolog.mintvrs.com/gateways/webhook/stripe/{tenantId}`
 - **Eventos**: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`
 
 :::info
@@ -72,7 +72,7 @@ sequenceDiagram
 ### Criar checkout de créditos
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/gateways/checkout/credits \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/checkout/credits \
   -H "Authorization: Bearer <user_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -91,7 +91,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/checkout/credits \
 ### Confirmar checkout após redirecionamento
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/gateways/checkout/confirm \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/checkout/confirm \
   -H "Authorization: Bearer <user_token>" \
   -H "Content-Type: application/json" \
   -d '{ "sessionId": "cs_live_..." }'
@@ -101,7 +101,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/checkout/confirm \
 
 ```bash
 # 1. Criar checkout para compra de chave
-curl -X POST https://api.mk.nearx.com.br/gateways/checkout/key-purchase \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/checkout/key-purchase \
   -H "Authorization: Bearer <user_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -112,7 +112,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/checkout/key-purchase \
   }'
 
 # 2. Após redirecionamento, confirmar compra (registra on-chain)
-curl -X POST https://api.mk.nearx.com.br/gateways/checkout/confirm-key-purchase \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/checkout/confirm-key-purchase \
   -H "Authorization: Bearer <user_token>" \
   -H "Content-Type: application/json" \
   -d '{ "sessionId": "cs_live_..." }'
@@ -122,7 +122,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/checkout/confirm-key-purchase 
 
 ```bash
 # Reembolso via gateway (Stripe)
-curl -X POST https://api.mk.nearx.com.br/gateways/payments/refund \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/payments/refund \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{

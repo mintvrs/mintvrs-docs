@@ -19,7 +19,7 @@ Guia para configurar os contratos inteligentes na blockchain Xion para seu tenan
 ### 1. Deploy do Factory Contract
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/xion/factory/deploy \
+curl -X POST https://admin-api.homolog.mintvrs.com/xion/factory/deploy \
   -H "Authorization: Bearer <token_superadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -37,7 +37,7 @@ curl -X POST https://api.mk.nearx.com.br/xion/factory/deploy \
 ### 2. Verificar saúde da conexão
 
 ```bash
-curl https://api.mk.nearx.com.br/xion/health
+curl https://admin-api.homolog.mintvrs.com/xion/health
 ```
 
 ```json
@@ -52,7 +52,7 @@ curl https://api.mk.nearx.com.br/xion/health
 ## Por tenant — Criar token CW20
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/xion/factory/create-token \
+curl -X POST https://admin-api.homolog.mintvrs.com/xion/factory/create-token \
   -H "Authorization: Bearer <token_superadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -74,7 +74,7 @@ curl -X POST https://api.mk.nearx.com.br/xion/factory/create-token \
 Após uma compra Web2 (fora do Stripe), registre-a na blockchain:
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/xion/tenant/purchases/register \
+curl -X POST https://admin-api.homolog.mintvrs.com/xion/tenant/purchases/register \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -95,7 +95,7 @@ curl -X POST https://api.mk.nearx.com.br/xion/tenant/purchases/register \
 ## Mint de NFT
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/xion/tenant/mint \
+curl -X POST https://admin-api.homolog.mintvrs.com/xion/tenant/mint \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -110,7 +110,7 @@ curl -X POST https://api.mk.nearx.com.br/xion/tenant/mint \
 ## Consultar endereço CW20 do tenant
 
 ```bash
-curl "https://api.mk.nearx.com.br/xion/factory/tenant-token?tenantId=tenant-uuid" \
+curl "https://admin-api.homolog.mintvrs.com/xion/factory/tenant-token?tenantId=tenant-uuid" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -124,7 +124,7 @@ curl "https://api.mk.nearx.com.br/xion/factory/tenant-token?tenantId=tenant-uuid
 ## Listar tenants na Factory
 
 ```bash
-curl https://api.mk.nearx.com.br/xion/factory/tenants \
+curl https://admin-api.homolog.mintvrs.com/xion/factory/tenants \
   -H "Authorization: Bearer <token_superadmin>"
 ```
 

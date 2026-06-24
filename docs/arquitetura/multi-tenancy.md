@@ -74,7 +74,7 @@ Para sistemas externos que não usam JWT, o tenant pode usar suas chaves:
 
 ```http
 GET /campaigns HTTP/1.1
-Host: api.mk.nearx.com.br
+Host: admin-api.homolog.mintvrs.com
 X-API-Key: mk_live_xxxxxxxxxxxx
 X-API-Secret: sk_live_yyyyyyyyyyyy
 ```

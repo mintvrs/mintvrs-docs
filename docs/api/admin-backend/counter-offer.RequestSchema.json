@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"counterPrice":{"type":"number","description":"Valor da contra-oferta do vendedor em centavos (BRL)"}},"required":["counterPrice"],"title":"CounterOfferDto"}}}}}

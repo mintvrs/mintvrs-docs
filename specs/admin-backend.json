@@ -497,12 +497,12 @@
         ]
       }
     },
-    "/campaigns/{id}/public": {
+    "/campaigns/{campaignId}/public": {
       "get": {
         "operationId": "findOnePublic",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "schema": {
@@ -538,12 +538,12 @@
         ]
       }
     },
-    "/campaigns/{id}": {
+    "/campaigns/{campaignId}": {
       "get": {
         "operationId": "findOne",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "schema": {
@@ -557,7 +557,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Campaign"
+                  "$ref": "#/components/schemas/CampaignDetailDto"
                 }
               }
             }
@@ -573,7 +573,7 @@
             }
           }
         },
-        "summary": "Obter campanha por ID",
+        "summary": "Obter campanha por ID (com custom_fields_resolved)",
         "tags": [
           "campaigns"
         ]
@@ -582,7 +582,7 @@
         "operationId": "update",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "schema": {
@@ -666,7 +666,7 @@
         "operationId": "remove",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "schema": {
@@ -733,13 +733,13 @@
         ]
       }
     },
-    "/campaigns/{id}/buttons": {
+    "/campaigns/{campaignId}/buttons": {
       "get": {
         "description": "Retorna o estado dos botões interativos da campanha: a flag `interactive_buttons_enabled`, a URL pública da imagem de fundo (`button_layout_image`, ou null) e a lista de botões. Cada botão é um círculo com `id` (= nome do ícone que o frontend mapeia para um SVG) e posição `x`/`y` em percentual (0-100). Endpoint público (sem autenticação).",
         "operationId": "getButtons",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "description": "UUID da campanha",
@@ -781,7 +781,7 @@
         "operationId": "replaceButtons",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "description": "UUID da campanha",
@@ -864,13 +864,13 @@
         ]
       }
     },
-    "/campaigns/{id}/button-layout-image": {
+    "/campaigns/{campaignId}/button-layout-image": {
       "post": {
         "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Formatos: jpg, jpeg, png, gif, webp. Tamanho máximo: 5MB. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).",
         "operationId": "setButtonLayoutImage",
         "parameters": [
           {
-            "name": "id",
+            "name": "campaignId",
             "required": true,
             "in": "path",
             "description": "UUID da campanha",
@@ -999,7 +999,57 @@
     "/credits/transactions/me": {
       "get": {
         "operationId": "getMyTransactions",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por tipo de transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "subtract",
+                "refund",
+                "lock",
+                "unlock",
+                "consume",
+                "compensation"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por status da transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "failed",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Ordenação",
+            "schema": {
+              "default": "date_desc",
+              "type": "string",
+              "enum": [
+                "date_desc",
+                "date_asc",
+                "amount_desc",
+                "amount_asc"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de transações do usuário",
@@ -1020,7 +1070,7 @@
             "bearer": []
           }
         ],
-        "summary": "Obter histórico de transações de créditos do usuário",
+        "summary": "Obter histórico de transações de créditos do usuário (com filtros e ordenação)",
         "tags": [
           "credits"
         ]
@@ -1902,6 +1952,43 @@
           }
         ],
         "summary": "Listar transações (filtrado por tenant do caller)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/me/summary": {
+      "get": {
+        "operationId": "myKeysSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyKeysSummaryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resumo das chaves que eu possuo (total + por campanha)",
         "tags": [
           "transactions"
         ]
@@ -3750,14 +3837,15 @@
         ]
       }
     },
-    "/marketplace/buy/{id}": {
+    "/marketplace/buy/{listingId}": {
       "post": {
         "operationId": "buyListing",
         "parameters": [
           {
-            "name": "id",
+            "name": "listingId",
             "required": true,
             "in": "path",
+            "description": "UUID do anúncio (listing)",
             "schema": {
               "type": "string"
             }
@@ -3786,14 +3874,15 @@
         ]
       }
     },
-    "/marketplace/cancel/{id}": {
+    "/marketplace/cancel/{listingId}": {
       "post": {
         "operationId": "cancelListing",
         "parameters": [
           {
-            "name": "id",
+            "name": "listingId",
             "required": true,
             "in": "path",
+            "description": "UUID do anúncio (listing)",
             "schema": {
               "type": "string"
             }
@@ -3819,6 +3908,459 @@
         "summary": "Cancelar anúncio de venda",
         "tags": [
           "marketplace"
+        ]
+      }
+    },
+    "/marketplace/{campaignId}/hasKey": {
+      "get": {
+        "operationId": "hasKey",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da CAMPANHA",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HasKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Checar se o usuário possui chave de uma campanha (para abrir o modal de venda)",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/{listingId}/buyProposal": {
+      "post": {
+        "description": "Alias amigável de POST /marketplace/offers. Cria uma oferta sobre o anúncio (:listingId) e trava o crédito do comprador em escrow.",
+        "operationId": "buyProposal",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do anúncio (listing)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyProposalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Quer Comprar: enviar proposta de compra (oferta com retenção de saldo)",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/offers": {
+      "post": {
+        "operationId": "createOffer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/sent": {
+      "get": {
+        "operationId": "listSent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceOffer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar ofertas que eu fiz (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/received": {
+      "get": {
+        "operationId": "listReceived",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "pending",
+                "countered",
+                "accepted",
+                "rejected",
+                "cancelled",
+                "expired"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceOffer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar ofertas recebidas nos meus anúncios (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}": {
+      "patch": {
+        "operationId": "updateOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar valor/validade da minha oferta (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/cancel": {
+      "post": {
+        "operationId": "cancelOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar minha oferta (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/accept-counter": {
+      "post": {
+        "operationId": "acceptCounter",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aceitar a contra-oferta do vendedor (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/accept": {
+      "post": {
+        "operationId": "acceptOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aceitar uma oferta pendente (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/reject": {
+      "post": {
+        "operationId": "rejectOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recusar uma oferta (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/counter": {
+      "post": {
+        "operationId": "counterOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer uma contra-oferta (vendedor)",
+        "tags": [
+          "marketplace-offers"
         ]
       }
     },
@@ -3989,6 +4531,162 @@
           "kyc"
         ]
       }
+    },
+    "/legal/terms-of-use": {
+      "get": {
+        "operationId": "termsOfUse",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Termos de uso (público, sem autenticação)",
+        "tags": [
+          "legal"
+        ]
+      }
+    },
+    "/legal/privacy-policy": {
+      "get": {
+        "operationId": "privacyPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Política de privacidade (público, sem autenticação)",
+        "tags": [
+          "legal"
+        ]
+      }
+    },
+    "/votes/me": {
+      "get": {
+        "operationId": "listMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyVoteDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar campanhas que eu favoritei",
+        "tags": [
+          "votes"
+        ]
+      }
+    },
+    "/votes/{campaignId}": {
+      "post": {
+        "operationId": "toggle",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoteToggleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Favoritar/desfavoritar uma campanha (toggle)",
+        "tags": [
+          "votes"
+        ]
+      },
+      "get": {
+        "operationId": "getForCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignVotesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Contagem de curtidas da campanha + se eu curti",
+        "tags": [
+          "votes"
+        ]
+      }
     }
   },
   "info": {
@@ -4032,7 +4730,11 @@
     },
     {
       "name": "marketplace",
-      "description": "Marketplace P2P: listar, comprar e cancelar listings de chaves."
+      "description": "Marketplace P2P: listar, comprar, cancelar, propor compra (buyProposal/ofertas) e checar posse de chave."
+    },
+    {
+      "name": "marketplace-offers",
+      "description": "Ofertas P2P (estilo OpenSea): criar, atualizar, cancelar, aceitar, recusar e contra-ofertar."
     },
     {
       "name": "splits",
@@ -4053,6 +4755,14 @@
     {
       "name": "main-stars",
       "description": "Main stars."
+    },
+    {
+      "name": "votes",
+      "description": "Votos/favoritos de campanhas (curtidas) e ranking."
+    },
+    {
+      "name": "legal",
+      "description": "Documentos legais públicos (termos de uso, política de privacidade)."
     }
   ],
   "servers": [
@@ -4063,10 +4773,6 @@
     {
       "url": "http://localhost:3006",
       "description": "API atual (env API_BASE_URL ou localhost)"
-    },
-    {
-      "url": "https://api.mk.nearx.com.br",
-      "description": "Produção"
     }
   ],
   "components": {
@@ -4566,6 +5272,39 @@
           "updated_at"
         ]
       },
+      "ResolvedCustomFieldDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da definição do custom field (chave em custom_fields)",
+            "example": "cf_a1b2"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label legível do campo (do config do tenant)",
+            "example": "Estilo de Ensaio"
+          },
+          "fieldType": {
+            "type": "string",
+            "description": "Tipo do campo",
+            "nullable": true,
+            "example": "short_text"
+          },
+          "value": {
+            "type": "object",
+            "description": "Valor preenchido na campanha (null se vazio)",
+            "nullable": true,
+            "example": "Boudoir"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "fieldType",
+          "value"
+        ]
+      },
       "CampaignActiveDto": {
         "type": "object",
         "properties": {
@@ -4691,6 +5430,41 @@
             "type": "number",
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 100
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Total de curtidas/favoritos da campanha",
+            "example": 42
+          },
+          "rankingPosition": {
+            "type": "number",
+            "description": "Posição no ranking por nº de curtidas (1 = mais curtida)",
+            "example": 3,
+            "nullable": true
+          },
+          "sellPriceMin": {
+            "type": "number",
+            "description": "Menor preço de revenda ativo (centavos), ou null se nenhum",
+            "example": 1500,
+            "nullable": true
+          },
+          "sellPriceMax": {
+            "type": "number",
+            "description": "Maior preço de revenda ativo (centavos), ou null se nenhum",
+            "example": 5000,
+            "nullable": true
+          },
+          "keysForSale": {
+            "type": "number",
+            "description": "Quantidade de chaves à venda no marketplace para esta campanha",
+            "example": 4
+          },
+          "custom_fields_resolved": {
+            "description": "Custom fields resolvidos com label (cruzado com o config do tenant)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResolvedCustomFieldDto"
+            }
           }
         },
         "required": [
@@ -4716,7 +5490,13 @@
           "created_at",
           "updated_at",
           "currentKeys",
-          "totalKeys"
+          "totalKeys",
+          "votesCount",
+          "rankingPosition",
+          "sellPriceMin",
+          "sellPriceMax",
+          "keysForSale",
+          "custom_fields_resolved"
         ]
       },
       "Content": {
@@ -4837,6 +5617,13 @@
             "items": {
               "$ref": "#/components/schemas/GalleryItemDto"
             }
+          },
+          "custom_fields_resolved": {
+            "description": "Custom fields resolvidos com label (cruzado com o config do tenant)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResolvedCustomFieldDto"
+            }
           }
         },
         "required": [
@@ -4845,7 +5632,157 @@
           "currentKeys",
           "totalKeys",
           "totalMediaCount",
-          "gallery"
+          "gallery",
+          "custom_fields_resolved"
+        ]
+      },
+      "CampaignDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de capa",
+            "nullable": true
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Data de início",
+            "nullable": true
+          },
+          "end_date": {
+            "type": "string",
+            "description": "Data de fim",
+            "nullable": true
+          },
+          "goal_value": {
+            "type": "string",
+            "description": "Valor objetivo (meta financeira)",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ]
+          },
+          "raised": {
+            "type": "string",
+            "description": "Valor arrecadado"
+          },
+          "backers": {
+            "type": "number",
+            "description": "Número de apoiadores"
+          },
+          "nft_contract_address": {
+            "type": "string",
+            "description": "Endereço do contrato NFT",
+            "nullable": true
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "main_star": {
+            "description": "Artista principal (modelo) da campanha",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MainStar"
+              }
+            ]
+          },
+          "main_star_id": {
+            "type": "string",
+            "description": "ID do artista principal",
+            "nullable": true
+          },
+          "custom_fields": {
+            "type": "object",
+            "description": "Campos customizados (JSON)",
+            "nullable": true
+          },
+          "interactive_buttons_enabled": {
+            "type": "boolean",
+            "description": "Habilita a etapa de botões interativos sobre imagem",
+            "default": false
+          },
+          "button_layout_image": {
+            "type": "string",
+            "description": "URL pública da imagem de fundo usada para posicionar os botões interativos",
+            "nullable": true
+          },
+          "interactive_buttons": {
+            "type": "array",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "nullable": true,
+            "items": {
+              "type": "object"
+            }
+          },
+          "platform_fee": {
+            "type": "string",
+            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "nullable": false
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          },
+          "custom_fields_resolved": {
+            "description": "Custom fields resolvidos com label (cruzado com o config do tenant)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResolvedCustomFieldDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cover_image",
+          "start_date",
+          "end_date",
+          "goal_value",
+          "status",
+          "raised",
+          "backers",
+          "nft_contract_address",
+          "tenantId",
+          "main_star",
+          "main_star_id",
+          "custom_fields",
+          "interactive_buttons_enabled",
+          "button_layout_image",
+          "interactive_buttons",
+          "platform_fee",
+          "created_at",
+          "updated_at",
+          "custom_fields_resolved"
         ]
       },
       "UpdateCampaignDto": {
@@ -5624,6 +6561,51 @@
           "createdAt"
         ]
       },
+      "KeysByCampaignDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha"
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "nullable": true
+          },
+          "count": {
+            "type": "number",
+            "description": "Quantidade de chaves dessa campanha que o usuário possui",
+            "example": 3
+          }
+        },
+        "required": [
+          "campaignId",
+          "campaignName",
+          "count"
+        ]
+      },
+      "MyKeysSummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves que o usuário possui",
+            "example": 5
+          },
+          "byCampaign": {
+            "description": "Quebra por campanha",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeysByCampaignDto"
+            }
+          }
+        },
+        "required": [
+          "totalKeys",
+          "byCampaign"
+        ]
+      },
       "RegisterTransactionDto": {
         "type": "object",
         "properties": {
@@ -6308,6 +7290,213 @@
           "price"
         ]
       },
+      "HasKeyDto": {
+        "type": "object",
+        "properties": {
+          "hasKey": {
+            "type": "boolean",
+            "description": "Se o usuário possui ao menos uma chave da campanha",
+            "example": true
+          },
+          "count": {
+            "type": "number",
+            "description": "Quantas chaves da campanha o usuário possui",
+            "example": 2
+          },
+          "transactionIds": {
+            "description": "IDs das transações (chaves) possuídas",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "hasKey",
+          "count",
+          "transactionIds"
+        ]
+      },
+      "BuyProposalDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "Valor da proposta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da proposta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "price",
+          "expiresInDays"
+        ]
+      },
+      "MarketplaceOffer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da oferta"
+          },
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
+            "nullable": true
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador que fez a oferta"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "nullable": true
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor (dono do anúncio, denormalizado)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
+          },
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da oferta",
+            "enum": [
+              "pending",
+              "countered",
+              "accepted",
+              "rejected",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de expiração da oferta"
+          },
+          "lockCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction de lock (escrow)",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de aceitação",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "transactionId",
+          "campaignId",
+          "tenantId",
+          "buyerId",
+          "buyerEmail",
+          "buyerName",
+          "sellerId",
+          "price",
+          "counterPrice",
+          "status",
+          "expiresAt",
+          "lockCreditTxId",
+          "acceptedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateOfferDto": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da oferta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "listingId",
+          "price",
+          "expiresInDays"
+        ]
+      },
+      "UpdateOfferDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "Novo valor da oferta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Nova validade da oferta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        }
+      },
+      "CounterOfferDto": {
+        "type": "object",
+        "properties": {
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos (BRL)"
+          }
+        },
+        "required": [
+          "counterPrice"
+        ]
+      },
       "VerificarCpfDto": {
         "type": "object",
         "properties": {
@@ -6319,6 +7508,108 @@
         },
         "required": [
           "cpf"
+        ]
+      },
+      "LegalDocumentDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Identificador do documento",
+            "example": "terms-of-use"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título do documento",
+            "example": "Termos de Uso"
+          },
+          "version": {
+            "type": "string",
+            "description": "Versão do documento",
+            "example": "1.0.0"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Data da última atualização (ISO 8601)",
+            "example": "2026-06-24T00:00:00.000Z"
+          },
+          "content": {
+            "type": "string",
+            "description": "Conteúdo do documento em markdown"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "version",
+          "updatedAt",
+          "content"
+        ]
+      },
+      "MyVoteDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha favoritada"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando foi favoritada"
+          }
+        },
+        "required": [
+          "campaignId",
+          "createdAt"
+        ]
+      },
+      "VoteToggleDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha"
+          },
+          "hasVoted": {
+            "type": "boolean",
+            "description": "Se o usuário está favoritando a campanha após o toggle",
+            "example": true
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Total de curtidas da campanha",
+            "example": 42
+          }
+        },
+        "required": [
+          "campaignId",
+          "hasVoted",
+          "votesCount"
+        ]
+      },
+      "CampaignVotesDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha"
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Total de curtidas da campanha",
+            "example": 42
+          },
+          "hasVoted": {
+            "type": "boolean",
+            "description": "Se o usuário atual curtiu a campanha",
+            "example": false
+          }
+        },
+        "required": [
+          "campaignId",
+          "votesCount",
+          "hasVoted"
         ]
       }
     }

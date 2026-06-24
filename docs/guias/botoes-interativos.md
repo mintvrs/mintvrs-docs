@@ -12,7 +12,7 @@ resolução/tamanho de tela (responsivo).
 
 A feature é **opcional por campanha**: o dono ativa a flag `interactive_buttons_enabled` e, no painel
 admin, usa um editor de **arrastar e soltar** para posicionar os botões. Quem só consome a campanha lê
-o layout pronto via `GET /campaigns/:id/buttons` (ou no `GET /campaigns/:id/public`).
+o layout pronto via `GET /campaigns/:campaignId/buttons` (ou no `GET /campaigns/:campaignId/public`).
 
 :::note Habilitação por tenant
 No painel admin, a seção de botões só aparece na campanha se o **TenantAdmin** tiver habilitado
@@ -21,7 +21,7 @@ A API em si não impõe esse gate — é uma decisão de UI do painel.
 :::
 
 :::info Fluxo de imagem
-A imagem de fundo é enviada pelo **backend** (`POST /campaigns/:id/button-layout-image`) para um
+A imagem de fundo é enviada pelo **backend** (`POST /campaigns/:campaignId/button-layout-image`) para um
 **bucket S3 público**. A URL retornada é **permanente e pública** (sem assinatura/expiração) — o
 frontend só guarda essa URL. O upload é multipart; **não** suba direto do browser para o S3.
 :::
@@ -51,10 +51,10 @@ inteira falhar com **400**. `x`, `y`, `width`, `height` precisam estar entre **0
 
 ## 1. Ativar a feature na campanha
 
-A flag liga/desliga via `PATCH /campaigns/:id` (ou já no `POST /campaigns`):
+A flag liga/desliga via `PATCH /campaigns/:campaignId` (ou já no `POST /campaigns`):
 
 ```bash
-curl -X PATCH https://api.mk.nearx.com.br/campaigns/<campaignId> \
+curl -X PATCH https://admin-api.homolog.mintvrs.com/campaigns/<campaignId> \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{ "interactive_buttons_enabled": true }'
@@ -63,7 +63,7 @@ curl -X PATCH https://api.mk.nearx.com.br/campaigns/<campaignId> \
 ## 2. Enviar a imagem de fundo (multipart)
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/campaigns/<campaignId>/button-layout-image \
+curl -X POST https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/button-layout-image \
   -H "Authorization: Bearer <token>" \
   -F "file=@/caminho/local/fundo.png"
 ```
@@ -81,7 +81,7 @@ curl -X POST https://api.mk.nearx.com.br/campaigns/<campaignId>/button-layout-im
 `PUT` **substitui o array inteiro** (semântica "salvar tudo de uma vez", ideal para o editor visual):
 
 ```bash
-curl -X PUT https://api.mk.nearx.com.br/campaigns/<campaignId>/buttons \
+curl -X PUT https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/buttons \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -105,11 +105,11 @@ curl -X PUT https://api.mk.nearx.com.br/campaigns/<campaignId>/buttons \
 ## 4. Ler o layout (público)
 
 ```bash
-curl https://api.mk.nearx.com.br/campaigns/<campaignId>/buttons
+curl https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/buttons
 ```
 
 Retorna `{ interactive_buttons_enabled, button_layout_image, buttons[] }`. Os mesmos campos também
-vêm dentro de `campaign` no `GET /campaigns/:id/public`.
+vêm dentro de `campaign` no `GET /campaigns/:campaignId/public`.
 
 ## Implementando o editor (frontend)
 
@@ -119,17 +119,17 @@ sequenceDiagram
     participant Backend
     participant S3
 
-    Editor->>Backend: PATCH /campaigns/:id { interactive_buttons_enabled: true }
-    Editor->>Backend: POST /campaigns/:id/button-layout-image (multipart)
+    Editor->>Backend: PATCH /campaigns/:campaignId { interactive_buttons_enabled: true }
+    Editor->>Backend: POST /campaigns/:campaignId/button-layout-image (multipart)
     Backend->>S3: upload (bucket público)
     S3-->>Backend: ok
     Backend-->>Editor: { button_layout_image }
     Note over Editor: renderiza a imagem; usuário arrasta os botões
-    Editor->>Backend: PUT /campaigns/:id/buttons { buttons: [...] }
+    Editor->>Backend: PUT /campaigns/:campaignId/buttons { buttons: [...] }
     Backend-->>Editor: { enabled, image, buttons: [...] }
 
     Note over Editor: App consumidor
-    Editor->>Backend: GET /campaigns/:id/buttons
+    Editor->>Backend: GET /campaigns/:campaignId/buttons
     Backend-->>Editor: { enabled, image, buttons }
 ```
 

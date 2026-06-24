@@ -430,6 +430,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/my-keys-summary",
+          label: "Resumo das chaves que eu possuo (total + por campanha)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/list-by-buyer",
           label: "Listar transações por email do comprador",
           className: "api-method get",
@@ -471,7 +477,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/get-my-transactions",
-          label: "Obter histórico de transações de créditos do usuário",
+          label: "Obter histórico de transações de créditos do usuário (com filtros e ordenação)",
           className: "api-method get",
         },
         {
@@ -548,6 +554,82 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "api/admin-backend/cancel-listing",
           label: "Cancelar anúncio de venda",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/has-key",
+          label: "Checar se o usuário possui chave de uma campanha (para abrir o modal de venda)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/buy-proposal",
+          label: "Quer Comprar: enviar proposta de compra (oferta com retenção de saldo)",
+          className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "marketplace-offers",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/marketplace-offers",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/create-offer",
+          label: "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-sent",
+          label: "Listar ofertas que eu fiz (comprador)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-received",
+          label: "Listar ofertas recebidas nos meus anúncios (vendedor)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/update-offer",
+          label: "Atualizar valor/validade da minha oferta (comprador)",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/cancel-offer",
+          label: "Cancelar minha oferta (comprador)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/accept-counter",
+          label: "Aceitar a contra-oferta do vendedor (comprador)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/accept-offer",
+          label: "Aceitar uma oferta pendente (vendedor)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/reject-offer",
+          label: "Recusar uma oferta (vendedor)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/counter-offer",
+          label: "Fazer uma contra-oferta (vendedor)",
           className: "api-method post",
         },
       ],
@@ -743,6 +825,56 @@ const sidebar: SidebarsConfig = {
           id: "api/admin-backend/remove",
           label: "Remover main star",
           className: "api-method delete",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "votes",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/votes",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/list-mine",
+          label: "Listar campanhas que eu favoritei",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/toggle",
+          label: "Favoritar/desfavoritar uma campanha (toggle)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-for-campaign",
+          label: "Contagem de curtidas da campanha + se eu curti",
+          className: "api-method get",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "legal",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/legal",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/terms-of-use",
+          label: "Termos de uso (público, sem autenticação)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/privacy-policy",
+          label: "Política de privacidade (público, sem autenticação)",
+          className: "api-method get",
         },
       ],
     },

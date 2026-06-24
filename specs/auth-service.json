@@ -423,10 +423,6 @@
     {
       "url": "http://localhost:3001",
       "description": "API atual (env API_BASE_URL ou localhost)"
-    },
-    {
-      "url": "https://auth.mk.nearx.com.br",
-      "description": "Produção"
     }
   ],
   "components": {

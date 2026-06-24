@@ -9,7 +9,7 @@ sidebar_position: 2
 ## Login
 
 ```bash
-curl -X POST https://auth.mk.nearx.com.br/auth/login \
+curl -X POST https://auth.homolog.mintvrs.com/auth/login \
   -H "Content-Type: application/json" \
   -d '{ "email": "usuario@email.com", "password": "SuaSenha123" }'
 ```
@@ -28,7 +28,7 @@ curl -X POST https://auth.mk.nearx.com.br/auth/login \
 Envie o `accessToken` no header `Authorization` de todas as requisições ao admin-backend:
 
 ```bash
-curl -X GET https://api.mk.nearx.com.br/campaigns \
+curl -X GET https://admin-api.homolog.mintvrs.com/campaigns \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -37,7 +37,7 @@ curl -X GET https://api.mk.nearx.com.br/campaigns \
 Quando o `accessToken` expirar (1 hora), use o `refreshToken` para obter novos tokens:
 
 ```bash
-curl -X POST https://auth.mk.nearx.com.br/auth/refresh \
+curl -X POST https://auth.homolog.mintvrs.com/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{ "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }'
 ```
@@ -81,7 +81,7 @@ sequenceDiagram
 ## Obtendo o perfil do usuário
 
 ```bash
-curl -X GET https://auth.mk.nearx.com.br/auth/profile \
+curl -X GET https://auth.homolog.mintvrs.com/auth/profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 

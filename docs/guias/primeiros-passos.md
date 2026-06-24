@@ -13,7 +13,7 @@ Guia rápido para integrar com a API do MKClub.
 ### Login e obter JWT
 
 ```bash
-curl -X POST https://auth.mk.nearx.com.br/auth/login \
+curl -X POST https://auth.homolog.mintvrs.com/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "seu@email.com",
@@ -34,7 +34,7 @@ Salve o `accessToken` — você vai usá-lo em todas as próximas chamadas.
 ## 2. Verificar sua identidade
 
 ```bash
-curl https://auth.mk.nearx.com.br/auth/profile \
+curl https://auth.homolog.mintvrs.com/auth/profile \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -52,7 +52,7 @@ curl https://auth.mk.nearx.com.br/auth/profile \
 
 ```bash
 # Listar campanhas do seu tenant
-curl https://api.mk.nearx.com.br/campaigns \
+curl https://admin-api.homolog.mintvrs.com/campaigns \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -60,13 +60,13 @@ curl https://api.mk.nearx.com.br/campaigns \
 
 ```bash
 # Este endpoint não requer autenticação
-curl https://api.mk.nearx.com.br/campaigns/active
+curl https://admin-api.homolog.mintvrs.com/campaigns/active
 ```
 
 ## 5. Ver saldo de créditos
 
 ```bash
-curl https://api.mk.nearx.com.br/credits/balance \
+curl https://admin-api.homolog.mintvrs.com/credits/balance \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -82,9 +82,9 @@ curl https://api.mk.nearx.com.br/credits/balance \
 
 | Serviço | URL |
 |---------|-----|
-| Auth Service | `https://auth.mk.nearx.com.br` |
-| Admin Backend | `https://api.mk.nearx.com.br` |
-| Admin Panel | `https://admin.mk.nearx.com.br` |
+| Auth Service | `https://auth.homolog.mintvrs.com` |
+| Admin Backend | `https://admin-api.homolog.mintvrs.com` |
+| Admin Panel | `https://admin.mintvrs.com` |
 
 ## URLs locais (desenvolvimento)
 

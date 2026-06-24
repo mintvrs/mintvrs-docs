@@ -11,7 +11,7 @@ Apenas **SuperAdmin** e **Admin** podem criar tenants.
 ## 1. Criar o tenant
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/tenants \
+curl -X POST https://admin-api.homolog.mintvrs.com/tenants \
   -H "Authorization: Bearer <token_superadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -40,7 +40,7 @@ O `apiSecret` é mostrado apenas uma vez. Guarde-o imediatamente.
 ## 2. Criar o TenantAdmin
 
 ```bash
-curl -X POST https://auth.mk.nearx.com.br/auth/users/tenant-admin \
+curl -X POST https://auth.homolog.mintvrs.com/auth/users/tenant-admin \
   -H "Authorization: Bearer <token_superadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -53,7 +53,7 @@ curl -X POST https://auth.mk.nearx.com.br/auth/users/tenant-admin \
 ## 3. Configurar gateway de pagamento
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/gateways \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -67,7 +67,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways \
 ## 4. Testar a conexão do gateway
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/gateways/test-connection \
+curl -X POST https://admin-api.homolog.mintvrs.com/gateways/test-connection \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -79,7 +79,7 @@ curl -X POST https://api.mk.nearx.com.br/gateways/test-connection \
 ## 5. Ativar o gateway
 
 ```bash
-curl -X PATCH https://api.mk.nearx.com.br/gateways/{gatewayId}/toggle \
+curl -X PATCH https://admin-api.homolog.mintvrs.com/gateways/{gatewayId}/toggle \
   -H "Authorization: Bearer <token_tenantadmin>" \
   -H "Content-Type: application/json" \
   -d '{ "active": true }'
@@ -91,7 +91,7 @@ Se o tenant vai usar NFTs na blockchain Xion:
 
 ```bash
 # SuperAdmin cria o token CW20 para o tenant via Factory
-curl -X POST https://api.mk.nearx.com.br/xion/factory/create-token \
+curl -X POST https://admin-api.homolog.mintvrs.com/xion/factory/create-token \
   -H "Authorization: Bearer <token_superadmin>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -104,7 +104,7 @@ curl -X POST https://api.mk.nearx.com.br/xion/factory/create-token \
 ## Dashboard do tenant
 
 ```bash
-curl https://api.mk.nearx.com.br/tenants/{tenantId}/dashboard \
+curl https://admin-api.homolog.mintvrs.com/tenants/{tenantId}/dashboard \
   -H "Authorization: Bearer <token>"
 ```
 

@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"price":{"type":"number","description":"Valor da proposta em centavos (BRL)"},"expiresInDays":{"type":"number","description":"Validade da proposta em dias (1 a 30)","minimum":1,"maximum":30}},"required":["price","expiresInDays"],"title":"BuyProposalDto"}}}}}

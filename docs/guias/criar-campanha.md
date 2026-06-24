@@ -11,7 +11,7 @@ Campanhas são o coração do MKClub. Cada campanha representa um projeto de cro
 ## 1. Criar a campanha
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/campaigns \
+curl -X POST https://admin-api.homolog.mintvrs.com/campaigns \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -53,7 +53,7 @@ curl -X POST https://api.mk.nearx.com.br/campaigns \
 
 ```bash
 # Tier Bronze — mais acessível
-curl -X POST https://api.mk.nearx.com.br/accesses \
+curl -X POST https://admin-api.homolog.mintvrs.com/accesses \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -64,7 +64,7 @@ curl -X POST https://api.mk.nearx.com.br/accesses \
   }'
 
 # Tier Ouro — premium
-curl -X POST https://api.mk.nearx.com.br/accesses \
+curl -X POST https://admin-api.homolog.mintvrs.com/accesses \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -83,7 +83,7 @@ curl -X POST https://api.mk.nearx.com.br/accesses \
 
 ```bash
 # Conteúdo de prévia (visível para todos)
-curl -X POST https://api.mk.nearx.com.br/contents \
+curl -X POST https://admin-api.homolog.mintvrs.com/contents \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -95,7 +95,7 @@ curl -X POST https://api.mk.nearx.com.br/contents \
   }'
 
 # Conteúdo exclusivo (visível apenas para apoiadores)
-curl -X POST https://api.mk.nearx.com.br/contents \
+curl -X POST https://admin-api.homolog.mintvrs.com/contents \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -111,7 +111,7 @@ curl -X POST https://api.mk.nearx.com.br/contents \
 
 ```bash
 # Endpoint público — retorna campanha com accesses e prévia de conteúdo
-curl https://api.mk.nearx.com.br/campaigns/{campaignId}/public
+curl https://admin-api.homolog.mintvrs.com/campaigns/{campaignId}/public
 ```
 
 ## 5. Status de campanha
@@ -127,8 +127,14 @@ curl https://api.mk.nearx.com.br/campaigns/{campaignId}/public
 
 A campanha pode ter **botões clicáveis posicionados sobre uma imagem de fundo**, com coordenadas em
 percentual (responsivo). É opcional: ative com `interactive_buttons_enabled: true` (no `POST`/`PATCH`),
-envie a imagem de fundo (`POST /campaigns/:id/button-layout-image`) e salve o layout
-(`PUT /campaigns/:id/buttons`). Veja o guia dedicado: [Botões Interativos](./botoes-interativos.md).
+envie a imagem de fundo (`POST /campaigns/:campaignId/button-layout-image`) e salve o layout
+(`PUT /campaigns/:campaignId/buttons`). Veja o guia dedicado: [Botões Interativos](./botoes-interativos.md).
+
+## Campos customizados (custom fields)
+
+Campos extras por tenant (ex.: "Estilo de Ensaio", "Fotógrafo") são definidos no config do tenant e preenchidos por campanha. No banco, os valores ficam **keyados pelo `id` da definição** (não pelo label), então **todos os GETs de campanha** retornam também `custom_fields_resolved` (lista já com o label pronto pra exibir).
+
+👉 Guia completo (como o front lê, passo a passo): **[Custom Fields](./custom-fields.md)**.
 
 ## Splits de receita
 
@@ -146,6 +152,6 @@ Plataforma (20%): R$ 18,00
 Ver relatório de splits:
 
 ```bash
-curl https://api.mk.nearx.com.br/splits/{campaignId} \
+curl https://admin-api.homolog.mintvrs.com/splits/{campaignId} \
   -H "Authorization: Bearer <token>"
 ```

@@ -11,7 +11,7 @@ Para sistemas externos que precisam integrar com o MKClub sem sessão de usuári
 ## Como usar
 
 ```bash
-curl -X GET https://api.mk.nearx.com.br/campaigns \
+curl -X GET https://admin-api.homolog.mintvrs.com/campaigns \
   -H "X-API-Key: mk_live_xxxxxxxxxxxx" \
   -H "X-API-Secret: sk_live_yyyyyyyyyyyy"
 ```
@@ -23,7 +23,7 @@ Ambos os headers são **obrigatórios**. O request é escopado automaticamente a
 As chaves são geradas automaticamente quando um tenant é criado. Para regenerá-las:
 
 ```bash
-curl -X POST https://api.mk.nearx.com.br/tenants/{tenantId}/regenerate-keys \
+curl -X POST https://admin-api.homolog.mintvrs.com/tenants/{tenantId}/regenerate-keys \
   -H "Authorization: Bearer <token_superadmin>"
 ```
 

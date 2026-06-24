@@ -14,7 +14,7 @@ A API é **genérica e multi-tenant**: ela devolve as **entidades como são** + 
 - 🏷️ **`status`** vem no enum interno (`Active | Inactive | Ended | Scheduled`) — o front decide os rótulos.
 - 🧩 **Campos flexíveis** (fotógrafo, estilo, estúdio, profissão…) vêm em **`custom_fields`** (JSON), tanto na campanha quanto na modelo. Cada tenant define as chaves.
 - 🔐 Endpoints autenticados usam `Authorization: Bearer <accessToken>` (token do Auth Service).
-- ⚠️ Os endpoints **públicos** (`/campaigns/active`, `/campaigns/:id/public`) passarão a **exigir** o header `X-Tenant-Slug: <slug-do-tenant>` e filtrar por tenant. Hoje ainda são globais — **já envie o header** para se preparar (ver **Roadmap** no fim da página).
+- ⚠️ Os endpoints **públicos** (`/campaigns/active`, `/campaigns/:campaignId/public`) passarão a **exigir** o header `X-Tenant-Slug: <slug-do-tenant>` e filtrar por tenant. Hoje ainda são globais — **já envie o header** para se preparar (ver **Roadmap** no fim da página).
 
 ---
 
@@ -39,7 +39,7 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | ariaLabel | usar `name` como fallback |
 
 ## Detalhe da campanha (perfil)
-**`GET /campaigns/:id/public`** → `{ campaign, previews, currentKeys, totalKeys, totalMediaCount, gallery }`.
+**`GET /campaigns/:campaignId/public`** → `{ campaign, previews, currentKeys, totalKeys, totalMediaCount, gallery }`.
 
 | PDF (MKC) | Ler de |
 |---|---|
@@ -81,7 +81,7 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 
 ## Marketplace
 **`GET /marketplace/listings`** → anúncios ativos (`price` em centavos, `campaignId`, `sellerId`, `status`). Para comprar: **`POST /marketplace/buy/:id`**.
-> Modelo simples (postou venda → outro compra), **sem leilão/propostas**. A listing traz `campaignId`; para capa/modelo, cruze com `GET /campaigns/:id/public`.
+> Modelo simples (postou venda → outro compra), **sem leilão/propostas**. A listing traz `campaignId`; para capa/modelo, cruze com `GET /campaigns/:campaignId/public`.
 
 ## Checkout (compra de chave)
 **`POST /gateways/checkout/key-purchase`** → gera a URL do **Stripe Checkout**; o front **redireciona** o usuário. Confirmação é assíncrona (webhook). Não há charge direto com `cardToken`/`installments`.
@@ -111,7 +111,7 @@ Itens **definidos** mas ainda não no ar. Documentados aqui para o front já se 
 ### 1. Tenant-scoping dos endpoints públicos
 Os endpoints públicos passarão a **exigir** o header **`X-Tenant-Slug: <slug-do-tenant>`** e a **filtrar os dados pelo tenant** correspondente. Hoje retornam dados de **todos** os tenants (global).
 
-**Ação do front:** já enviar `X-Tenant-Slug` com o slug do tenant nas chamadas públicas (`/campaigns/active`, `/campaigns/:id/public`). Enquanto o backend não escopa, o header é **ignorado** (sem quebra); quando passar a escopar, **nada muda** no código do front.
+**Ação do front:** já enviar `X-Tenant-Slug` com o slug do tenant nas chamadas públicas (`/campaigns/active`, `/campaigns/:campaignId/public`). Enquanto o backend não escopa, o header é **ignorado** (sem quebra); quando passar a escopar, **nada muda** no código do front.
 
 ### 2. Dashboard do usuário
 Agregador pessoal do usuário logado (cards de resumo + abas `MY_KEYS`, `SUPPORTED_ESSAYS`, `USER_RANKING`, `MY_LISTINGS`). A maior parte dos dados o front **já consegue compor** dos endpoints atuais:
