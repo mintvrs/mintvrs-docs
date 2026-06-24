@@ -5531,6 +5531,11 @@
             "description": "Descrição do conteúdo",
             "nullable": true
           },
+          "aria_label": {
+            "type": "string",
+            "description": "Texto descritivo da imagem para acessibilidade (aria-label / alt de leitores de tela)",
+            "nullable": true
+          },
           "is_preview": {
             "type": "boolean",
             "description": "Conteúdo de preview"
@@ -5551,6 +5556,7 @@
           "type",
           "url",
           "description",
+          "aria_label",
           "is_preview",
           "active",
           "created_at"
@@ -5571,11 +5577,17 @@
           "mediaUrl": {
             "type": "string",
             "description": "URL da mídia"
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto descritivo para acessibilidade (fallback: título)",
+            "nullable": true
           }
         },
         "required": [
           "mediaType",
-          "mediaUrl"
+          "mediaUrl",
+          "ariaLabel"
         ]
       },
       "CampaignPublicDto": {
@@ -7061,6 +7073,11 @@
             "description": "Descrição do conteúdo",
             "example": "Making of completo"
           },
+          "aria_label": {
+            "type": "string",
+            "description": "Texto descritivo da imagem para acessibilidade (leitores de tela)",
+            "example": "Modelo na beira da piscina ao pôr do sol"
+          },
           "campaign_id": {
             "type": "string",
             "description": "ID da campanha associada",
@@ -7111,6 +7128,11 @@
             "type": "string",
             "description": "Descrição do conteúdo",
             "example": "Detalhes atualizados"
+          },
+          "aria_label": {
+            "type": "string",
+            "description": "Texto descritivo da imagem para acessibilidade (leitores de tela)",
+            "example": "Modelo na beira da piscina ao pôr do sol"
           },
           "campaign_id": {
             "type": "string",

@@ -136,6 +136,13 @@ Campos extras por tenant (ex.: "Estilo de Ensaio", "Fotógrafo") são definidos 
 
 👉 Guia completo (como o front lê, passo a passo): **[Custom Fields](./custom-fields.md)**.
 
+## Galeria de preview (fotos públicas)
+
+Na criação da campanha dá pra subir até **6 fotos** de galeria, que aparecem na **página pública** da campanha. Cada foto vira um `Content` com `is_preview: true` e um campo de acessibilidade `aria_label` (texto descritivo da imagem para leitores de tela).
+
+- Upload: `POST /contents` (via `uploadAndCreateContent`) com `{ campaign_id, type: "Image", is_preview: true, aria_label }`.
+- Leitura pública: `GET /campaigns/:campaignId/public` → `gallery: [{ mediaType, mediaUrl, ariaLabel }]` (o `ariaLabel` cai no atributo `aria-label`/`alt` da imagem; fallback = `title`). Os mesmos itens vêm em `previews[]` com o campo `aria_label`.
+
 ## Splits de receita
 
 Quando há `stars` na campanha, a receita é distribuída automaticamente:
