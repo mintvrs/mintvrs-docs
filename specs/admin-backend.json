@@ -1843,6 +1843,46 @@
         ]
       }
     },
+    "/gateways/checkout/offer-funding": {
+      "post": {
+        "operationId": "createOfferFundingCheckout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "shortfall e, quando > 0, URL de checkout + sessionId"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gerar checkout Stripe para financiar a diferença de crédito de uma oferta P2P",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/confirm-offer-funding": {
+      "post": {
+        "operationId": "confirmOfferFunding",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status da confirmação e oferta criada"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar pagamento Stripe e criar a oferta P2P financiada",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
     "/gateways/webhook/stripe/{tenantId}": {
       "post": {
         "operationId": "handleStripeWebhook",
@@ -2181,9 +2221,695 @@
             "bearer": []
           }
         ],
-        "summary": "Compra real pelo usuário final (debita créditos) — cria N chaves",
+        "summary": "[DESATIVADO] Compra de chave nova com crédito — use cartão/PIX no checkout",
         "tags": [
           "transactions"
+        ]
+      }
+    },
+    "/marketplace/listings": {
+      "get": {
+        "operationId": "listActive",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Busca por nome de campanha ou vendedor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "description": "Preço mínimo em centavos",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "description": "Preço máximo em centavos",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "campaignId",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Ordenação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "price_asc",
+                "price_desc",
+                "date_asc",
+                "date_desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceListing"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar anúncios ativos no marketplace P2P",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/my-listings": {
+      "get": {
+        "operationId": "myListings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceListing"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar meus anúncios",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/list": {
+      "post": {
+        "operationId": "createListing",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar anúncio de venda de chave",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/buy/{listingId}": {
+      "post": {
+        "operationId": "buyListing",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do anúncio (listing)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Comprar chave de outro usuário",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/cancel/{listingId}": {
+      "post": {
+        "operationId": "cancelListing",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do anúncio (listing)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceListing"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar anúncio de venda",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/{campaignId}/hasKey": {
+      "get": {
+        "operationId": "hasKey",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da CAMPANHA",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HasKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Checar se o usuário possui chave de uma campanha (para abrir o modal de venda)",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/{listingId}/buyProposal": {
+      "post": {
+        "description": "Alias amigável de POST /marketplace/offers. Cria uma oferta sobre o anúncio (:listingId) e trava o crédito do comprador em escrow.",
+        "operationId": "buyProposal",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do anúncio (listing)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyProposalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Quer Comprar: enviar proposta de compra (oferta com retenção de saldo)",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
+    "/marketplace/offers": {
+      "post": {
+        "operationId": "createOffer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/sent": {
+      "get": {
+        "operationId": "listSent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceOffer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar ofertas que eu fiz (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/received": {
+      "get": {
+        "operationId": "listReceived",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "pending",
+                "countered",
+                "accepted",
+                "rejected",
+                "cancelled",
+                "expired"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketplaceOffer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar ofertas recebidas nos meus anúncios (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}": {
+      "patch": {
+        "operationId": "updateOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar valor/validade da minha oferta (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/cancel": {
+      "post": {
+        "operationId": "cancelOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar minha oferta (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/accept-counter": {
+      "post": {
+        "operationId": "acceptCounter",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aceitar a contra-oferta do vendedor (comprador)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/accept": {
+      "post": {
+        "operationId": "acceptOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aceitar uma oferta pendente (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/reject": {
+      "post": {
+        "operationId": "rejectOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recusar uma oferta (vendedor)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/{offerId}/counter": {
+      "post": {
+        "operationId": "counterOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer uma contra-oferta (vendedor)",
+        "tags": [
+          "marketplace-offers"
         ]
       }
     },
@@ -3678,692 +4404,6 @@
         ]
       }
     },
-    "/marketplace/listings": {
-      "get": {
-        "operationId": "listActive",
-        "parameters": [
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Busca por nome de campanha ou vendedor",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minPrice",
-            "required": false,
-            "in": "query",
-            "description": "Preço mínimo em centavos",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxPrice",
-            "required": false,
-            "in": "query",
-            "description": "Preço máximo em centavos",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "campaignId",
-            "required": false,
-            "in": "query",
-            "description": "Filtrar por campanha",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Ordenação",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "price_asc",
-                "price_desc",
-                "date_asc",
-                "date_desc"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MarketplaceListing"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar anúncios ativos no marketplace P2P",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/my-listings": {
-      "get": {
-        "operationId": "myListings",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MarketplaceListing"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar meus anúncios",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/list": {
-      "post": {
-        "operationId": "createListing",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateListingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceListing"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Criar anúncio de venda de chave",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/buy/{listingId}": {
-      "post": {
-        "operationId": "buyListing",
-        "parameters": [
-          {
-            "name": "listingId",
-            "required": true,
-            "in": "path",
-            "description": "UUID do anúncio (listing)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceListing"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Comprar chave de outro usuário",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/cancel/{listingId}": {
-      "post": {
-        "operationId": "cancelListing",
-        "parameters": [
-          {
-            "name": "listingId",
-            "required": true,
-            "in": "path",
-            "description": "UUID do anúncio (listing)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceListing"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Cancelar anúncio de venda",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/{campaignId}/hasKey": {
-      "get": {
-        "operationId": "hasKey",
-        "parameters": [
-          {
-            "name": "campaignId",
-            "required": true,
-            "in": "path",
-            "description": "UUID da CAMPANHA",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HasKeyDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Checar se o usuário possui chave de uma campanha (para abrir o modal de venda)",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/{listingId}/buyProposal": {
-      "post": {
-        "description": "Alias amigável de POST /marketplace/offers. Cria uma oferta sobre o anúncio (:listingId) e trava o crédito do comprador em escrow.",
-        "operationId": "buyProposal",
-        "parameters": [
-          {
-            "name": "listingId",
-            "required": true,
-            "in": "path",
-            "description": "UUID do anúncio (listing)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BuyProposalDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Quer Comprar: enviar proposta de compra (oferta com retenção de saldo)",
-        "tags": [
-          "marketplace"
-        ]
-      }
-    },
-    "/marketplace/offers": {
-      "post": {
-        "operationId": "createOffer",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOfferDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/sent": {
-      "get": {
-        "operationId": "listSent",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MarketplaceOffer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar ofertas que eu fiz (comprador)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/received": {
-      "get": {
-        "operationId": "listReceived",
-        "parameters": [
-          {
-            "name": "listingId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "pending",
-                "countered",
-                "accepted",
-                "rejected",
-                "cancelled",
-                "expired"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MarketplaceOffer"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar ofertas recebidas nos meus anúncios (vendedor)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}": {
-      "patch": {
-        "operationId": "updateOffer",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOfferDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Atualizar valor/validade da minha oferta (comprador)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}/cancel": {
-      "post": {
-        "operationId": "cancelOffer",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Cancelar minha oferta (comprador)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}/accept-counter": {
-      "post": {
-        "operationId": "acceptCounter",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Aceitar a contra-oferta do vendedor (comprador)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}/accept": {
-      "post": {
-        "operationId": "acceptOffer",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Aceitar uma oferta pendente (vendedor)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}/reject": {
-      "post": {
-        "operationId": "rejectOffer",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Recusar uma oferta (vendedor)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
-    "/marketplace/offers/{offerId}/counter": {
-      "post": {
-        "operationId": "counterOffer",
-        "parameters": [
-          {
-            "name": "offerId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CounterOfferDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Fazer uma contra-oferta (vendedor)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
     "/splits/my": {
       "get": {
         "operationId": "getMySplits",
@@ -4484,6 +4524,7 @@
     },
     "/kyc/consultar": {
       "post": {
+        "description": "Confere se o CPF, o nome completo e a data de nascimento informados batem com os dados da Receita Federal. Retorna apenas o resultado da verificação (valid + matches por campo); não expõe o nome/data consultados.",
         "operationId": "consultar",
         "parameters": [],
         "requestBody": {
@@ -4498,7 +4539,7 @@
         },
         "responses": {
           "200": {
-            "description": "Dados do CPF consultado"
+            "description": "Resultado da verificação: { success, code, message, valid?, matches? }. Não retorna nome/data da Receita."
           },
           "401": {
             "description": "Não autorizado",
@@ -4526,7 +4567,7 @@
             "bearer": []
           }
         ],
-        "summary": "Consulta nome e data de nascimento pelo CPF (Receita Federal)",
+        "summary": "Verifica CPF + nome + data de nascimento na Receita Federal",
         "tags": [
           "kyc"
         ]
@@ -6777,6 +6818,349 @@
           "fiatAmount"
         ]
       },
+      "MarketplaceListing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT à venda)"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "Email do vendedor"
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador",
+            "nullable": true
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "soldAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da venda",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer on-chain",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "buyerId",
+          "buyerEmail",
+          "soldAt",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateListingDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT a ser vendido)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          }
+        },
+        "required": [
+          "transactionId",
+          "price"
+        ]
+      },
+      "HasKeyDto": {
+        "type": "object",
+        "properties": {
+          "hasKey": {
+            "type": "boolean",
+            "description": "Se o usuário possui ao menos uma chave da campanha",
+            "example": true
+          },
+          "count": {
+            "type": "number",
+            "description": "Quantas chaves da campanha o usuário possui",
+            "example": 2
+          },
+          "transactionIds": {
+            "description": "IDs das transações (chaves) possuídas",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "hasKey",
+          "count",
+          "transactionIds"
+        ]
+      },
+      "BuyProposalDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "Valor da proposta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da proposta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "price",
+          "expiresInDays"
+        ]
+      },
+      "MarketplaceOffer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da oferta"
+          },
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
+            "nullable": true
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador que fez a oferta"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "nullable": true
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor (dono do anúncio, denormalizado)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
+          },
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da oferta",
+            "enum": [
+              "pending",
+              "countered",
+              "accepted",
+              "rejected",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de expiração da oferta"
+          },
+          "lockCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction de lock (escrow)",
+            "nullable": true
+          },
+          "stripeFundedAmount": {
+            "type": "number",
+            "description": "Parcela do price comprada via Stripe especificamente para financiar ESTA oferta (centavos). 0 quando coberta pelo saldo pré-existente. É o valor estornado no cartão quando a oferta é recusada/expira/cancelada.",
+            "default": 0
+          },
+          "fundingCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction (type=add, provider=stripe) que financiou a parcela Stripe. Alvo do refundStripe no release.",
+            "nullable": true
+          },
+          "fundingSessionId": {
+            "type": "string",
+            "description": "sessionId do checkout Stripe que financiou a oferta (idempotência na confirmação/webhook).",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de aceitação",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "transactionId",
+          "campaignId",
+          "tenantId",
+          "buyerId",
+          "buyerEmail",
+          "buyerName",
+          "sellerId",
+          "price",
+          "counterPrice",
+          "status",
+          "expiresAt",
+          "lockCreditTxId",
+          "stripeFundedAmount",
+          "fundingCreditTxId",
+          "fundingSessionId",
+          "acceptedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateOfferDto": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da oferta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "listingId",
+          "price",
+          "expiresInDays"
+        ]
+      },
+      "UpdateOfferDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "Novo valor da oferta em centavos (BRL)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Nova validade da oferta em dias (1 a 30)",
+            "minimum": 1,
+            "maximum": 30
+          }
+        }
+      },
+      "CounterOfferDto": {
+        "type": "object",
+        "properties": {
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos (BRL)"
+          }
+        },
+        "required": [
+          "counterPrice"
+        ]
+      },
       "Token": {
         "type": "object",
         "properties": {
@@ -7194,331 +7578,6 @@
           }
         }
       },
-      "MarketplaceListing": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID do anúncio"
-          },
-          "transactionId": {
-            "type": "string",
-            "description": "ID da transação (NFT à venda)"
-          },
-          "sellerId": {
-            "type": "string",
-            "description": "ID do vendedor"
-          },
-          "sellerEmail": {
-            "type": "string",
-            "description": "Email do vendedor"
-          },
-          "sellerName": {
-            "type": "string",
-            "description": "Nome do vendedor"
-          },
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha (denormalizado)"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "ID do tenant",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "description": "Preço em centavos (BRL)"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status do anúncio",
-            "enum": [
-              "active",
-              "sold",
-              "cancelled"
-            ]
-          },
-          "buyerId": {
-            "type": "string",
-            "description": "ID do comprador",
-            "nullable": true
-          },
-          "buyerEmail": {
-            "type": "string",
-            "description": "Email do comprador",
-            "nullable": true
-          },
-          "soldAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data da venda",
-            "nullable": true
-          },
-          "xionTransactionHash": {
-            "type": "string",
-            "description": "Hash da transação on-chain",
-            "nullable": true
-          },
-          "xionExplorerUrl": {
-            "type": "string",
-            "description": "URL do explorer on-chain",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de atualização"
-          }
-        },
-        "required": [
-          "id",
-          "transactionId",
-          "sellerId",
-          "sellerEmail",
-          "sellerName",
-          "campaignId",
-          "tenantId",
-          "price",
-          "status",
-          "buyerId",
-          "buyerEmail",
-          "soldAt",
-          "xionTransactionHash",
-          "xionExplorerUrl",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "CreateListingDto": {
-        "type": "object",
-        "properties": {
-          "transactionId": {
-            "type": "string",
-            "description": "ID da transação (NFT a ser vendido)"
-          },
-          "price": {
-            "type": "number",
-            "description": "Preço em centavos (BRL)"
-          }
-        },
-        "required": [
-          "transactionId",
-          "price"
-        ]
-      },
-      "HasKeyDto": {
-        "type": "object",
-        "properties": {
-          "hasKey": {
-            "type": "boolean",
-            "description": "Se o usuário possui ao menos uma chave da campanha",
-            "example": true
-          },
-          "count": {
-            "type": "number",
-            "description": "Quantas chaves da campanha o usuário possui",
-            "example": 2
-          },
-          "transactionIds": {
-            "description": "IDs das transações (chaves) possuídas",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "hasKey",
-          "count",
-          "transactionIds"
-        ]
-      },
-      "BuyProposalDto": {
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "description": "Valor da proposta em centavos (BRL)"
-          },
-          "expiresInDays": {
-            "type": "number",
-            "description": "Validade da proposta em dias (1 a 30)",
-            "minimum": 1,
-            "maximum": 30
-          }
-        },
-        "required": [
-          "price",
-          "expiresInDays"
-        ]
-      },
-      "MarketplaceOffer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID da oferta"
-          },
-          "listingId": {
-            "type": "string",
-            "description": "ID do anúncio (listing) alvo da oferta"
-          },
-          "transactionId": {
-            "type": "string",
-            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
-          },
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha (denormalizado)"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
-            "nullable": true
-          },
-          "buyerId": {
-            "type": "string",
-            "description": "ID do comprador que fez a oferta"
-          },
-          "buyerEmail": {
-            "type": "string",
-            "description": "Email do comprador",
-            "nullable": true
-          },
-          "buyerName": {
-            "type": "string",
-            "description": "Nome do comprador",
-            "nullable": true
-          },
-          "sellerId": {
-            "type": "string",
-            "description": "ID do vendedor (dono do anúncio, denormalizado)"
-          },
-          "price": {
-            "type": "number",
-            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
-          },
-          "counterPrice": {
-            "type": "number",
-            "description": "Valor da contra-oferta do vendedor em centavos",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "description": "Status da oferta",
-            "enum": [
-              "pending",
-              "countered",
-              "accepted",
-              "rejected",
-              "cancelled",
-              "expired"
-            ]
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data/hora de expiração da oferta"
-          },
-          "lockCreditTxId": {
-            "type": "string",
-            "description": "ID da CreditTransaction de lock (escrow)",
-            "nullable": true
-          },
-          "acceptedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data/hora de aceitação",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de atualização"
-          }
-        },
-        "required": [
-          "id",
-          "listingId",
-          "transactionId",
-          "campaignId",
-          "tenantId",
-          "buyerId",
-          "buyerEmail",
-          "buyerName",
-          "sellerId",
-          "price",
-          "counterPrice",
-          "status",
-          "expiresAt",
-          "lockCreditTxId",
-          "acceptedAt",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "CreateOfferDto": {
-        "type": "object",
-        "properties": {
-          "listingId": {
-            "type": "string",
-            "description": "ID do anúncio (listing) alvo da oferta"
-          },
-          "price": {
-            "type": "number",
-            "description": "Valor da oferta em centavos (BRL)"
-          },
-          "expiresInDays": {
-            "type": "number",
-            "description": "Validade da oferta em dias (1 a 30)",
-            "minimum": 1,
-            "maximum": 30
-          }
-        },
-        "required": [
-          "listingId",
-          "price",
-          "expiresInDays"
-        ]
-      },
-      "UpdateOfferDto": {
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "description": "Novo valor da oferta em centavos (BRL)"
-          },
-          "expiresInDays": {
-            "type": "number",
-            "description": "Nova validade da oferta em dias (1 a 30)",
-            "minimum": 1,
-            "maximum": 30
-          }
-        }
-      },
-      "CounterOfferDto": {
-        "type": "object",
-        "properties": {
-          "counterPrice": {
-            "type": "number",
-            "description": "Valor da contra-oferta do vendedor em centavos (BRL)"
-          }
-        },
-        "required": [
-          "counterPrice"
-        ]
-      },
       "VerificarCpfDto": {
         "type": "object",
         "properties": {
@@ -7526,10 +7585,22 @@
             "type": "string",
             "example": "123.456.789-09",
             "description": "CPF no formato 000.000.000-00"
+          },
+          "nome": {
+            "type": "string",
+            "example": "MARIA DA SILVA SANTOS",
+            "description": "Nome completo a ser validado contra a Receita Federal"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "example": "1990-05-27",
+            "description": "Data de nascimento (YYYY-MM-DD) a ser validada contra a Receita Federal"
           }
         },
         "required": [
-          "cpf"
+          "cpf",
+          "nome",
+          "dataNascimento"
         ]
       },
       "LegalDocumentDto": {

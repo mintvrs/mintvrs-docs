@@ -1,1 +1,1 @@
-{"parameters":[{"name":"id","required":true,"in":"path","description":"UUID do anúncio (listing)","schema":{"type":"string"}}]}
+{"parameters":[{"name":"listingId","required":true,"in":"path","description":"UUID do anúncio (listing)","schema":{"type":"string"}}]}

@@ -1,1 +1,1 @@
-{"parameters":[{"name":"id","required":true,"in":"path","description":"UUID da campanha","schema":{"example":"b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f","type":"string"}}]}
+{"parameters":[{"name":"campaignId","required":true,"in":"path","description":"UUID da campanha","schema":{"example":"b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f","type":"string"}}]}

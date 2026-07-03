@@ -146,6 +146,18 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/create-offer-funding-checkout",
+          label: "Gerar checkout Stripe para financiar a diferença de crédito de uma oferta P2P",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/confirm-offer-funding",
+          label: "Confirmar pagamento Stripe e criar a oferta P2P financiada",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/handle-stripe-webhook",
           label: "Stripe webhook receiver (público, sem autenticação)",
           className: "api-method post",
@@ -205,7 +217,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/find-one",
-          label: "Obter campanha por ID",
+          label: "Obter campanha por ID (com custom_fields_resolved)",
           className: "api-method get",
         },
         {
@@ -455,7 +467,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/purchase",
-          label: "Compra real pelo usuário final (debita créditos) — cria N chaves",
+          label: "[DESATIVADO] Compra de chave nova com crédito — use cartão/PIX no checkout",
           className: "api-method post",
         },
       ],
@@ -921,7 +933,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/consultar",
-          label: "Consulta nome e data de nascimento pelo CPF (Receita Federal)",
+          label: "Verifica CPF + nome + data de nascimento na Receita Federal",
           className: "api-method post",
         },
       ],
