@@ -998,6 +998,7 @@
     },
     "/credits/transactions/me": {
       "get": {
+        "description": "Cada item inclui `campaign: { id, name }` (null quando não há campanha associada) e `balanceAfter` — o saldo em centavos imediatamente após a transação (null em transações anteriores à existência do campo). O saldo do dia é o `balanceAfter` da transação mais recente do dia. Os valores possíveis de `provider` e os formatos de `metadata` por tipo estão documentados no schema da transação.",
         "operationId": "getMyTransactions",
         "parameters": [
           {
@@ -1058,7 +1059,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CreditTransaction"
+                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
                   }
                 }
               }
@@ -1082,7 +1083,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Lista de transações do tenant"
+            "description": "Lista de transações do tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1102,7 +1113,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Lista de todas as transações"
+            "description": "Lista de todas as transações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5621,7 +5642,7 @@
           },
           "ariaLabel": {
             "type": "string",
-            "description": "Texto descritivo para acessibilidade (fallback: título)",
+            "description": "Texto descritivo para acessibilidade. Usa o aria_label do conteúdo; sem ele, cai no título apenas quando este não é um nome de arquivo. Null quando não há descrição legível — o app define o texto alternativo.",
             "nullable": true
           }
         },
@@ -6059,7 +6080,46 @@
           "updatedAt"
         ]
       },
-      "CreditTransaction": {
+      "TransactionUserSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do usuário"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do usuário"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "TransactionCampaignSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "EnrichedCreditTransactionDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -6097,7 +6157,16 @@
           },
           "provider": {
             "type": "string",
-            "description": "Provider do pagamento (ex: stripe)"
+            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada).",
+            "enum": [
+              "stripe",
+              "internal",
+              "admin_grant",
+              "credit_refund",
+              "stripe_refund",
+              "campaign_cancel_compensation"
+            ],
+            "nullable": true
           },
           "providerTransactionId": {
             "type": "string",
@@ -6116,7 +6185,13 @@
           },
           "metadata": {
             "type": "object",
-            "description": "Metadata adicional"
+            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`.",
+            "nullable": true
+          },
+          "balanceAfter": {
+            "type": "number",
+            "description": "Saldo do usuário (em centavos) imediatamente após esta transação. Snapshot gravado na criação; null em transações anteriores à existência do campo e em transações pending ainda não aprovadas.",
+            "nullable": true
           },
           "campaignId": {
             "type": "string",
@@ -6158,6 +6233,24 @@
             "format": "date-time",
             "type": "string",
             "description": "Data de atualização"
+          },
+          "user": {
+            "description": "Resumo do usuário da transação",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionUserSummaryDto"
+              }
+            ]
+          },
+          "campaign": {
+            "description": "Resumo da campanha associada (null quando a transação não tem campaignId ou a campanha não existe mais)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionCampaignSummaryDto"
+              }
+            ]
           }
         },
         "required": [
@@ -6171,6 +6264,7 @@
           "providerTransactionId",
           "status",
           "metadata",
+          "balanceAfter",
           "campaignId",
           "expiresAt",
           "isNonRefundable",
@@ -6178,7 +6272,9 @@
           "xionTransactionHash",
           "xionExplorerUrl",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "user",
+          "campaign"
         ]
       },
       "GrantCreditsDto": {
