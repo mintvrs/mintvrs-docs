@@ -1,0 +1,69 @@
+---
+id: verificar-me
+title: "Verifica o KYC do próprio usuário autenticado (onboarding)"
+description: "Fluxo self-service: o usuário autenticado (qualquer nível, inclusive User) envia CPF, nome completo e data de nascimento próprios, que são conferidos contra a Receita Federal. Quando os três dados conferem, o KYC fica marcado como verificado no perfil (idempotente: chamadas seguintes retornam ALREADY_VERIFIED). Limite de 5 tentativas por 24h; um CPF verificado só pode pertencer a uma conta."
+sidebar_label: "Verifica o KYC do próprio usuário autenticado (onboarding)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Verifica o KYC do próprio usuário autenticado (onboarding)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/kyc/verificar/me"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fluxo self-service: o usuário autenticado (qualquer nível, inclusive User) envia CPF, nome completo e data de nascimento próprios, que são conferidos contra a Receita Federal. Quando os três dados conferem, o KYC fica marcado como verificado no perfil (idempotente: chamadas seguintes retornam ALREADY_VERIFIED). Limite de 5 tentativas por 24h; um CPF verificado só pode pertencer a uma conta.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./verificar-me.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./verificar-me.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./verificar-me.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      
