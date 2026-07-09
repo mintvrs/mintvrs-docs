@@ -933,7 +933,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/consultar",
-          label: "Verifica CPF + nome + data de nascimento na Receita Federal",
+          label: "[Backoffice] Verifica CPF + nome + data de nascimento na Receita Federal",
           className: "api-method post",
         },
       ],

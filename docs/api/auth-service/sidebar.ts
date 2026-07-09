@@ -110,6 +110,42 @@ const sidebar: SidebarsConfig = {
         },
       ],
     },
+    {
+      type: "category",
+      label: "onboarding",
+      items: [
+        {
+          type: "doc",
+          id: "api/auth-service/verify-identity",
+          label: "Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/register",
+          label: "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o código de confirmação",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/otp-request",
+          label: "Envia código de 6 dígitos por e-mail (login passo 1 e 'reenviar código' do cadastro)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/otp-confirm",
+          label: "Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e 'verifique seu e-mail')",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/recover-email",
+          label: "Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento",
+          className: "api-method post",
+        },
+      ],
+    },
   ],
 };
 
