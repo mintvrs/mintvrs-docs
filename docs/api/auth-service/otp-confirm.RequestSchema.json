@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"email":{"type":"string","example":"maria@gmail.com","description":"E-mail da conta"},"code":{"type":"string","example":"987654","description":"Código de 6 dígitos recebido por e-mail"}},"required":["email","code"],"title":"OtpConfirmDto"}}}}}

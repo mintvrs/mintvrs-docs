@@ -1,0 +1,69 @@
+---
+id: otp-confirm
+title: "Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e 'verifique seu e-mail')"
+description: "Valida o código enviado por e-mail. No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/login). Máximo de 5 tentativas por código; depois disso o código é invalidado e é preciso pedir outro."
+sidebar_label: "Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e 'verifique seu e-mail')"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e 'verifique seu e-mail')"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/otp/confirm"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Valida o código enviado por e-mail. No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/login). Máximo de 5 tentativas por código; depois disso o código é invalidado e é preciso pedir outro.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./otp-confirm.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./otp-confirm.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./otp-confirm.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

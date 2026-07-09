@@ -397,6 +397,241 @@
           }
         ]
       }
+    },
+    "/auth/signup/verify-identity": {
+      "post": {
+        "operationId": "verifyIdentity",
+        "summary": "Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)",
+        "description": "Valida os dados contra a Receita Federal ANTES da criação da conta. Quando `code=VALID`, retorna um `verificationToken` de uso único (validade de 30 minutos) que deve ser enviado no POST /auth/signup/register. Não retorna nome/data da Receita. Limites: 3 req/min e 10 req/h por IP; 5 tentativas por CPF a cada 24h.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyIdentityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado da verificação (o corpo indica se pode prosseguir; ver campo `code`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyIdentityResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit por IP ou limite de tentativas do CPF (code=CPF_ATTEMPTS_EXCEEDED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/auth/signup/register": {
+      "post": {
+        "operationId": "register",
+        "summary": "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o código de confirmação",
+        "description": "Cria a conta passwordless usando o `verificationToken` do passo 1 (nome, CPF e data de nascimento vêm da verificação — não são reenviados). Exige confirmação de maioridade e aceite dos termos. Um código de 6 dígitos é enviado ao e-mail; a conta só loga após confirmá-lo no POST /auth/otp/confirm.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPasswordlessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conta criada; código de confirmação enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterPasswordlessResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Verificação de identidade inválida/expirada/já usada (code=VERIFICATION_INVALID) ou body inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail (code=EMAIL_IN_USE) ou CPF (code=CPF_IN_USE) já vinculado a outra conta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/auth/otp/request": {
+      "post": {
+        "operationId": "otpRequest",
+        "summary": "Envia código de 6 dígitos por e-mail (login passo 1 e \"reenviar código\" do cadastro)",
+        "description": "Gera e envia um código de acesso para o e-mail informado. Serve tanto para o login passwordless quanto para reenviar o código de confirmação do cadastro (o servidor decide pelo estado da conta). Resposta sempre 200 com o e-mail mascarado, exista ou não conta com esse endereço (anti-enumeração). Cooldown de 60s entre envios para o mesmo e-mail.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resposta padrão (não indica se a conta existe)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpRequestResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown de reenvio (code=RESEND_COOLDOWN, com retryAfterSeconds) ou rate limit por IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/auth/otp/confirm": {
+      "post": {
+        "operationId": "otpConfirm",
+        "summary": "Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e \"verifique seu e-mail\")",
+        "description": "Valida o código enviado por e-mail. No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/login). Máximo de 5 tentativas por código; depois disso o código é invalidado e é preciso pedir outro.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Código correto; usuário autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Código inválido (code=INVALID_CODE, com attemptsRemaining) ou expirado (code=CODE_EXPIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Código invalidado por excesso de tentativas (code=TOO_MANY_ATTEMPTS) ou rate limit por IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/auth/email/recover": {
+      "post": {
+        "operationId": "recoverEmail",
+        "summary": "Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento",
+        "description": "Para quem esqueceu o e-mail cadastrado. Se os três dados conferirem com uma conta, retorna o e-mail mascarado. Com `sendEmail=true`, envia uma mensagem ao e-mail cadastrado (botão \"Enviar mensagem para o e-mail cadastrado\"). Comparação local com os dados já validados da conta — não consulta a Receita. As tentativas contam no limite de 5/24h por CPF.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado da busca (found=false quando os dados não conferem)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoverEmailResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit por IP ou limite de tentativas do CPF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
     }
   },
   "info": {
@@ -666,6 +901,320 @@
           "email",
           "name",
           "tenant_id"
+        ]
+      },
+      "VerifyIdentityDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "MARIA DA SILVA SANTOS",
+            "description": "Nome completo, como consta na Receita Federal"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "123.456.789-09",
+            "description": "CPF no formato 000.000.000-00"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "example": "1990-05-27",
+            "description": "Data de nascimento (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "nome",
+          "cpf",
+          "dataNascimento"
+        ]
+      },
+      "IdentityMatchesDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "boolean",
+            "description": "Nome informado confere com a Receita Federal"
+          },
+          "dataNascimento": {
+            "type": "boolean",
+            "description": "Data de nascimento informada confere com a Receita Federal"
+          }
+        },
+        "required": [
+          "nome",
+          "dataNascimento"
+        ]
+      },
+      "VerifyIdentityResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a verificação foi concluída (não se os dados são válidos)"
+          },
+          "code": {
+            "type": "string",
+            "description": "Resultado: VALID = pode prosseguir para o passo 2 com o verificationToken; MISMATCH = dados não conferem; CPF_NOT_FOUND = CPF inexistente na Receita; CPF_ALREADY_REGISTERED = já existe conta com esse CPF (usar login ou recuperação de e-mail); API_ERROR = falha temporária, tentar novamente",
+            "enum": [
+              "VALID",
+              "MISMATCH",
+              "CPF_NOT_FOUND",
+              "CPF_ALREADY_REGISTERED",
+              "API_ERROR"
+            ],
+            "example": "VALID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem legível do resultado"
+          },
+          "matches": {
+            "description": "Detalhe de quais campos conferem (presente em VALID/MISMATCH)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IdentityMatchesDto"
+              }
+            ]
+          },
+          "verificationToken": {
+            "type": "string",
+            "description": "Token de verificação para usar no POST /auth/signup/register. Presente somente quando code=VALID. Uso único.",
+            "example": "f3a9c1…64 caracteres hex"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Validade do verificationToken (ISO 8601). Presente somente quando code=VALID."
+          }
+        },
+        "required": [
+          "success",
+          "code",
+          "message"
+        ]
+      },
+      "OnboardingErrorDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro",
+            "example": "Código inválido. Confira os números e tente novamente."
+          },
+          "error": {
+            "type": "string",
+            "description": "Nome do erro HTTP",
+            "example": "Unauthorized"
+          },
+          "statusCode": {
+            "type": "number",
+            "description": "Status HTTP",
+            "example": 401
+          }
+        },
+        "required": [
+          "message",
+          "error",
+          "statusCode"
+        ]
+      },
+      "RegisterPasswordlessDto": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "description": "Token retornado pelo POST /auth/signup/verify-identity (code=VALID)"
+          },
+          "email": {
+            "type": "string",
+            "example": "maria@gmail.com",
+            "description": "E-mail que receberá o código de confirmação"
+          },
+          "nickname": {
+            "type": "string",
+            "example": "mariazinha",
+            "description": "Apelido exibido no site",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "adultConfirmed": {
+            "type": "boolean",
+            "description": "Confirmação de que o usuário tem 18 anos ou mais (deve ser true)",
+            "example": true
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "description": "Aceite dos Termos de Uso e Política de Privacidade (deve ser true)",
+            "example": true
+          }
+        },
+        "required": [
+          "verificationToken",
+          "email",
+          "nickname",
+          "adultConfirmed",
+          "termsAccepted"
+        ]
+      },
+      "OtpInfoDto": {
+        "type": "object",
+        "properties": {
+          "expiresInSeconds": {
+            "type": "number",
+            "description": "Validade do código em segundos",
+            "example": 600
+          },
+          "resendCooldownSeconds": {
+            "type": "number",
+            "description": "Tempo mínimo para pedir reenvio, em segundos",
+            "example": 60
+          }
+        },
+        "required": [
+          "expiresInSeconds",
+          "resendCooldownSeconds"
+        ]
+      },
+      "RegisterPasswordlessResultDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "UUID do usuário criado"
+          },
+          "maskedEmail": {
+            "type": "string",
+            "description": "E-mail mascarado para exibir na tela de confirmação",
+            "example": "mar**@g****.com"
+          },
+          "otp": {
+            "description": "Informações do código enviado por e-mail",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OtpInfoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "maskedEmail",
+          "otp"
+        ]
+      },
+      "OtpRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "maria@gmail.com",
+            "description": "E-mail da conta"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "OtpRequestResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Sempre \"ok\" (resposta idêntica exista ou não conta com esse e-mail)",
+            "example": "ok"
+          },
+          "maskedEmail": {
+            "type": "string",
+            "description": "E-mail mascarado para exibir na tela",
+            "example": "mar**@g****.com"
+          },
+          "resendCooldownSeconds": {
+            "type": "number",
+            "description": "Tempo mínimo para pedir reenvio, em segundos",
+            "example": 60
+          },
+          "expiresInSeconds": {
+            "type": "number",
+            "description": "Validade do código em segundos",
+            "example": 600
+          }
+        },
+        "required": [
+          "status",
+          "maskedEmail",
+          "resendCooldownSeconds",
+          "expiresInSeconds"
+        ]
+      },
+      "OtpConfirmDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "maria@gmail.com",
+            "description": "E-mail da conta"
+          },
+          "code": {
+            "type": "string",
+            "example": "987654",
+            "description": "Código de 6 dígitos recebido por e-mail"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "RecoverEmailDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "MARIA DA SILVA SANTOS",
+            "description": "Nome completo, como consta na Receita Federal"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "123.456.789-09",
+            "description": "CPF no formato 000.000.000-00"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "example": "1990-05-27",
+            "description": "Data de nascimento (YYYY-MM-DD)"
+          },
+          "sendEmail": {
+            "type": "boolean",
+            "description": "Quando true e os dados conferem, envia uma mensagem ao e-mail cadastrado (botão \"Enviar mensagem para o e-mail cadastrado\")",
+            "default": false
+          }
+        },
+        "required": [
+          "nome",
+          "cpf",
+          "dataNascimento"
+        ]
+      },
+      "RecoverEmailResultDto": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "true quando os dados conferem com uma conta existente"
+          },
+          "maskedEmail": {
+            "type": "string",
+            "description": "E-mail mascarado da conta encontrada",
+            "example": "joa**********@g****.com"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem legível do resultado"
+          }
+        },
+        "required": [
+          "found",
+          "message"
         ]
       }
     }

@@ -1,0 +1,69 @@
+---
+id: recover-email
+title: "Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento"
+description: "Para quem esqueceu o e-mail cadastrado. Se os três dados conferirem com uma conta, retorna o e-mail mascarado. Com `sendEmail=true`, envia uma mensagem ao e-mail cadastrado (botão 'Enviar mensagem para o e-mail cadastrado'). Comparação local com os dados já validados da conta — não consulta a Receita. As tentativas contam no limite de 5/24h por CPF."
+sidebar_label: "Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/email/recover"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Para quem esqueceu o e-mail cadastrado. Se os três dados conferirem com uma conta, retorna o e-mail mascarado. Com `sendEmail=true`, envia uma mensagem ao e-mail cadastrado (botão "Enviar mensagem para o e-mail cadastrado"). Comparação local com os dados já validados da conta — não consulta a Receita. As tentativas contam no limite de 5/24h por CPF.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./recover-email.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./recover-email.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./recover-email.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,69 @@
+---
+id: verify-identity
+title: "Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)"
+description: "Valida os dados contra a Receita Federal ANTES da criação da conta. Quando `code=VALID`, retorna um `verificationToken` de uso único (validade de 30 minutos) que deve ser enviado no POST /auth/signup/register. Não retorna nome/data da Receita. Limites: 3 req/min e 10 req/h por IP; 5 tentativas por CPF a cada 24h."
+sidebar_label: "Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/signup/verify-identity"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Valida os dados contra a Receita Federal ANTES da criação da conta. Quando `code=VALID`, retorna um `verificationToken` de uso único (validade de 30 minutos) que deve ser enviado no POST /auth/signup/register. Não retorna nome/data da Receita. Limites: 3 req/min e 10 req/h por IP; 5 tentativas por CPF a cada 24h.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./verify-identity.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./verify-identity.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./verify-identity.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

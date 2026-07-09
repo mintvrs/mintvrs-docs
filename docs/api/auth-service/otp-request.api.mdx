@@ -1,0 +1,69 @@
+---
+id: otp-request
+title: "Envia código de 6 dígitos por e-mail (login passo 1 e 'reenviar código' do cadastro)"
+description: "Gera e envia um código de acesso para o e-mail informado. Serve tanto para o login passwordless quanto para reenviar o código de confirmação do cadastro (o servidor decide pelo estado da conta). Resposta sempre 200 com o e-mail mascarado, exista ou não conta com esse endereço (anti-enumeração). Cooldown de 60s entre envios para o mesmo e-mail."
+sidebar_label: "Envia código de 6 dígitos por e-mail (login passo 1 e 'reenviar código' do cadastro)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Envia código de 6 dígitos por e-mail (login passo 1 e 'reenviar código' do cadastro)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/otp/request"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Gera e envia um código de acesso para o e-mail informado. Serve tanto para o login passwordless quanto para reenviar o código de confirmação do cadastro (o servidor decide pelo estado da conta). Resposta sempre 200 com o e-mail mascarado, exista ou não conta com esse endereço (anti-enumeração). Cooldown de 60s entre envios para o mesmo e-mail.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./otp-request.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./otp-request.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./otp-request.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -4543,115 +4543,9 @@
         ]
       }
     },
-    "/kyc/verificar/me": {
-      "post": {
-        "description": "Fluxo self-service: o usuário autenticado (qualquer nível, inclusive User) envia CPF, nome completo e data de nascimento próprios, que são conferidos contra a Receita Federal. Quando os três dados conferem, o KYC fica marcado como verificado no perfil (idempotente: chamadas seguintes retornam ALREADY_VERIFIED). Limite de 5 tentativas por 24h; um CPF verificado só pode pertencer a uma conta.",
-        "operationId": "verificarMe",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerificarCpfDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Resultado da verificação e status atual. Não retorna nome/data da Receita.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KycSelfResultDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "CPF já vinculado a outra conta",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Limite de 5 tentativas por 24h atingido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Verifica o KYC do próprio usuário autenticado (onboarding)",
-        "tags": [
-          "kyc"
-        ]
-      }
-    },
-    "/kyc/me": {
-      "get": {
-        "description": "Retorna o status atual da verificação KYC do usuário (pending | verified) para o front decidir se exibe o passo de verificação no onboarding.",
-        "operationId": "statusMe",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Status KYC atual",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KycStatusDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Status KYC do usuário autenticado",
-        "tags": [
-          "kyc"
-        ]
-      }
-    },
     "/kyc/consultar": {
       "post": {
-        "description": "Ferramenta administrativa: confere se o CPF, o nome completo e a data de nascimento informados batem com os dados da Receita Federal, sem persistir nada. Retorna apenas o resultado da verificação (valid + matches por campo); não expõe o nome/data consultados. Para o fluxo de onboarding do usuário, use POST /kyc/verificar/me.",
+        "description": "Ferramenta administrativa: confere se o CPF, o nome completo e a data de nascimento informados batem com os dados da Receita Federal, sem persistir nada. Retorna apenas o resultado da verificação (valid + matches por campo); não expõe o nome/data consultados. O KYC de onboarding do usuário do app é feito no auth service (POST /auth/signup/verify-identity).",
         "operationId": "consultar",
         "parameters": [],
         "requestBody": {
@@ -5055,20 +4949,6 @@
             "description": "ID do tenant (null para SuperAdmin)",
             "nullable": true
           },
-          "kyc_status": {
-            "type": "string",
-            "description": "Status da verificação KYC",
-            "enum": [
-              "pending",
-              "verified"
-            ]
-          },
-          "kyc_verified_at": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Quando o KYC foi verificado",
-            "nullable": true
-          },
           "created_at": {
             "format": "date-time",
             "type": "string",
@@ -5082,7 +4962,6 @@
           "provider",
           "access_role",
           "tenantId",
-          "kyc_status",
           "created_at"
         ]
       },
@@ -7842,80 +7721,6 @@
         "required": [
           "nome",
           "dataNascimento"
-        ]
-      },
-      "KycSelfResultDto": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "description": "Indica se a consulta foi concluída (não se os dados são válidos)"
-          },
-          "code": {
-            "type": "string",
-            "description": "Código do resultado",
-            "enum": [
-              "VALID",
-              "MISMATCH",
-              "CPF_NOT_FOUND",
-              "API_ERROR",
-              "ALREADY_VERIFIED"
-            ],
-            "example": "VALID"
-          },
-          "message": {
-            "type": "string",
-            "description": "Mensagem legível do resultado"
-          },
-          "valid": {
-            "type": "boolean",
-            "description": "`true` somente quando CPF, nome e data de nascimento conferem com a Receita Federal"
-          },
-          "matches": {
-            "description": "Detalhe de quais campos conferem",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/KycMatchesDto"
-              }
-            ]
-          },
-          "status": {
-            "type": "string",
-            "description": "Status KYC do usuário após a tentativa",
-            "enum": [
-              "pending",
-              "verified"
-            ]
-          }
-        },
-        "required": [
-          "success",
-          "code",
-          "message",
-          "status"
-        ]
-      },
-      "KycStatusDto": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "Status KYC do usuário",
-            "enum": [
-              "pending",
-              "verified"
-            ]
-          },
-          "verifiedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Quando o KYC foi verificado (null se pendente)",
-            "nullable": true
-          }
-        },
-        "required": [
-          "status",
-          "verifiedAt"
         ]
       },
       "KycResultDto": {
