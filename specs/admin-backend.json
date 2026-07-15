@@ -521,6 +521,16 @@
               }
             }
           },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Campanha não encontrada ou não ativa",
             "content": {
@@ -558,6 +568,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CampaignDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -756,6 +776,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CampaignButtonsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -1788,9 +1818,29 @@
       "post": {
         "operationId": "createCheckout",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "URL de checkout gerada"
+          },
+          "400": {
+            "description": "Body inválido (amount/successUrl/cancelUrl obrigatórios)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1808,9 +1858,29 @@
       "post": {
         "operationId": "confirmCheckout",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmCheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Status da confirmação do checkout"
+          },
+          "400": {
+            "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1828,9 +1898,29 @@
       "post": {
         "operationId": "createKeyPurchaseCheckout",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyPurchaseCheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "URL de checkout e sessionId"
+          },
+          "400": {
+            "description": "Body inválido (campaignId UUID, fiatAmount inteiro positivo, URLs obrigatórias)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1848,9 +1938,29 @@
       "post": {
         "operationId": "confirmKeyPurchase",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmCheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Status da confirmação e hash da transação on-chain"
+          },
+          "400": {
+            "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1868,9 +1978,29 @@
       "post": {
         "operationId": "createOfferFundingCheckout",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferFundingCheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "shortfall e, quando > 0, URL de checkout + sessionId"
+          },
+          "400": {
+            "description": "Body inválido (listingId UUID, price/expiresInDays inteiros positivos, URLs obrigatórias)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1888,9 +2018,29 @@
       "post": {
         "operationId": "confirmOfferFunding",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmCheckoutDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Status da confirmação e oferta criada"
+          },
+          "400": {
+            "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1915,14 +2065,43 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "stripe-signature",
+            "required": true,
+            "in": "header",
+            "description": "Assinatura enviada pelo Stripe (Stripe-Signature)",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Webhook recebido"
+          },
+          "400": {
+            "description": "Assinatura ausente/inválida, tenantId malformado ou webhook secret não configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant sem gateway Stripe ativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
-        "summary": "Stripe webhook receiver (público, sem autenticação)",
+        "summary": "Stripe webhook receiver (público; exige assinatura Stripe válida)",
         "tags": [
           "payment-gateways"
         ]
@@ -1932,6 +2111,16 @@
       "post": {
         "operationId": "charge",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargeDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Pagamento processado"
@@ -2200,6 +2389,8 @@
     },
     "/transactions/purchase": {
       "post": {
+        "deprecated": true,
+        "description": "Desativado por decisão de produto: chave nova (marketplace primário) é comprada apenas via checkout (cartão/PIX). Crédito é exclusivo das ofertas P2P. Este endpoint responde SEMPRE 400.",
         "operationId": "purchase",
         "parameters": [],
         "requestBody": {
@@ -2213,15 +2404,12 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "",
+          "400": {
+            "description": "Sempre retornado: \"Compra de chave nova com crédito foi desativada. Use cartão de crédito (ou PIX) no checkout.\"",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Transaction"
-                  }
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2468,6 +2656,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "listingId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2502,6 +2700,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HasKeyDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2587,6 +2795,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body inválido (listingId UUID, price/expiresInDays válidos)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2731,6 +2949,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "offerId malformado ou body inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2764,6 +2992,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "offerId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2803,6 +3041,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "offerId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2839,6 +3087,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "offerId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2872,6 +3130,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "offerId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2918,6 +3186,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "offerId malformado ou body inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -4431,7 +4709,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StarSplitDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4741,6 +5029,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CampaignVotesDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -6310,7 +6608,7 @@
         "properties": {
           "originalTransactionId": {
             "type": "string",
-            "description": "ID da transação original a reembolsar"
+            "description": "ID (UUID) da transação original a reembolsar"
           },
           "amount": {
             "type": "number",
@@ -6596,6 +6894,191 @@
           "purchasedAt",
           "tenantId",
           "cw20ContractAddress"
+        ]
+      },
+      "CheckoutDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Valor em centavos",
+            "example": 10000
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda (default 'brl')",
+            "default": "brl",
+            "enum": [
+              "brl",
+              "usd"
+            ]
+          },
+          "successUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no sucesso"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no cancelamento"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider (default 'stripe')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição exibida no checkout"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
+          }
+        },
+        "required": [
+          "amount",
+          "successUrl",
+          "cancelUrl"
+        ]
+      },
+      "ConfirmCheckoutDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão de checkout (Stripe)"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider (default 'stripe')"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
+          }
+        },
+        "required": [
+          "sessionId"
+        ]
+      },
+      "KeyPurchaseCheckoutDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID (UUID) da campanha"
+          },
+          "fiatAmount": {
+            "type": "number",
+            "description": "Preço unitário em centavos (o backend cobra fiatAmount × quantity)",
+            "example": 5000
+          },
+          "successUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no sucesso"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no cancelamento"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade de chaves (default 1)"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "ID (UUID) do access vinculado"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
+          }
+        },
+        "required": [
+          "campaignId",
+          "fiatAmount",
+          "successUrl",
+          "cancelUrl"
+        ]
+      },
+      "OfferFundingCheckoutDto": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "description": "ID (UUID) do anúncio"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço total da oferta em centavos",
+            "example": 8000
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da oferta em dias",
+            "example": 7
+          },
+          "successUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no sucesso"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "description": "URL de redirecionamento no cancelamento"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
+          }
+        },
+        "required": [
+          "listingId",
+          "price",
+          "expiresInDays",
+          "successUrl",
+          "cancelUrl"
+        ]
+      },
+      "ChargeDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount in cents",
+            "example": 5000
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code",
+            "example": "brl"
+          },
+          "description": {
+            "type": "string",
+            "description": "Payment description"
+          },
+          "customerEmail": {
+            "type": "string",
+            "description": "Customer email"
+          },
+          "customerName": {
+            "type": "string",
+            "description": "Customer name"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Specific provider to use (if tenant has multiple gateways)"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
         ]
       },
       "Transaction": {
@@ -7680,6 +8163,86 @@
             "description": "Configuração padrão de campanhas (template JSONB)"
           }
         }
+      },
+      "StarSplitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do registro de split (campaign_star)"
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha"
+          },
+          "campaignStatus": {
+            "type": "string",
+            "description": "Status da campanha (ex: Active, Ended)"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término da campanha",
+            "nullable": true
+          },
+          "starName": {
+            "type": "string",
+            "description": "Nome da star"
+          },
+          "percentage": {
+            "type": "string",
+            "description": "Percentual do split (ex: \"10.00\")"
+          },
+          "pixKey": {
+            "type": "string",
+            "description": "Chave PIX cadastrada para o repasse"
+          },
+          "totalRaised": {
+            "type": "number",
+            "description": "Total arrecadado na venda primária (sem o markup da plataforma)"
+          },
+          "starValue": {
+            "type": "number",
+            "description": "Valor da star sobre a venda primária"
+          },
+          "secondaryRaised": {
+            "type": "number",
+            "description": "Total arrecadado em vendas secundárias (marketplace)"
+          },
+          "secondaryValue": {
+            "type": "number",
+            "description": "Valor da star sobre as vendas secundárias"
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Se o repasse já está disponível (campanha encerrada)"
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação de split na Xion",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer da transação",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "campaignName",
+          "campaignStatus",
+          "endDate",
+          "starName",
+          "percentage",
+          "pixKey",
+          "totalRaised",
+          "starValue",
+          "secondaryRaised",
+          "secondaryValue",
+          "available",
+          "xionTransactionHash",
+          "xionExplorerUrl"
+        ]
       },
       "VerificarCpfDto": {
         "type": "object",

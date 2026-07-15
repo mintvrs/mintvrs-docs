@@ -117,6 +117,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Código OAuth inválido, expirado ou recusado pelo Google"
           }
         },
         "tags": [
@@ -191,7 +194,7 @@
     "/auth/users": {
       "get": {
         "operationId": "listUsersByRole",
-        "summary": "Listar usuários por role (apenas Super Admin)",
+        "summary": "Listar usuários por role (SuperAdmin ou Admin)",
         "description": "Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown \"Criar tenant para o Admin\".",
         "parameters": [
           {
@@ -212,7 +215,7 @@
             "description": "Token ausente ou inválido"
           },
           "403": {
-            "description": "Apenas SuperAdmin"
+            "description": "Apenas SuperAdmin ou Admin"
           }
         },
         "tags": [
@@ -228,7 +231,7 @@
     "/auth/users/{id}/tenant": {
       "patch": {
         "operationId": "updateUserTenant",
-        "summary": "Vincular tenant a um usuário (apenas Super Admin)",
+        "summary": "Vincular tenant a um usuário (SuperAdmin ou Admin)",
         "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id.",
         "parameters": [
           {
@@ -258,7 +261,7 @@
             "description": "Token ausente ou inválido"
           },
           "403": {
-            "description": "Apenas SuperAdmin"
+            "description": "Apenas SuperAdmin ou Admin"
           }
         },
         "tags": [
