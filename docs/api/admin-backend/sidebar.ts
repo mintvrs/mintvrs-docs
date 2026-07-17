@@ -159,7 +159,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/handle-stripe-webhook",
-          label: "Stripe webhook receiver (público, sem autenticação)",
+          label: "Stripe webhook receiver (público; exige assinatura Stripe válida)",
           className: "api-method post",
         },
         {
@@ -468,7 +468,7 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "api/admin-backend/purchase",
           label: "[DESATIVADO] Compra de chave nova com crédito — use cartão/PIX no checkout",
-          className: "api-method post",
+          className: "menu__list-item--deprecated api-method post",
         },
       ],
     },

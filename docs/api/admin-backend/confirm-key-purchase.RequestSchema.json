@@ -1,1 +1,1 @@
-{"title":"Body"}
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"sessionId":{"type":"string","description":"ID da sessão de checkout (Stripe)"},"provider":{"type":"string","description":"Provider (default 'stripe')"},"tenantId":{"type":"string","description":"Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"}},"required":["sessionId"],"title":"ConfirmCheckoutDto"}}}}}

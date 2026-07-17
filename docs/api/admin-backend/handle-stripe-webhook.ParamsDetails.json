@@ -1,1 +1,1 @@
-{"parameters":[{"name":"tenantId","required":true,"in":"path","schema":{"type":"string"}}]}
+{"parameters":[{"name":"tenantId","required":true,"in":"path","schema":{"type":"string"}},{"name":"stripe-signature","required":true,"in":"header","description":"Assinatura enviada pelo Stripe (Stripe-Signature)","schema":{"type":"string"}}]}

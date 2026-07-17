@@ -5516,7 +5516,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de capa",
+            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
           "start_date": {
@@ -5690,7 +5690,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de capa",
+            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
           "start_date": {
@@ -5890,7 +5890,7 @@
           },
           "url": {
             "type": "string",
-            "description": "URL do conteúdo",
+            "description": "URL do conteúdo. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
           "description": {
@@ -5943,7 +5943,7 @@
           },
           "mediaUrl": {
             "type": "string",
-            "description": "URL da mídia"
+            "description": "URL da mídia. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md."
           },
           "ariaLabel": {
             "type": "string",
@@ -6033,7 +6033,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de capa",
+            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
           "start_date": {
