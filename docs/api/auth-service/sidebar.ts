@@ -47,13 +47,13 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/auth-service/list-users-by-role",
-          label: "Listar usuários por role (apenas Super Admin)",
+          label: "Listar usuários por role ou por tenant",
           className: "api-method get",
         },
         {
           type: "doc",
           id: "api/auth-service/update-user-tenant",
-          label: "Vincular tenant a um usuário (apenas Super Admin)",
+          label: "Vincular tenant a um usuário (SuperAdmin ou Admin)",
           className: "api-method patch",
         },
         {

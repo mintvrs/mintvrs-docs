@@ -1,11 +1,11 @@
 ---
 id: list-users-by-role
-title: "Listar usuários por role (apenas Super Admin)"
-description: "Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown 'Criar tenant para o Admin'."
-sidebar_label: "Listar usuários por role (apenas Super Admin)"
+title: "Listar usuários por role ou por tenant"
+description: "Retorna id, email e name dos usuários com a role informada (SuperAdmin/Admin apenas). Usado no admin para dropdown 'Criar tenant para o Admin'. Alternativamente, filtra por tenantId (retorna só {id}) — liberado para SuperAdmin/Admin ou para o próprio dono do tenant (req.user.tenant_id === tenantId), usado internamente pelo admin-backend para notificações de nova campanha."
+sidebar_label: "Listar usuários por role ou por tenant"
 hide_title: true
 hide_table_of_contents: true
-api: eJzFVktyGzcQvUrXeCPR1EiWs6JXlCM7dpSyok+yCF0iOAORKIPAGMDQYihuc4DcQJWFKwuvUjkBb5KT5DUwI42kZJFVtNGwge5+/X1YZbaSTgRlzZsyG2Ra+XDupfMHyxOrZdbPSukLpyq+gfMTGawzglTZJzkXSpMkI+aSSuup9vXmxil8FXZOghwskDKX1s1FKXI696K0ZCyJcq4MVcIJKp2tSvvJ0Ch76ZRwFKQRJqRDS0O+OcpyAGHJXAZgywY/rTL2CkAuoXTyY62cRAiXQnvZzxSj/VhLt3wcA8OK9i+VDg4+t+TVILnq01n0H39sQ9UXM8SZDVZZWFbs0AenzDRbr9+zV19Z46Xn8/29Pf5339cR8okgZSc3W7e568fUbWfrfvbV3rPHymf2gzQkai9NkGRr5HKxudGqtEnl+WOVYQX4nk5rVDXGAKD9LIgpJy0TdZhlwO1lUTsVljGREymcdPh8zyEhwzPLnTCVISYdGoNslzV3a24Mzol0i7YMtdM4n4VQ+cFuvJbP7NxqO83hPSycz9EMj2rwTbojNp83v3E0XUOwo20h9Mz6MHi+h8w81B4evyERaqFRObMg/Lw4GJ4eXpyfHHGabrWR2k60p1zKVKs25lWqL9e1EfWbj1fctAHytz+eQdgUn+HhV9N7Q0Rrnfo5js9jkEUhvacQiwgr5NLspBFA8BgBgMW3k5fopFlOh2jDg+ie5PLtbPK6yHNu/djMMylKAOR68kzFllRBM5Dvvn2p6wkxHjpFcVTxeHJ7vXiy+Wy5HVEoNJUqUgEoCmIo6TcwJpt5rzcyI/PkCf2gPJ9MsS00iw49etK3Jje/UzMMm5uF1FRZNxiZHer1jjjQXg+V4pbfRS/PxDYc9npOTjEdzuKwOyCsdjhXPror+SKSxwZESujTNl8ptdvJzbF0mGY2ZW9N3UUJ4ZYyha4VjZOZC14cY+AYp4VzocpxWgrzWge1k6SN8RPpZWAsET1j8VarQoUmXYi22YZPsfrYTwTPW7CL8bW1U6yed1wnGIneUh94W6iUVmT6la6vLIXNl0oVlmXPchofvzs9ozSGUWUcrY+j1xhGJbz/ZB2i+OuXX9tea6ONmyRea3KXBCOzj6YzC96743vdfNuH9wyMiZdL3LUeZd/8KT2JZknTgShwp2RCkN3eGJnnOX1fC4MioCTdqZBXlcL+7aNijKATYwMzRWkfwG7IYQIuwPgsbGPON/nj/e7bdol13uaT63hA1/R1nItUuWvId+Jf8y99820MzO0WRbWuacj2UBgbsHhEw2Iv7jWQqXWyCe07xYP9gxcElwK5wfxIg2IjPbWnym3+qCIrJCO+Ve6wUPIdU8xjMm8ZEuMmi82XSzTJfRCVk3AxA0201pjRo5nzdjIulUEQbZxBpOOhC8xXu6ifk1rQAjNTa54eQYWYVwLdHyFiuzADpM3yLN/L9yBB5wdRYGeueEdV2L9zYXhNNesycqHrMCGPTXwjbIkObdEt995bYKtoH+P8/75CGiII8irsVlowwfYTd60asmxoFtJIlyAgpiKWr1YT4eW50+s1i9PrhEm0VF5MdOf18u+R/5e3yz9i/SCXd8+mhdA1X4k8uRAIfcKEgqdA5yXw+pAZMAZ19wx6QJcxjOZImGXHNIKON+LoIvAWQRxZ+F2v138DT7m0RQ==
+api: eJztVs1uGzcQfhVie7EUeeUkPSnIQU6dNGmKpP5pD1VgUbu0RIQiNyRXsSoL6KkPUPQFghyCHnIK+gR6kzxJvyF3V2urDRqghx7qg7z8m/lm5pufVWIKYbmXRj/Ok0GipPNnTlh3uDw2SiS9JBcus7KgGzg/Ft5YzZnMe0zMuVRMMM3nguXGsdKVmzdW4iszc8aZhQQm9YWxc55ztndSQtcwn0vdD7+MF0Jz10nZmeO5YdowHvYLbjnLrSly81qzUfLASm6Zx2Xt46FhQcIoSdlQeQFIXi6AQ3vRYxdSedwpTP3mcc72bIXcbT6wlczXHfbx59+YkhOYD91B6g5AU9bqCrv5UMA2GKrpp0YDua/SEh5L48a5zNn9+/cbxZ0e3EIKpA4wA0RWCFXZuj/h2Uuh86hHGy8vZMY37zZ/CMdyONcsOMv4vOB6xlPEg+7NBWS5ZPDjKiGJiIuNwQKYUlqBSF5w5UQvkRS0V6Wwy91QUnSC1ugvy/bE5SD6tcdOA/6w6OCpy2YIdzJYJX5ZkELnrdTTZL3uNRhqkz8Tx2krrA0S3gTVVESK8boZRXJRRuSqufdJrC8ImSuMdsLR+Z2DA/p3Hc9TpAAnuVs67zV070W2ExRwg1Ag3q9KrhHhCJ641CJeJ1n3ki8Pbu/qOTWIO+PgDjEC0qRebN4omZv45O7uk2HIlx2a9uj1lpkNVSMGilHi+ZT4kvDSzxK4wYmstNIvA4cmglth8fmCPARyzQzVgqnwgW94MUj69LJPRHfkYmEXNQNLq3A+875wg364ls7M3CgzTYHNL6xLUQ52wv51vENUf0sWtwVBjjIZVzPj/ODuAbx38/Xw+WPGfckVSKsXDMvzw+HJ0fnZ8VNyRvMa7m9Ze0LMiKGvbV5FuhBNqq1e9fGQypbH/pMfTrFZcYngYVVRfghrjZU/hQK6CzLLhHPMh0BDSs3eWOpgfKww+LbiAsScpewIGXgY1DOxfDKbPMrSlLI+5M9M8BwAKZ5UVQPDpVcE5NtvHqhywggPO0FwZLZbu7vdcLJ5Z4jdCBSIF2vNW8PCRjAlroExyky73ZEe6S++YN9LRydTFExFW0cOvHW1yM3vrMqtzZuFUJQEg5HeZ93uUzK020WkKIP64PuMd6Cw27ViimSzBoftfKNnR3PpgrqcLsJ5JIBHh96q/RVd24lqnguLDCRRphG1tRKbe1JnqpRsHMWcU1UZA8e4qdzjWIXmpfJyP+5Wwo+FE56wBPSExRklM+krd1HKx354C82P9ATw1AfbGB8ZM0XVfUZxgpCgLfLAmUxGt8LTD1V5ifTdvC9kZmjvdsrGz5+dnLKYhuHJOEgfB63BjII799pYWPHxl1+bSllZG6pNuFb5Lm6M9B2QTi+ov46vsbnh4TUBY0YFKJR3J6suxatmzA6rVoauJdrcGOm7KfsuFkmEpJ0V4rKQKPihSdprNlYwo5XmBuyqK0/QJKhDmkqcq/xHrc3VdAlx7tDJVThgV+yrkBcxclfY3w9/1b/4TbeRME2lRbSu2JDkITDGo/DwqoPfu0YgXaooE6+3Dw/vHN5jUMnhG+SP0Ag23FO6pli7qlq7+nGrAUfdwcWUJvN69kC6iWzzHgODuQ6isAIqZmgltTSa6YKYszozLqSGEbWdnsfjofXU/vqInxWKswVyplSUPdspJEBEdaEOECvL7fQgPcAOmO95hpq5ohpVoP7OuaYyVZXL0Fptq7FS2oQpkQatpmverFyrIBh5/P8A+h8YQKtG6MWl7xeKozMh1qF3r6phoRozsBvGBTRgasW0v1pNuBNnVq3XtB0HQhoicun4RLUGxr8nwOeMrX+J9aVYbifmBVclXQkTyD9H8a8PrZ9A2pqrt2hf0AKsnFD7x+DWmtseHdG8EkKwnYFvDDfB6dUR18uWaIQo3AiFFmFqUNAaetfr9Z8Z2xKW
 sidebar_class_name: "get api-method"
 info_path: api/auth-service/mkclub-auth-service
 custom_edit_url: null
@@ -23,7 +23,7 @@ import Translate from "@docusaurus/Translate";
 <Heading
   as={"h1"}
   className={"openapi__heading"}
-  children={"Listar usuários por role (apenas Super Admin)"}
+  children={"Listar usuários por role ou por tenant"}
 >
 </Heading>
 
@@ -37,7 +37,7 @@ import Translate from "@docusaurus/Translate";
 
 
 
-Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown "Criar tenant para o Admin".
+Retorna id, email e name dos usuários com a role informada (SuperAdmin/Admin apenas). Usado no admin para dropdown "Criar tenant para o Admin". Alternativamente, filtra por tenantId (retorna só \{id\}) — liberado para SuperAdmin/Admin ou para o próprio dono do tenant (req.user.tenant_id === tenantId), usado internamente pelo admin-backend para notificações de nova campanha.
 
 <Heading
   id={"request"}

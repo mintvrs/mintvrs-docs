@@ -2436,6 +2436,153 @@
         ]
       }
     },
+    "/notifications": {
+      "get": {
+        "operationId": "listMyNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar minhas notificações (mais recentes primeiro)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{notificationId}/read": {
+      "patch": {
+        "operationId": "markRead",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da notificação",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notificação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Marcar uma notificação como lida",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "operationId": "markAllRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Concluído"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Marcar todas as minhas notificações como lidas",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{notificationId}": {
+      "delete": {
+        "operationId": "dismiss",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da notificação",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Concluído"
+          },
+          "404": {
+            "description": "Notificação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Descartar uma notificação",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/marketplace/listings": {
       "get": {
         "operationId": "listActive",
@@ -5130,6 +5277,10 @@
     {
       "name": "legal",
       "description": "Documentos legais públicos (termos de uso, política de privacidade)."
+    },
+    {
+      "name": "notifications",
+      "description": "Painel de notificações internas do usuário (meta atingida, conteúdo novo, chave vendida, nova campanha)."
     }
   ],
   "servers": [
@@ -5552,6 +5703,11 @@
             "type": "number",
             "description": "Número de apoiadores"
           },
+          "lastNotifiedMilestone": {
+            "type": "number",
+            "description": "Maior marco de financiamento (%) já notificado (GOAL_REACHED) — evita duplicar notificação a cada compra",
+            "nullable": true
+          },
           "nft_contract_address": {
             "type": "string",
             "description": "Endereço do contrato NFT",
@@ -5626,6 +5782,7 @@
           "status",
           "raised",
           "backers",
+          "lastNotifiedMilestone",
           "nft_contract_address",
           "tenantId",
           "main_star",
@@ -5725,6 +5882,11 @@
           "backers": {
             "type": "number",
             "description": "Número de apoiadores"
+          },
+          "lastNotifiedMilestone": {
+            "type": "number",
+            "description": "Maior marco de financiamento (%) já notificado (GOAL_REACHED) — evita duplicar notificação a cada compra",
+            "nullable": true
           },
           "nft_contract_address": {
             "type": "string",
@@ -5845,6 +6007,7 @@
           "status",
           "raised",
           "backers",
+          "lastNotifiedMilestone",
           "nft_contract_address",
           "tenantId",
           "main_star",
@@ -6069,6 +6232,11 @@
             "type": "number",
             "description": "Número de apoiadores"
           },
+          "lastNotifiedMilestone": {
+            "type": "number",
+            "description": "Maior marco de financiamento (%) já notificado (GOAL_REACHED) — evita duplicar notificação a cada compra",
+            "nullable": true
+          },
           "nft_contract_address": {
             "type": "string",
             "description": "Endereço do contrato NFT",
@@ -6150,6 +6318,7 @@
           "status",
           "raised",
           "backers",
+          "lastNotifiedMilestone",
           "nft_contract_address",
           "tenantId",
           "main_star",
@@ -7402,6 +7571,51 @@
           "campaignId",
           "buyerName",
           "fiatAmount"
+        ]
+      },
+      "NotificationResponseDto": {
+        "type": "object",
+        "properties": {
+          "notificationId": {
+            "type": "string",
+            "description": "ID único da notificação"
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria do evento",
+            "enum": [
+              "goal_reached",
+              "new_content",
+              "key_sold",
+              "new_campaign"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Título da notificação"
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "Subtítulo/detalhe da notificação",
+            "nullable": true
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora em ISO 8601"
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "Se a notificação já foi lida"
+          }
+        },
+        "required": [
+          "notificationId",
+          "category",
+          "title",
+          "subtitle",
+          "timestamp",
+          "isRead"
         ]
       },
       "MarketplaceListing": {

@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"Lista de usuários (id, email, name)"},"401":{"description":"Token ausente ou inválido"},"403":{"description":"Apenas SuperAdmin"}}}
+{"responses":{"200":{"description":"Lista de usuários (id, email, name — ou só id quando filtrado por tenantId)"},"401":{"description":"Token ausente ou inválido"},"403":{"description":"Apenas SuperAdmin/Admin, ou o dono do próprio tenant"}}}

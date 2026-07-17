@@ -194,8 +194,8 @@
     "/auth/users": {
       "get": {
         "operationId": "listUsersByRole",
-        "summary": "Listar usuários por role (SuperAdmin ou Admin)",
-        "description": "Retorna id, email e name dos usuários com a role informada. Usado no admin para dropdown \"Criar tenant para o Admin\".",
+        "summary": "Listar usuários por role ou por tenant",
+        "description": "Retorna id, email e name dos usuários com a role informada (SuperAdmin/Admin apenas). Usado no admin para dropdown \"Criar tenant para o Admin\". Alternativamente, filtra por tenantId (retorna só {id}) — liberado para SuperAdmin/Admin ou para o próprio dono do tenant (req.user.tenant_id === tenantId), usado internamente pelo admin-backend para notificações de nova campanha.",
         "parameters": [
           {
             "name": "role",
@@ -205,17 +205,26 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Tenant para filtrar (alternativo a role) — retorna só {id} de cada usuário",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Lista de usuários (id, email, name)"
+            "description": "Lista de usuários (id, email, name — ou só id quando filtrado por tenantId)"
           },
           "401": {
             "description": "Token ausente ou inválido"
           },
           "403": {
-            "description": "Apenas SuperAdmin ou Admin"
+            "description": "Apenas SuperAdmin/Admin, ou o dono do próprio tenant"
           }
         },
         "tags": [

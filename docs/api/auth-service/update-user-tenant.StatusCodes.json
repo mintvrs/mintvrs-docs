@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"tenant_id atualizado"},"401":{"description":"Token ausente ou inválido"},"403":{"description":"Apenas SuperAdmin"}}}
+{"responses":{"200":{"description":"tenant_id atualizado"},"401":{"description":"Token ausente ou inválido"},"403":{"description":"Apenas SuperAdmin ou Admin"}}}

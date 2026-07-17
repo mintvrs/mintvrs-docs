@@ -1,0 +1,1 @@
+{"parameters":[{"name":"notificationId","required":true,"in":"path","description":"UUID da notificação","schema":{"type":"string"}}]}

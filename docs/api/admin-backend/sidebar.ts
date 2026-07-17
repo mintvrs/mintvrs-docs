@@ -892,6 +892,40 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "notifications",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/notifications",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/list-my-notifications",
+          label: "Listar minhas notificações (mais recentes primeiro)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/mark-read",
+          label: "Marcar uma notificação como lida",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/mark-all-read",
+          label: "Marcar todas as minhas notificações como lidas",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/dismiss",
+          label: "Descartar uma notificação",
+          className: "api-method delete",
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "App",
       items: [
         {
