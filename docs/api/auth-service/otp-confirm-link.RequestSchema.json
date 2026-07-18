@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"token":{"type":"string","description":"Token do link mágico — o query param `token` da URL que o botão do e-mail abre no frontend","example":"k7dLm2…43 caracteres base64url"}},"required":["token"],"title":"OtpConfirmLinkDto"}}}}}

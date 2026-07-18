@@ -18,14 +18,15 @@ Referência completa de todas as variáveis de ambiente dos serviços.
 | `JWT_SECRET` | ✅ | — | Chave secreta para assinar JWTs |
 | `JWT_EXPIRES_IN` | ❌ | `1h` | Duração do access token |
 | `REFRESH_TOKEN_EXPIRES_IN` | ❌ | `7d` | Duração do refresh token |
-| `SMTP_HOST` | ❌ | — | Host do servidor SMTP (reset de senha) |
-| `SMTP_PORT` | ❌ | `587` | Porta SMTP |
-| `SMTP_USER` | ❌ | — | Usuário SMTP |
-| `SMTP_PASS` | ❌ | — | Senha SMTP |
-| `SMTP_FROM` | ❌ | — | Email remetente |
+| `RESEND_API_KEY` | ❌¹ | — | API key da [Resend](https://resend.com) (e-mail transacional: OTP, reset de senha, recuperação de e-mail) |
+| `MAIL_FROM_EMAIL` | ❌ | `noreply@mintvrs.com` | E-mail remetente (no-reply) |
+| `MAIL_FROM_NAME` | ❌ | `MintVRS` | Nome exibido no remetente |
+| `MAGIC_LINK_URL_BASE` | ❌ | `http://localhost:3000/confirm-email` | URL base do link mágico do e-mail de OTP; o front recebe `?token=...` e chama `POST /auth/otp/confirm-link` |
 | `CORS_ORIGINS` | ✅ | — | Origins permitidos (comma-separated). Deve incluir `https://docs.mintvrs.com` em produção |
 | `API_BASE_URL` | ❌ | `http://localhost:3001` | URL base para Swagger server |
 | `LOG_LEVEL` | ❌ | `log` | Nível de log (verbose/debug/log/warn/error) |
+
+> ¹ Sem `RESEND_API_KEY`, nenhum e-mail é enviado e os endpoints de OTP expõem `debugCode`/`debugMagicToken` na resposta (modo dev/homolog). Com a key definida, os campos de debug somem e código + link chegam por e-mail. Requer o domínio do remetente verificado no painel da Resend.
 
 ## admin-backend
 

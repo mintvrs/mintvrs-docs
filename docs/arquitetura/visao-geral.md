@@ -58,7 +58,7 @@ Serviço dedicado à **autenticação e identidade**:
 - Login com email/senha (Passport Local)
 - Emissão e validação de JWT (access token + refresh token)
 - Registro de usuários
-- Reset de senha por email (Nodemailer)
+- Reset de senha por email (Resend)
 - Gestão de usuários no banco `authdb`
 
 O admin-backend **não valida JWTs diretamente** — delega para o auth-service via `GET /auth/profile`.

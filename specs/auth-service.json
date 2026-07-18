@@ -455,9 +455,9 @@
     },
     "/auth/signup/register": {
       "post": {
-        "operationId": "register",
-        "summary": "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o código de confirmação",
-        "description": "Cria a conta passwordless usando o `verificationToken` do passo 1 (nome, CPF e data de nascimento vêm da verificação — não são reenviados). Exige confirmação de maioridade e aceite dos termos. Um código de 6 dígitos é enviado ao e-mail; a conta só loga após confirmá-lo no POST /auth/otp/confirm.",
+        "operationId": "registerPasswordless",
+        "summary": "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o e-mail de confirmação",
+        "description": "Cria a conta passwordless usando o `verificationToken` do passo 1 (nome, CPF e data de nascimento vêm da verificação — não são reenviados). Exige confirmação de maioridade e aceite dos termos. Um e-mail com as duas opções de confirmação é enviado — botão de link mágico (POST /auth/otp/confirm-link) e código de 6 dígitos (POST /auth/otp/confirm); a conta só loga após confirmar por um deles.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -509,8 +509,8 @@
     "/auth/otp/request": {
       "post": {
         "operationId": "otpRequest",
-        "summary": "Envia código de 6 dígitos por e-mail (login passo 1 e \"reenviar código\" do cadastro)",
-        "description": "Gera e envia um código de acesso para o e-mail informado. Serve tanto para o login passwordless quanto para reenviar o código de confirmação do cadastro (o servidor decide pelo estado da conta). Resposta sempre 200 com o e-mail mascarado, exista ou não conta com esse endereço (anti-enumeração). Cooldown de 60s entre envios para o mesmo e-mail.",
+        "summary": "Envia e-mail com link mágico + código de 6 dígitos (login passo 1 e \"reenviar\" do cadastro)",
+        "description": "Gera e envia um e-mail com as duas opções de acesso: botão de link mágico (confirmar no POST /auth/otp/confirm-link) e código de 6 dígitos (confirmar no POST /auth/otp/confirm) — usar uma opção invalida a outra. Serve tanto para o login passwordless quanto para reenviar a confirmação do cadastro (o servidor decide pelo estado da conta). Resposta sempre 200 com o e-mail mascarado, exista ou não conta com esse endereço (anti-enumeração). Cooldown de 60s entre envios para o mesmo e-mail.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -588,6 +588,59 @@
           },
           "429": {
             "description": "Código invalidado por excesso de tentativas (code=TOO_MANY_ATTEMPTS) ou rate limit por IP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/auth/otp/confirm-link": {
+      "post": {
+        "operationId": "otpConfirmLink",
+        "summary": "Confirma pelo link mágico do e-mail e retorna os tokens",
+        "description": "Valida o token do link mágico (query param `token` da URL aberta pelo botão do e-mail). Consome o mesmo registro da confirmação por código: usar o link invalida o código de 6 dígitos e vice-versa (uso único, validade de 10 minutos). No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/otp/confirm).",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpConfirmLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link válido; usuário autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Link inválido ou já utilizado (code=INVALID_LINK) ou expirado (code=LINK_EXPIRED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit por IP",
             "content": {
               "application/json": {
                 "schema": {
@@ -1022,6 +1075,11 @@
             "type": "number",
             "description": "Status HTTP",
             "example": 401
+          },
+          "code": {
+            "type": "string",
+            "description": "Código de máquina do erro para o front decidir a tela (ex: INVALID_CODE, CODE_EXPIRED, INVALID_LINK, LINK_EXPIRED, TOO_MANY_ATTEMPTS, RESEND_COOLDOWN, VERIFICATION_INVALID, EMAIL_IN_USE, CPF_IN_USE, CPF_ATTEMPTS_EXCEEDED)",
+            "example": "INVALID_CODE"
           }
         },
         "required": [
@@ -1083,8 +1141,13 @@
           },
           "debugCode": {
             "type": "string",
-            "description": "SOMENTE enquanto o envio de e-mail (SMTP) não está configurado no ambiente (dev/homolog): o código de 6 dígitos vem aqui para permitir testes. Em produção, com SMTP ativo, este campo NUNCA é retornado — o código chega por e-mail.",
+            "description": "SOMENTE enquanto o envio de e-mail (Resend) não está configurado no ambiente (dev/homolog): o código de 6 dígitos vem aqui para permitir testes. Em produção, com o envio ativo, este campo NUNCA é retornado — o código chega por e-mail.",
             "example": "123456"
+          },
+          "debugMagicToken": {
+            "type": "string",
+            "description": "SOMENTE enquanto o envio de e-mail (Resend) não está configurado no ambiente (dev/homolog): o token do link mágico vem aqui para permitir testes do POST /auth/otp/confirm-link. Em produção, com o envio ativo, este campo NUNCA é retornado — o link chega por e-mail.",
+            "example": "k7dLm2…43 caracteres base64url"
           }
         },
         "required": [
@@ -1157,8 +1220,13 @@
           },
           "debugCode": {
             "type": "string",
-            "description": "SOMENTE enquanto o envio de e-mail (SMTP) não está configurado no ambiente (dev/homolog): o código de 6 dígitos vem aqui para permitir testes. Em produção, com SMTP ativo, este campo NUNCA é retornado — o código chega por e-mail.",
+            "description": "SOMENTE enquanto o envio de e-mail (Resend) não está configurado no ambiente (dev/homolog): o código de 6 dígitos vem aqui para permitir testes. Em produção, com o envio ativo, este campo NUNCA é retornado — o código chega por e-mail.",
             "example": "123456"
+          },
+          "debugMagicToken": {
+            "type": "string",
+            "description": "SOMENTE enquanto o envio de e-mail (Resend) não está configurado no ambiente (dev/homolog): o token do link mágico vem aqui para permitir testes do POST /auth/otp/confirm-link. Em produção, com o envio ativo, este campo NUNCA é retornado — o link chega por e-mail.",
+            "example": "k7dLm2…43 caracteres base64url"
           }
         },
         "required": [
@@ -1185,6 +1253,19 @@
         "required": [
           "email",
           "code"
+        ]
+      },
+      "OtpConfirmLinkDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token do link mágico — o query param `token` da URL que o botão do e-mail abre no frontend",
+            "example": "k7dLm2…43 caracteres base64url"
+          }
+        },
+        "required": [
+          "token"
         ]
       },
       "RecoverEmailDto": {

@@ -60,7 +60,7 @@ graph LR
 
 ```
 Backend:      NestJS v11 · TypeORM · PostgreSQL · Passport JWT · Stripe
-Auth:         NestJS v10 · JWT · Nodemailer
+Auth:         NestJS v10 · JWT · Resend
 Frontend:     Next.js 16 · React 19 · Tailwind CSS v4 · shadcn/ui
 Blockchain:   Xion (Cosmos) · CosmWasm · CW20 · CW721 (NFT)
 Infra:        Docker · Traefik · AWS S3 · GitHub Container Registry

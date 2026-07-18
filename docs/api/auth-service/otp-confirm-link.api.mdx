@@ -1,0 +1,69 @@
+---
+id: otp-confirm-link
+title: "Confirma pelo link mágico do e-mail e retorna os tokens"
+description: "Valida o token do link mágico (query param `token` da URL aberta pelo botão do e-mail). Consome o mesmo registro da confirmação por código: usar o link invalida o código de 6 dígitos e vice-versa (uso único, validade de 10 minutos). No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/otp/confirm)."
+sidebar_label: "Confirma pelo link mágico do e-mail e retorna os tokens"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWM1uG0cSfpXC5CJxKUqWjQShkQMl0QkT/UWinF1YBtmcaZFtz0xPunsYKbKAnPYBFvsCwgIb7MGnIJdc+SZ+kv2qe0gOzSTKIcACCwuCNNNdXV1d9VXV13Mb6UIa4ZTOe0nUjrQr9nV+pUx2qPLXUTNKpI2NKlgA089FqhJBmpx+LXNKNKUQo2x2P1axpo1vS2luqBBGZDT0MkOC/MXZIYmRNE5QIVNNI+1m/9K8XG5lQqWbLcKuVmcSqjNpM01GjpV1RvPyOFgkZj/yqkIbimc/JWqs21RaYaiyQuXTuXnVPCWSPqZk9nasnLYkaapiuTWVxgraKK2m2S857G5SWAhp/D7aoUzlJRbArGPoEolgS5qUCROz9mA0zIKdUKauFGR0i87LWFrLtjttckEi5ve+d9VfMHplpJ2E141wyiuNYznvidOT8z5ti9JNthGE7erMmy3EwPtTOpgdtV+8bEZGws/W7enkJmrf+ldlJMLnTCmbEZY6mTueEkWRwjiO3vYryyG8jWw8kZngJ3dTSI756JWMHe9jGAxOSetn2dCaGHyg8vEaJPq/ioR3P/wTjvodOGCK1oEAlBhJORxj/CESbCevRVakbMHrT5LDbPfdD/9+8hhRMSKGS6SlkbDy4yelSaO7u2bNGy+qI8BjTjmv4WQF3gdOY0lYZAsAMBx8d2eH/60ek+VpOrsHTvRTwK6c3RulCfGCq338oz/N8zXcPOz/jheuEvLLb/pPQ07IjDrAkjbqe29Em/akMNLM4xD5Uy8R+fBGZ0E67LTcpYbbSp8POOCe6yknZ2WbXYtO/ZjvGVMLmR84q+KzjNiTnUe/ESSUgRAm0iW9mt1T6VQKL2BgI9aJ/Kx3/Lxz2DsYHPaOv9pkIXldKLOc5/FB96+nvbPuweafF1VkvBVj+bCjj+AsCGZcjKQxeiUH9qvKtjilL51AtGBP57NfMml8qWOTOZWmKB14anHAWZt52IBjLsSckxCnL/r90xULLnJRAQthhFLrhCvtPjxX05yXGer9muZzL7umE8G8Yz8nf8A7+8vSjmIDNKHQzm31wKuKBwRilShDAq5IUe/ldZvmod8/Oeg2if/OA92kOiyaVAdBk/onJ4OjzvHfBp1+v3t02j9v0ln3vHvMmk4OD06+OW7S8+5Z71lvv9PvnRwPKmVN6h51eod4HVyc846nz1ae5+qw0363exDwtnR13dy19JnjaR7WlUjUa14+0sIk8GWX5WoptPvpegqdCaAmVZlyvtH2Tj8kwIcE+L9MAGhzYsyUKtILCV4HqjXRTIYLbT2KhZvgbY2bbaWBIltppoGb3UbMQtrRxLnCtrf9itYENDHV4xZIpZsa2wJtXIvpF0EmMFxgqq4IelIdi3QCa9qPd9D31ijAaY9wcJEixvmU8DrY65x3B8yz0N4Wqzeju5dsblwa5W7OOW1DZo48NVjkMjutGmpWD888UcU4GAYGK4SyeXjLhV+ywjce5Clzlgzogu/h8CpnY3M9J8ot6l4vWIu8+XIy+jxutZgPK9Y3keDrxoOCC9HZkhN35/BZcNg/wBxZ65X2ayrYHH21n5Yjz6LoHCHG1WHtUI2Gn5n96NNxQQbDRcUPeIeEd5w06Gw1Gpf5Zf7RR/RcWZ4Z4wqW8lDXomTZucrZf6giprP7qUy5ILcv8y1qNA7ZXY0G4s2sedvKfCI2sWGjMb83YRIWzXmq5WXdTFm/XcKCCAErCCRseT0JAdoM25xKc6VSVqV/lfLShsrjtFQ0DGoGRqdyCDuGEBG5G6hkGGpSVqZObYXRSjk4neQiRd56tsVq9Bblavc8fzwYh4zDPt54pM+KjZ9rPU4lnXCcoMTvFtBkdayCW+HpZ2l5jWvr7G2B6wmPPWrRsMZd/ZKh1z70u/pjFMLa77TBKd79/R+Le92wxly9WJ27Di/zXUA3nyqQ3+FvcPC6giHlwpIvbBZhn/0MYApNnQQFg/ZEDJkEm+Syjo3L/HGLvi5FzjS3umhWuRXYrGkGhj5c5+fhlPo9s6veMUJmcNNc0PbKf2eIrJ3Dxcd5k2fe+Al6Qwc+L0Lk3mB8y/9U/8IzSyNhSlACfzhE6w11wpXZaYfyhWMLnnm6AqC8TINOrF4u3Nvde0rYUsA3yB+ZI9hwD5prYWY/FQx6CkrsfHHfv9b29i7mNMkqUUK6yXj2Fjd6vWpEYSS2mPC1otJ2gVh4NRfzzLhCK07n0+j0YboDAoTGtI34Ge7DU+RMmXL2CNSirBBAvzcR1YX7SKgsj1o7rZ2Ke6FcoTBxpeOOlAnPuqqiW11nqw8rK3fw5a1aLqC7vI29V8pulyzvw1ee/8lXnqqnOnnttotUoMkh4J4G3FYUBFdmLISo9m13hYagsXOLZ6HbW+5rFya9u+NhH63w4Qj3cSVG3N1evITyqoUyb3ktbwKYGAJbfTaFxdOSTVoj/UxQwgru6oX7Xdk6o+LjM6eovlxlnvBGRnzHHwDwtx3x6TwkPTHxY7dRKvJx6a8OUdDJP/8FoB5FTg==
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mkclub-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Confirma pelo link mágico do e-mail e retorna os tokens"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/otp/confirm-link"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Valida o token do link mágico (query param `token` da URL aberta pelo botão do e-mail). Consome o mesmo registro da confirmação por código: usar o link invalida o código de 6 dígitos e vice-versa (uso único, validade de 10 minutos). No cadastro, marca o e-mail como verificado. Sucesso retorna accessToken + refreshToken (mesmo formato do POST /auth/otp/confirm).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./otp-confirm-link.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./otp-confirm-link.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./otp-confirm-link.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

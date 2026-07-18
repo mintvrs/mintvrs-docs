@@ -37,12 +37,12 @@ DATABASE_URL=postgresql://postgres:postgres!@localhost:5433/authdb
 JWT_SECRET=sua-chave-secreta-aqui
 JWT_EXPIRES_IN=1h
 REFRESH_TOKEN_EXPIRES_IN=7d
-# SMTP (opcional para dev)
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-SMTP_FROM=
+# E-mail transacional via Resend (opcional para dev: sem a key, os endpoints
+# de OTP expõem debugCode/debugMagicToken na resposta em vez de enviar e-mail)
+RESEND_API_KEY=
+MAIL_FROM_EMAIL=noreply@mintvrs.com
+MAIL_FROM_NAME=MintVRS
+MAGIC_LINK_URL_BASE=http://localhost:3000/confirm-email
 ```
 
 ### admin-backend

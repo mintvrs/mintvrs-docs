@@ -122,20 +122,26 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/auth-service/register",
-          label: "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o código de confirmação",
+          id: "api/auth-service/register-passwordless",
+          label: "Cadastro passo 2: cria a conta (e-mail + apelido) e envia o e-mail de confirmação",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/auth-service/otp-request",
-          label: "Envia código de 6 dígitos por e-mail (login passo 1 e 'reenviar código' do cadastro)",
+          label: "Envia e-mail com link mágico + código de 6 dígitos (login passo 1 e 'reenviar' do cadastro)",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/auth-service/otp-confirm",
           label: "Confirma o código de 6 dígitos e retorna os tokens (login passo 2 e 'verifique seu e-mail')",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/otp-confirm-link",
+          label: "Confirma pelo link mágico do e-mail e retorna os tokens",
           className: "api-method post",
         },
         {
