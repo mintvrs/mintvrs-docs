@@ -1,0 +1,69 @@
+---
+id: get-preview-gallery
+title: "Galeria de previews da campanha exposta SOMENTE via API. Público."
+description: "Retorna as mídias (imagem/vídeo) marcadas como `is_api_gallery` da campanha, com URLs servíveis. Estas NÃO aparecem em GET /campaigns/:id/public — o front consome esta rota à parte e decide como usar."
+sidebar_label: "Galeria de previews da campanha exposta SOMENTE via API. Público."
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Galeria de previews da campanha exposta SOMENTE via API. Público."}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/{campaignId}/preview-gallery"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retorna as mídias (imagem/vídeo) marcadas como `is_api_gallery` da campanha, com URLs servíveis. Estas NÃO aparecem em GET /campaigns/:id/public — o front consome esta rota à parte e decide como usar.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-preview-gallery.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-preview-gallery.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-preview-gallery.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -30,19 +30,24 @@ frontend só guarda essa URL. O upload é multipart; **não** suba direto do bro
 
 ```jsonc
 {
-  "id": "mic",   // string OBRIGATÓRIA (≤ 60) — nome do ícone (o front mapeia para um SVG)
+  "id": "video", // string OBRIGATÓRIA (≤ 60) — nome do ícone/tag (o front mapeia para um SVG)
   "x": 42.5,     // number 0–100 (% horizontal)
   "y": 73.1,     // number 0–100 (% vertical)
   "enabled": true, // opcional, default true
   "width": 12,   // opcional, % (0–100)
   "height": 8,   // opcional, % (0–100)
-  "order": 0     // opcional
+  "order": 0,    // opcional
+  "type": "VIDEO",         // opcional — IMAGE | VIDEO | AUDIO | FILE
+  "fileUrl": "https://…",  // definido pelo upload de arquivo (ver §4); URL servível
+  "fileName": "teaser.mp4" // definido pelo upload de arquivo
 }
 ```
 
 - O botão é renderizado como um **círculo**; não há rótulo de texto.
-- `id` é o **nome do ícone**, digitado livremente pelo dono da campanha (ex.: `mic`, `star`, `heart`). É o identificador do botão; o **frontend consumidor escolhe o SVG** correspondente a esse nome.
+- `id` é o **nome do ícone / tag**, digitado livremente pelo dono da campanha (ex.: `mic`, `star`, `heart`). É o identificador do botão; o **frontend consumidor escolhe o SVG** correspondente a esse nome.
 - `x`/`y` representam o **centro** do botão em percentual relativo à imagem renderizada.
+- `type` declara **que tipo de arquivo** o botão abre (`IMAGE`, `VIDEO`, `AUDIO`, `FILE`). Ele define quais formatos o upload aceita (ver §4).
+- `fileUrl`/`fileName` são preenchidos pelo **endpoint de upload de arquivo** (§4), não pelo editor. Um `PUT` de posições **preserva** o arquivo já enviado do botão de mesmo `id` — não é apagado ao reordenar/reposicionar.
 
 :::warning Validação estrita
 O backend usa `forbidNonWhitelisted`: enviar **qualquer campo fora** deste contrato faz a requisição
@@ -70,11 +75,18 @@ curl -X POST https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/button
 
 **Resposta:**
 ```json
-{ "button_layout_image": "https://<bucket>.s3.<region>.amazonaws.com/campaigns/<campaignId>/button-layout-1718600000000.png" }
+{ "button_layout_image": "https://s3.<region>.amazonaws.com/<bucket>/campaigns/<campaignId>/button-layout-1718600000000.png" }
 ```
 
 - Extensões aceitas: `jpg, jpeg, png, gif, webp`. Tamanho máximo: **5MB**.
 - Requer ser **dono** da campanha (ou Admin/TenantAdmin/SuperAdmin) — caso contrário **403**.
+
+:::info URL servível
+Todas as URLs de mídia (`button_layout_image`, `cover_image`, `fileUrl` dos botões, galeria) são
+devolvidas no formato REST direto da AWS `https://s3.<region>.amazonaws.com/<bucket>/<key>`. **Não**
+use o hostname público customizado (`public.homolog.mintvrs.com`) — ele ainda não está roteado ao
+bucket e retorna **404**. Consuma exatamente a URL que a API devolve.
+:::
 
 ## 3. Salvar o layout de botões (substitui tudo)
 
@@ -102,14 +114,53 @@ curl -X PUT https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/buttons
 }
 ```
 
-## 4. Ler o layout (público)
+## 4. Enviar o arquivo de um botão (multipart)
+
+Cada botão pode carregar **um arquivo** (imagem, vídeo, áudio ou documento). O upload vai pelo
+**backend** para o **bucket S3 público** e a URL servível é gravada em `fileUrl` do botão de id
+`:buttonId`.
+
+```bash
+curl -X POST https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/buttons/<buttonId>/file \
+  -H "Authorization: Bearer <token>" \
+  -F "type=VIDEO" \
+  -F "file=@/caminho/local/teaser.mp4"
+```
+
+- `:buttonId` é o `id` do botão dentro do layout (ex.: `VIDEO`).
+- `type` é **opcional** se o botão já tem `type` definido; caso contrário é **obrigatório**.
+
+**Resposta** (o botão atualizado, com a URL já servível):
+```json
+{
+  "id": "VIDEO", "x": 58.5, "y": 30, "enabled": true, "order": 2,
+  "type": "VIDEO",
+  "fileUrl": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/campaigns/<campaignId>/buttons/video-1718600000000.mp4",
+  "fileName": "teaser.mp4"
+}
+```
+
+**Formatos aceitos por tipo** (valida extensão + mimetype, com limite de tamanho):
+
+| `type`  | Extensões                                          | Limite  |
+| ------- | -------------------------------------------------- | ------- |
+| `IMAGE` | jpg, jpeg, png, gif, webp, avif, svg               | 10 MB   |
+| `VIDEO` | mp4, mov, webm, m4v, avi, mkv                      | 200 MB  |
+| `AUDIO` | mp3, wav, ogg, m4a, aac, flac                      | 50 MB   |
+| `FILE`  | pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip | 50 MB   |
+
+Enviar um formato fora da lista do `type` retorna **400**. Requer ser **dono** da campanha (ou
+Admin/TenantAdmin/SuperAdmin).
+
+## 5. Ler o layout (público)
 
 ```bash
 curl https://admin-api.homolog.mintvrs.com/campaigns/<campaignId>/buttons
 ```
 
-Retorna `{ interactive_buttons_enabled, button_layout_image, buttons[] }`. Os mesmos campos também
-vêm dentro de `campaign` no `GET /campaigns/:campaignId/public`.
+Retorna `{ interactive_buttons_enabled, button_layout_image, buttons[] }` — cada botão já com
+`type`/`fileUrl`/`fileName` (URLs servíveis). Os mesmos campos também vêm dentro de `campaign` no
+`GET /campaigns/:campaignId/public`.
 
 ## Implementando o editor (frontend)
 

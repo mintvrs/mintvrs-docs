@@ -1,0 +1,1 @@
+{"parameters":[{"name":"campaignId","required":true,"in":"path","description":"UUID da campanha","schema":{"type":"string"}},{"name":"buttonId","required":true,"in":"path","description":"Id do botão (nome do ícone/tag) dentro do layout","schema":{"example":"VIDEO","type":"string"}}]}

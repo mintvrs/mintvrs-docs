@@ -250,6 +250,30 @@ const sidebar: SidebarsConfig = {
           label: "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)",
           className: "api-method post",
         },
+        {
+          type: "doc",
+          id: "api/admin-backend/upload-button-file",
+          label: "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) para o bucket público (apenas dono/admin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-preview-gallery",
+          label: "Galeria de previews da campanha exposta SOMENTE via API. Público.",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/add-preview-gallery-image",
+          label: "Adiciona uma mídia à galeria de previews via API (bucket público, apenas dono/admin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/remove-preview-gallery-image",
+          label: "Remove um item da galeria de previews via API (soft delete, apenas dono/admin)",
+          className: "api-method delete",
+        },
       ],
     },
     {

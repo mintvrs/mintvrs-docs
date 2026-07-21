@@ -999,6 +999,343 @@
         ]
       }
     },
+    "/campaigns/{campaignId}/buttons/{buttonId}/file": {
+      "post": {
+        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Valida a extensão + mimetype contra o regex do tipo, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. Formatos por tipo — IMAGE: jpg, jpeg, png, gif, webp, avif, svg (≤10MB); VIDEO: mp4, mov, webm, m4v, avi, mkv (≤200MB); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB). Retorna o botão atualizado com a URL servível.",
+        "operationId": "uploadButtonFile",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "buttonId",
+            "required": true,
+            "in": "path",
+            "description": "Id do botão (nome do ícone/tag) dentro do layout",
+            "schema": {
+              "example": "VIDEO",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo do botão (o formato aceito depende de `type`)"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "IMAGE",
+                      "VIDEO",
+                      "AUDIO",
+                      "FILE"
+                    ],
+                    "description": "Tipo do arquivo. Se omitido, usa o `type` já definido no botão."
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Botão atualizado com o arquivo enviado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InteractiveButtonDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente, tipo inválido, extensão/mimetype ou tamanho fora do permitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha ou botão não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) para o bucket público (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/preview-gallery": {
+      "get": {
+        "description": "Retorna as mídias (imagem/vídeo) marcadas como `is_api_gallery` da campanha, com URLs servíveis. Estas NÃO aparecem em GET /campaigns/:id/public — o front consome esta rota à parte e decide como usar.",
+        "operationId": "getPreviewGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Itens da galeria de previews (via API).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Galeria de previews da campanha exposta SOMENTE via API. Público.",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "description": "Sobe a imagem/vídeo pro bucket S3 público e registra como item `is_api_gallery` (fora da página pública). Retorna o conteúdo criado com URL servível.",
+        "operationId": "addPreviewGalleryImage",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem (jpg, png, gif, webp, avif, svg) ou vídeo (mp4, mov, webm, m4v, avi, mkv)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Título (opcional)"
+                  },
+                  "ariaLabel": {
+                    "type": "string",
+                    "description": "Texto alternativo para acessibilidade (opcional)"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item criado na galeria de previews.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente ou formato inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adiciona uma mídia à galeria de previews via API (bucket público, apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/preview-gallery/{contentId}": {
+      "delete": {
+        "operationId": "removePreviewGalleryImage",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do item da galeria",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item removido."
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove um item da galeria de previews via API (soft delete, apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/credits/balance": {
       "get": {
         "operationId": "getBalance",
@@ -5960,6 +6297,11 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 100
           },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
           "votesCount": {
             "type": "number",
             "description": "Total de curtidas/favoritos da campanha",
@@ -6021,6 +6363,7 @@
           "updated_at",
           "currentKeys",
           "totalKeys",
+          "fundingPercentage",
           "votesCount",
           "rankingPosition",
           "sellPriceMin",
@@ -6070,6 +6413,10 @@
             "type": "boolean",
             "description": "Conteúdo de preview"
           },
+          "is_api_gallery": {
+            "type": "boolean",
+            "description": "Item da galeria de previews exposta SOMENTE via API (GET /campaigns/:id/preview-gallery). Não aparece na página pública /campaigns/:id/public."
+          },
           "active": {
             "type": "boolean",
             "description": "Conteúdo ativo"
@@ -6088,6 +6435,7 @@
           "description",
           "aria_label",
           "is_preview",
+          "is_api_gallery",
           "active",
           "created_at"
         ]
@@ -6148,6 +6496,11 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 100
           },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
           "totalMediaCount": {
             "type": "number",
             "description": "Total de mídias ativas da campanha (não só previews)",
@@ -6173,6 +6526,7 @@
           "previews",
           "currentKeys",
           "totalKeys",
+          "fundingPercentage",
           "totalMediaCount",
           "gallery",
           "custom_fields_resolved"
@@ -6456,6 +6810,27 @@
             "type": "number",
             "description": "Ordem de renderização",
             "example": 0
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de arquivo que o botão abre. Define quais formatos o upload aceita.",
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "FILE"
+            ],
+            "example": "VIDEO"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL pública do arquivo do botão. Definida pelo endpoint de upload (POST /campaigns/:id/buttons/:buttonId/file); enviar aqui no PUT é opcional e o valor já salvo é preservado.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/campaigns/`id`/buttons/video-123.mp4"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Nome original do arquivo enviado no botão",
+            "example": "teaser.mp4"
           }
         },
         "required": [
@@ -7155,7 +7530,7 @@
           },
           "accessId": {
             "type": "string",
-            "description": "ID (UUID) do access vinculado"
+            "description": "ID (UUID) do access/tier comprado. Obrigatório: é o que incrementa as chaves vendidas (accesses.sold) e move a % de financiamento."
           },
           "tenantId": {
             "type": "string",
@@ -7166,7 +7541,8 @@
           "campaignId",
           "fiatAmount",
           "successUrl",
-          "cancelUrl"
+          "cancelUrl",
+          "accessId"
         ]
       },
       "OfferFundingCheckoutDto": {
