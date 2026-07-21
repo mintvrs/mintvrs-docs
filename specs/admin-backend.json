@@ -1161,179 +1161,6 @@
         "tags": [
           "campaigns"
         ]
-      },
-      "post": {
-        "description": "Sobe a imagem/vídeo pro bucket S3 público e registra como item `is_api_gallery` (fora da página pública). Retorna o conteúdo criado com URL servível.",
-        "operationId": "addPreviewGalleryImage",
-        "parameters": [
-          {
-            "name": "campaignId",
-            "required": true,
-            "in": "path",
-            "description": "UUID da campanha",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "Imagem (jpg, png, gif, webp, avif, svg) ou vídeo (mp4, mov, webm, m4v, avi, mkv)"
-                  },
-                  "title": {
-                    "type": "string",
-                    "description": "Título (opcional)"
-                  },
-                  "ariaLabel": {
-                    "type": "string",
-                    "description": "Texto alternativo para acessibilidade (opcional)"
-                  }
-                },
-                "required": [
-                  "file"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Item criado na galeria de previews.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Content"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Arquivo ausente ou formato inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Não é o dono da campanha",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Campanha não encontrada",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Adiciona uma mídia à galeria de previews via API (bucket público, apenas dono/admin)",
-        "tags": [
-          "campaigns"
-        ]
-      }
-    },
-    "/campaigns/{campaignId}/preview-gallery/{contentId}": {
-      "delete": {
-        "operationId": "removePreviewGalleryImage",
-        "parameters": [
-          {
-            "name": "campaignId",
-            "required": true,
-            "in": "path",
-            "description": "UUID da campanha",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "contentId",
-            "required": true,
-            "in": "path",
-            "description": "UUID do item da galeria",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Item removido."
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Não é o dono da campanha",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Item não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Remove um item da galeria de previews via API (soft delete, apenas dono/admin)",
-        "tags": [
-          "campaigns"
-        ]
       }
     },
     "/credits/balance": {
@@ -5889,6 +5716,11 @@
             "description": "URL da imagem de capa",
             "example": "https://example.com/capa.jpg"
           },
+          "preview_image": {
+            "type": "string",
+            "description": "URL da imagem de PREVIEW (separada do cover_image). O front sobe pro S3 e manda a URL aqui, igual o cover. Fica disponível SOMENTE via GET /campaigns/:id/preview-gallery — NÃO aparece na página pública /campaigns/:id/public.",
+            "example": "https://example.com/preview.jpg"
+          },
           "start_date": {
             "type": "string",
             "description": "Data de início (YYYY-MM-DD)",
@@ -6704,6 +6536,11 @@
             "type": "string",
             "description": "URL da imagem de capa",
             "example": "https://example.com/capa2.jpg"
+          },
+          "preview_image": {
+            "type": "string",
+            "description": "URL da imagem de PREVIEW (separada do cover_image). Só via GET /campaigns/:id/preview-gallery, não no /public. Enviar \"\" (vazio) remove a preview atual.",
+            "example": "https://example.com/preview2.jpg"
           },
           "start_date": {
             "type": "string",
