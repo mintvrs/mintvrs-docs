@@ -1,7 +1,7 @@
 ---
-id: mkclub-auth-service
-title: "MKClub Auth Service"
-description: "**Serviço de autenticação e autorização do MKClub.**"
+id: mintvrs-auth-service
+title: "MintVRS Auth Service"
+description: "**Serviço de autenticação, autorização e onboarding do MintVRS.**"
 sidebar_label: Introduction
 sidebar_position: 0
 hide_title: true
@@ -23,28 +23,47 @@ import Export from "@theme/ApiExplorer/Export";
 <Heading
   as={"h1"}
   className={"openapi__heading"}
-  children={"MKClub Auth Service"}
+  children={"MintVRS Auth Service"}
 >
 </Heading>
 
 
 
-**Serviço de autenticação e autorização do MKClub.**
+**Serviço de autenticação, autorização e onboarding do MintVRS.**
 
 ## Visão geral
 
 Este serviço é responsável por:
-- **Login** (email/senha) e **registro** de usuários
+- **Cadastro passwordless com KYC** — verificação de identidade na Receita Federal antes de criar a conta
+- **Login passwordless por OTP** — código de 6 dígitos + link mágico enviados por e-mail
+- **Login clássico** (email/senha), **registro** e **Google OAuth** (login social)
 - Emissão de **JWT** (access + refresh token)
 - **Perfil** do usuário autenticado (inclui `access_role` e `tenant_id` para multi-tenant)
-- **Reset de senha** (solicitação por email + conclusão com token)
-- **Google OAuth** para login social
+- **Reset de senha** (solicitação por email + conclusão com token) e **recuperação de e-mail** (por nome + CPF + nascimento)
 
-## Fluxo típico
+## Fluxo passwordless (app do usuário)
+
+**Cadastro:**
+1. `POST /auth/signup/verify-identity` — nome + CPF + data de nascimento validados na Receita → `verificationToken` (uso único, 30 min)
+2. `POST /auth/signup/register` — cria a conta com o token + e-mail + apelido e dispara o e-mail de confirmação
+3. Confirmar por **uma** das opções do e-mail → retorna `accessToken` + `refreshToken`
+
+**Login:**
+1. `POST /auth/otp/request` com o e-mail → envia código + link mágico (resposta sempre 200, anti-enumeração)
+2. `POST /auth/otp/confirm` (código de 6 dígitos) **ou** `POST /auth/otp/confirm-link` (botão de link mágico) → tokens
+
+> **E-mail de OTP:** um único e-mail traz o **botão de link mágico** e o **código de 6 dígitos** no mesmo registro — usar um invalida o outro (uso único, 10 min). O botão aponta para `MAGIC_LINK_URL_BASE` (front do usuário), que lê o `?token=` e chama `POST /auth/otp/confirm-link`.
+
+## Fluxo clássico (painel admin)
 
 1. `POST /auth/login` com `email` e `password` → retorna `accessToken` e `refreshToken`
 2. Enviar `Authorization: Bearer `accessToken`` nas requisições ao Admin Backend e neste serviço
 3. Quando o access token expirar, usar `POST /auth/refresh` com o `refreshToken` para obter novos tokens
+4. Esqueceu a senha → `POST /auth/password/request-reset` → e-mail com link (`PASSWORD_RESET_URL_BASE`, front do admin) → `POST /auth/password/reset`
+
+## Envio de e-mail (Resend)
+
+Todos os e-mails (OTP, confirmação de cadastro, reset de senha, recuperação) saem **deste serviço** via **Resend**. Sem `RESEND_API_KEY` (dev/homolog), nada é enviado e os endpoints de OTP retornam `debugCode`/`debugMagicToken` na resposta para permitir testes — esses campos **desaparecem** assim que o envio real está ativo. O remetente (`MAIL_FROM_EMAIL`) precisa estar num **domínio verificado no Resend**.
 
 ## Roles (access_role)
 

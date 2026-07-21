@@ -4,7 +4,7 @@ const sidebar: SidebarsConfig = {
   apisidebar: [
     {
       type: "doc",
-      id: "api/auth-service/mkclub-auth-service",
+      id: "api/auth-service/mintvrs-auth-service",
     },
     {
       type: "category",
@@ -84,35 +84,11 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "health",
+      label: "onboarding",
       link: {
         type: "doc",
-        id: "api/auth-service/health",
+        id: "api/auth-service/onboarding",
       },
-      items: [
-        {
-          type: "doc",
-          id: "api/auth-service/startup",
-          label: "Startup probe - verifica se a aplicação iniciou",
-          className: "api-method get",
-        },
-        {
-          type: "doc",
-          id: "api/auth-service/liveness",
-          label: "Liveness probe - verifica se a aplicação está viva",
-          className: "api-method get",
-        },
-        {
-          type: "doc",
-          id: "api/auth-service/readiness",
-          label: "Readiness probe - verifica se a aplicação está pronta para receber tráfego",
-          className: "api-method get",
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "onboarding",
       items: [
         {
           type: "doc",
@@ -149,6 +125,34 @@ const sidebar: SidebarsConfig = {
           id: "api/auth-service/recover-email",
           label: "Recuperar meu e-mail: localiza a conta por nome + CPF + data de nascimento",
           className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "health",
+      link: {
+        type: "doc",
+        id: "api/auth-service/health",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/auth-service/startup",
+          label: "Startup probe - verifica se a aplicação iniciou",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/liveness",
+          label: "Liveness probe - verifica se a aplicação está viva",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/readiness",
+          label: "Readiness probe - verifica se a aplicação está pronta para receber tráfego",
+          className: "api-method get",
         },
       ],
     },

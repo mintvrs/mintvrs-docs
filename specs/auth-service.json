@@ -700,8 +700,8 @@
     }
   },
   "info": {
-    "title": "MKClub Auth Service",
-    "description": "**Serviço de autenticação e autorização do MKClub.**\n\n## Visão geral\n\nEste serviço é responsável por:\n- **Login** (email/senha) e **registro** de usuários\n- Emissão de **JWT** (access + refresh token)\n- **Perfil** do usuário autenticado (inclui `access_role` e `tenant_id` para multi-tenant)\n- **Reset de senha** (solicitação por email + conclusão com token)\n- **Google OAuth** para login social\n\n## Fluxo típico\n\n1. `POST /auth/login` com `email` e `password` → retorna `accessToken` e `refreshToken`\n2. Enviar `Authorization: Bearer `accessToken`` nas requisições ao Admin Backend e neste serviço\n3. Quando o access token expirar, usar `POST /auth/refresh` com o `refreshToken` para obter novos tokens\n\n## Roles (access_role)\n\n| Role | Descrição |\n|------|-----------|\n| **SuperAdmin** | Acesso total ao admin; `tenant_id` nulo |\n| **Admin** | B2B; cria e gerencia seus próprios tenants |\n| **TenantAdmin** | Admin de um tenant específico; `tenant_id` preenchido |\n| **User** | Usuário final |\n| **Star** | Artista/estrela vinculado a campanhas |\n",
+    "title": "MintVRS Auth Service",
+    "description": "**Serviço de autenticação, autorização e onboarding do MintVRS.**\n\n## Visão geral\n\nEste serviço é responsável por:\n- **Cadastro passwordless com KYC** — verificação de identidade na Receita Federal antes de criar a conta\n- **Login passwordless por OTP** — código de 6 dígitos + link mágico enviados por e-mail\n- **Login clássico** (email/senha), **registro** e **Google OAuth** (login social)\n- Emissão de **JWT** (access + refresh token)\n- **Perfil** do usuário autenticado (inclui `access_role` e `tenant_id` para multi-tenant)\n- **Reset de senha** (solicitação por email + conclusão com token) e **recuperação de e-mail** (por nome + CPF + nascimento)\n\n## Fluxo passwordless (app do usuário)\n\n**Cadastro:**\n1. `POST /auth/signup/verify-identity` — nome + CPF + data de nascimento validados na Receita → `verificationToken` (uso único, 30 min)\n2. `POST /auth/signup/register` — cria a conta com o token + e-mail + apelido e dispara o e-mail de confirmação\n3. Confirmar por **uma** das opções do e-mail → retorna `accessToken` + `refreshToken`\n\n**Login:**\n1. `POST /auth/otp/request` com o e-mail → envia código + link mágico (resposta sempre 200, anti-enumeração)\n2. `POST /auth/otp/confirm` (código de 6 dígitos) **ou** `POST /auth/otp/confirm-link` (botão de link mágico) → tokens\n\n> **E-mail de OTP:** um único e-mail traz o **botão de link mágico** e o **código de 6 dígitos** no mesmo registro — usar um invalida o outro (uso único, 10 min). O botão aponta para `MAGIC_LINK_URL_BASE` (front do usuário), que lê o `?token=` e chama `POST /auth/otp/confirm-link`.\n\n## Fluxo clássico (painel admin)\n\n1. `POST /auth/login` com `email` e `password` → retorna `accessToken` e `refreshToken`\n2. Enviar `Authorization: Bearer `accessToken`` nas requisições ao Admin Backend e neste serviço\n3. Quando o access token expirar, usar `POST /auth/refresh` com o `refreshToken` para obter novos tokens\n4. Esqueceu a senha → `POST /auth/password/request-reset` → e-mail com link (`PASSWORD_RESET_URL_BASE`, front do admin) → `POST /auth/password/reset`\n\n## Envio de e-mail (Resend)\n\nTodos os e-mails (OTP, confirmação de cadastro, reset de senha, recuperação) saem **deste serviço** via **Resend**. Sem `RESEND_API_KEY` (dev/homolog), nada é enviado e os endpoints de OTP retornam `debugCode`/`debugMagicToken` na resposta para permitir testes — esses campos **desaparecem** assim que o envio real está ativo. O remetente (`MAIL_FROM_EMAIL`) precisa estar num **domínio verificado no Resend**.\n\n## Roles (access_role)\n\n| Role | Descrição |\n|------|-----------|\n| **SuperAdmin** | Acesso total ao admin; `tenant_id` nulo |\n| **Admin** | B2B; cria e gerencia seus próprios tenants |\n| **TenantAdmin** | Admin de um tenant específico; `tenant_id` preenchido |\n| **User** | Usuário final |\n| **Star** | Artista/estrela vinculado a campanhas |\n",
     "version": "1.0.0",
     "contact": {}
   },
@@ -709,6 +709,10 @@
     {
       "name": "auth",
       "description": "Login, registro, refresh, perfil, OAuth e recuperação de senha."
+    },
+    {
+      "name": "onboarding",
+      "description": "Cadastro passwordless com KYC (verificação de identidade na Receita), login por OTP (código de 6 dígitos + link mágico) e recuperação de e-mail. E-mails via Resend."
     },
     {
       "name": "health",
@@ -1080,6 +1084,16 @@
             "type": "string",
             "description": "Código de máquina do erro para o front decidir a tela (ex: INVALID_CODE, CODE_EXPIRED, INVALID_LINK, LINK_EXPIRED, TOO_MANY_ATTEMPTS, RESEND_COOLDOWN, VERIFICATION_INVALID, EMAIL_IN_USE, CPF_IN_USE, CPF_ATTEMPTS_EXCEEDED)",
             "example": "INVALID_CODE"
+          },
+          "attemptsRemaining": {
+            "type": "number",
+            "description": "Tentativas restantes antes de o código ser invalidado. Presente apenas no erro code=INVALID_CODE do POST /auth/otp/confirm.",
+            "example": 4
+          },
+          "retryAfterSeconds": {
+            "type": "number",
+            "description": "Segundos a aguardar antes de pedir um novo envio. Presente apenas no erro code=RESEND_COOLDOWN do POST /auth/otp/request.",
+            "example": 42
           }
         },
         "required": [

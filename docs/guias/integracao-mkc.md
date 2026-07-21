@@ -30,8 +30,9 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | coverImageUrl | `cover_image` |
 | essayTitle | `name` |
 | modelName | `main_star.name` |
-| modelProfession | `main_star.custom_fields.profession` |
+| modelProfession | `main_star.custom_fields.modelProfession` |
 | modelProfilePictureUrl | `main_star.profile_photo` |
+| modelPhotoAriaLabel | `main_star.custom_fields.ariaLabel` *(fallback: `main_star.name`)* |
 | currentKeys | `currentKeys` *(computado)* |
 | totalKeys | `totalKeys` *(computado)* |
 | status | `status` *(enum interno)* |
@@ -47,6 +48,7 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | modelName | `campaign.main_star.name` |
 | essayTitle | `campaign.name` |
 | modelProfilePictureUrl | `campaign.main_star.profile_photo` |
+| modelPhotoAriaLabel | `campaign.main_star.custom_fields.ariaLabel` *(fallback: `main_star.name`)* |
 | photographerName | `campaign.custom_fields.photographerName` |
 | style | `campaign.custom_fields.style` |
 | studioName | `campaign.custom_fields.studioName` |
