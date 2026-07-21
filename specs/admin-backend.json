@@ -2811,7 +2811,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MarketplaceListing"
+                    "$ref": "#/components/schemas/ActiveListingViewDto"
                   }
                 }
               }
@@ -5652,6 +5652,27 @@
             "description": "Valor do acesso",
             "example": 49.9
           },
+          "price_pix": {
+            "type": "number",
+            "description": "Preço via PIX (em reais)",
+            "example": 44.9
+          },
+          "price_card": {
+            "type": "number",
+            "description": "Preço via cartão (em reais)",
+            "example": 49.9
+          },
+          "benefits": {
+            "description": "Benefícios do tier (lista de bullets)",
+            "example": [
+              "Acesso ao conteúdo exclusivo",
+              "Badge de apoiador"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "quantity": {
             "type": "number",
             "description": "Quantidade disponível",
@@ -5711,10 +5732,25 @@
             "description": "Descrição da campanha",
             "example": "Detalhes e objetivos da campanha"
           },
+          "essay_title": {
+            "type": "string",
+            "description": "Título do ensaio (distinto do nome da campanha)",
+            "example": "Ensaio Boudoir — Coleção Verão"
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir"
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de capa",
             "example": "https://example.com/capa.jpg"
+          },
+          "cover_image_alt": {
+            "type": "string",
+            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "example": "Retrato da modelo em estúdio com fundo escuro"
           },
           "preview_image": {
             "type": "string",
@@ -5834,9 +5870,24 @@
             "description": "Descrição da campanha",
             "nullable": true
           },
+          "essay_title": {
+            "type": "string",
+            "description": "Título do ensaio (distinto do nome da campanha)",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "nullable": true
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "nullable": true
+          },
+          "cover_image_alt": {
+            "type": "string",
+            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
             "nullable": true
           },
           "start_date": {
@@ -5847,6 +5898,12 @@
           "end_date": {
             "type": "string",
             "description": "Data de fim",
+            "nullable": true
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora em que a campanha foi encerrada (status Ended)",
             "nullable": true
           },
           "goal_value": {
@@ -5944,9 +6001,13 @@
           "id",
           "name",
           "description",
+          "essay_title",
+          "category",
           "cover_image",
+          "cover_image_alt",
           "start_date",
           "end_date",
+          "ended_at",
           "goal_value",
           "status",
           "raised",
@@ -6014,9 +6075,24 @@
             "description": "Descrição da campanha",
             "nullable": true
           },
+          "essay_title": {
+            "type": "string",
+            "description": "Título do ensaio (distinto do nome da campanha)",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "nullable": true
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "nullable": true
+          },
+          "cover_image_alt": {
+            "type": "string",
+            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
             "nullable": true
           },
           "start_date": {
@@ -6027,6 +6103,12 @@
           "end_date": {
             "type": "string",
             "description": "Data de fim",
+            "nullable": true
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora em que a campanha foi encerrada (status Ended)",
             "nullable": true
           },
           "goal_value": {
@@ -6168,15 +6250,37 @@
             "items": {
               "$ref": "#/components/schemas/ResolvedCustomFieldDto"
             }
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Alias de essay_title (título do ensaio)",
+            "example": "Ensaio Boudoir — Coleção Verão",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Alias de cover_image_alt (texto de acessibilidade da capa)",
+            "example": "Retrato da modelo em estúdio com fundo escuro",
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Alias de ended_at (data de encerramento da campanha)",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "name",
           "description",
+          "essay_title",
+          "category",
           "cover_image",
+          "cover_image_alt",
           "start_date",
           "end_date",
+          "ended_at",
           "goal_value",
           "status",
           "raised",
@@ -6201,7 +6305,10 @@
           "sellPriceMin",
           "sellPriceMax",
           "keysForSale",
-          "custom_fields_resolved"
+          "custom_fields_resolved",
+          "essayTitle",
+          "ariaLabel",
+          "completionDate"
         ]
       },
       "Content": {
@@ -6304,7 +6411,7 @@
         "type": "object",
         "properties": {
           "campaign": {
-            "description": "Entidade Campaign completa",
+            "description": "Entidade Campaign completa + aliases camelCase: essayTitle (essay_title), ariaLabel (cover_image_alt da capa), completionDate (ended_at) e custom_fields_resolved (também presente na raiz por retrocompatibilidade).",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Campaign"
@@ -6380,9 +6487,24 @@
             "description": "Descrição da campanha",
             "nullable": true
           },
+          "essay_title": {
+            "type": "string",
+            "description": "Título do ensaio (distinto do nome da campanha)",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "nullable": true
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "nullable": true
+          },
+          "cover_image_alt": {
+            "type": "string",
+            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
             "nullable": true
           },
           "start_date": {
@@ -6393,6 +6515,12 @@
           "end_date": {
             "type": "string",
             "description": "Data de fim",
+            "nullable": true
+          },
+          "ended_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora em que a campanha foi encerrada (status Ended)",
             "nullable": true
           },
           "goal_value": {
@@ -6497,9 +6625,13 @@
           "id",
           "name",
           "description",
+          "essay_title",
+          "category",
           "cover_image",
+          "cover_image_alt",
           "start_date",
           "end_date",
+          "ended_at",
           "goal_value",
           "status",
           "raised",
@@ -6532,10 +6664,25 @@
             "description": "Descrição da campanha",
             "example": "Atualização de escopo"
           },
+          "essay_title": {
+            "type": "string",
+            "description": "Título do ensaio (distinto do nome da campanha)",
+            "example": "Ensaio Boudoir — Coleção Verão"
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir"
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de capa",
             "example": "https://example.com/capa2.jpg"
+          },
+          "cover_image_alt": {
+            "type": "string",
+            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "example": "Retrato da modelo em estúdio com fundo escuro"
           },
           "preview_image": {
             "type": "string",
@@ -6606,6 +6753,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CampaignStarItemDto"
+            }
+          },
+          "accesses": {
+            "description": "Tiers de acesso (chaves). Quando enviado, substitui integralmente os tiers da campanha.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateAccessItemDto"
             }
           }
         }
@@ -7614,6 +7768,11 @@
             "description": "Total de chaves que o usuário possui",
             "example": 5
           },
+          "totalEssaysSupported": {
+            "type": "number",
+            "description": "Número de ensaios (campanhas distintas) que o usuário apoiou/possui",
+            "example": 2
+          },
           "byCampaign": {
             "description": "Quebra por campanha",
             "type": "array",
@@ -7624,6 +7783,7 @@
         },
         "required": [
           "totalKeys",
+          "totalEssaysSupported",
           "byCampaign"
         ]
       },
@@ -7829,6 +7989,128 @@
           "subtitle",
           "timestamp",
           "isRead"
+        ]
+      },
+      "ActiveListingViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "UUID da transação (chave) anunciada"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "UUID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "E-mail do vendedor"
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "UUID do tenant"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço do anúncio em centavos (BRL)",
+            "example": 1500
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação do anúncio"
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "nullable": true
+          },
+          "campaignCoverImage": {
+            "type": "string",
+            "description": "URL da capa da campanha (servível)",
+            "nullable": true
+          },
+          "campaignDescription": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "nullable": true
+          },
+          "sellPriceMin": {
+            "type": "number",
+            "description": "Menor preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
+            "example": 1500,
+            "nullable": true
+          },
+          "sellPriceMax": {
+            "type": "number",
+            "description": "Maior preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
+            "example": 5000,
+            "nullable": true
+          },
+          "sellOffersCount": {
+            "type": "number",
+            "description": "Quantidade de anúncios de venda ativos da campanha",
+            "example": 4
+          },
+          "buyPriceMin": {
+            "type": "number",
+            "description": "Menor preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
+            "example": 1200,
+            "nullable": true
+          },
+          "buyPriceMax": {
+            "type": "number",
+            "description": "Maior preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
+            "example": 4800,
+            "nullable": true
+          },
+          "buyOffersCount": {
+            "type": "number",
+            "description": "Quantidade de ofertas de compra vivas (pending/countered) da campanha",
+            "example": 2
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "createdAt",
+          "campaignName",
+          "campaignCoverImage",
+          "campaignDescription",
+          "sellPriceMin",
+          "sellPriceMax",
+          "sellOffersCount",
+          "buyPriceMin",
+          "buyPriceMax",
+          "buyOffersCount"
         ]
       },
       "MarketplaceListing": {
@@ -8261,6 +8543,27 @@
             "description": "Valor do acesso",
             "example": 99.9
           },
+          "price_pix": {
+            "type": "number",
+            "description": "Preço via PIX (em reais)",
+            "example": 89.9
+          },
+          "price_card": {
+            "type": "number",
+            "description": "Preço via cartão (em reais)",
+            "example": 99.9
+          },
+          "benefits": {
+            "description": "Benefícios do tier (lista de bullets)",
+            "example": [
+              "Acesso ao conteúdo exclusivo",
+              "Badge de apoiador"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "quantity": {
             "type": "number",
             "description": "Quantidade disponível",
@@ -8298,6 +8601,24 @@
             "description": "Preço do acesso",
             "nullable": true
           },
+          "price_pix": {
+            "type": "number",
+            "description": "Preço via PIX (em reais)",
+            "nullable": true
+          },
+          "price_card": {
+            "type": "number",
+            "description": "Preço via cartão (em reais)",
+            "nullable": true
+          },
+          "benefits": {
+            "type": "array",
+            "description": "Benefícios do tier (lista de bullets)",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
           "quantity": {
             "type": "number",
             "description": "Quantidade disponível",
@@ -8328,6 +8649,9 @@
           "id",
           "level",
           "price",
+          "price_pix",
+          "price_card",
+          "benefits",
           "quantity",
           "sold",
           "valid_until",
@@ -8347,6 +8671,27 @@
             "type": "number",
             "description": "Valor do acesso",
             "example": 99.9
+          },
+          "price_pix": {
+            "type": "number",
+            "description": "Preço via PIX (em reais)",
+            "example": 89.9
+          },
+          "price_card": {
+            "type": "number",
+            "description": "Preço via cartão (em reais)",
+            "example": 99.9
+          },
+          "benefits": {
+            "description": "Benefícios do tier (lista de bullets)",
+            "example": [
+              "Acesso ao conteúdo exclusivo",
+              "Badge de apoiador"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "quantity": {
             "type": "number",
@@ -8772,7 +9117,7 @@
             "description": "Versão do documento",
             "example": "1.0.0"
           },
-          "updatedAt": {
+          "lastUpdated": {
             "type": "string",
             "description": "Data da última atualização (ISO 8601)",
             "example": "2026-06-24T00:00:00.000Z"
@@ -8786,7 +9131,7 @@
           "slug",
           "title",
           "version",
-          "updatedAt",
+          "lastUpdated",
           "content"
         ]
       },
