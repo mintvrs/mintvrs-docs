@@ -457,6 +457,108 @@
         ]
       }
     },
+    "/campaigns/landing": {
+      "get": {
+        "description": "Listagem ENXUTA para o carrossel \"campanhas ativas\" da landing — separada de GET /campaigns/active (marketplace), que traz o detalhe completo. Retorna no máximo `limit` cards (default 12, máx 24), campanhas Active ordenadas por criação (mais recentes primeiro). Cada card contém apenas o que a landing renderiza: capa isolada (`coverImage`), modelo (`modelName`/`modelProfession`), tema do ensaio (`essayTitle`), progresso de chaves e dias restantes.",
+        "operationId": "findLanding",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Máximo de cards retornados (campanhas ativas mais recentes primeiro)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 24,
+              "default": 12,
+              "example": 12,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignCardDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "limit inválido (esperado inteiro entre 1 e 24)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cards de campanhas ativas para a landing page (público, mais recentes primeiro)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/ended": {
+      "get": {
+        "description": "Campanhas com status Ended, para a seção \"ensaio em produção\" da landing. Mesmo formato de card de GET /campaigns/landing, ordenado por encerramento (`completionDate`) mais recente primeiro.",
+        "operationId": "findEnded",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignCardDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cards de campanhas encerradas — ensaios em produção (público)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/featured": {
+      "get": {
+        "description": "Campanhas Active marcadas como destaque pelo tenant admin (PATCH /campaigns/:id/featured), ordenadas por `featuredOrder` crescente (sem ordem vão para o fim). Cada item traz a arte hero (`heroImage`), nome da modelo (título do hero), tema do ensaio (subtítulo), descrição, progresso de chaves e dias restantes. Campanhas destacadas que deixarem de estar Active saem automaticamente desta lista.",
+        "operationId": "findFeatured",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignHeroDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Campanhas em destaque para o carrossel hero da landing (público)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/campaigns/mine": {
       "get": {
         "operationId": "findMine",
@@ -748,6 +850,95 @@
           }
         ],
         "summary": "Remover campanha (SuperAdmin sempre; Admin se for do tenant dele; dono da campanha)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/featured": {
+      "patch": {
+        "description": "Define o destaque da campanha no carrossel hero (consumido por GET /campaigns/featured). Permissões: SuperAdmin, dono da campanha, Admin dono do tenant ou TenantAdmin do tenant. Regras: `featured: true` exige campanha com status Active (400 caso contrário); `featured: false` é sempre permitido e zera a ordem. `order` define a posição no carrossel (crescente; sem ordem vai para o fim). Campanha destacada que sair de Active some do carrossel automaticamente, mas mantém a marcação para quando for reativada.",
+        "operationId": "setFeatured",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCampaignFeaturedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado atual do destaque após a alteração.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignFeaturedStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campanha não está Active (ao tentar destacar)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão para destacar esta campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Destacar/remover campanha do carrossel hero da landing (tenant admin)",
         "tags": [
           "campaigns"
         ]
@@ -5742,20 +5933,25 @@
             "description": "Categoria da campanha",
             "example": "Boudoir"
           },
-          "cover_image": {
+          "hero_image": {
             "type": "string",
-            "description": "URL da imagem de capa",
-            "example": "https://example.com/capa.jpg"
+            "description": "URL da imagem HERO (arte widescreen do carrossel do topo da landing). Antiga cover_image, renomeada. O front sobe pro S3 e manda a URL aqui.",
+            "example": "https://example.com/hero.jpg"
           },
-          "cover_image_alt": {
+          "hero_image_alt": {
             "type": "string",
-            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade. Antiga cover_image_alt, renomeada.",
             "example": "Retrato da modelo em estúdio com fundo escuro"
           },
-          "preview_image": {
+          "cover_image": {
             "type": "string",
-            "description": "URL da imagem de PREVIEW (separada do cover_image). O front sobe pro S3 e manda a URL aqui, igual o cover. Fica disponível SOMENTE via GET /campaigns/:id/preview-gallery — NÃO aparece na página pública /campaigns/:id/public.",
-            "example": "https://example.com/preview.jpg"
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image. O front sobe pro S3 e manda a URL aqui.",
+            "example": "https://example.com/capa.jpg"
+          },
+          "key_image": {
+            "type": "string",
+            "description": "URL da arte de preview da CHAVE exibida nos cards do marketplace de revenda. O front sobe pro S3 e manda a URL aqui.",
+            "example": "https://example.com/chave.jpg"
           },
           "start_date": {
             "type": "string",
@@ -5880,14 +6076,34 @@
             "description": "Categoria da campanha",
             "nullable": true
           },
-          "cover_image": {
+          "hero_image": {
             "type": "string",
-            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "description": "URL da imagem HERO — arte widescreen do carrossel do topo da landing (antiga cover_image, renomeada). Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
-          "cover_image_alt": {
+          "hero_image_alt": {
             "type": "string",
-            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "nullable": true
+          },
+          "key_image": {
+            "type": "string",
+            "description": "URL da arte de preview da CHAVE exibida nos cards do marketplace de revenda (tamanho próprio, distinto da capa).",
+            "nullable": true
+          },
+          "is_featured": {
+            "type": "boolean",
+            "description": "Campanha destacada no carrossel hero da landing (seleção do tenant admin). Apenas campanhas Active aparecem em GET /campaigns/featured.",
+            "default": false
+          },
+          "featured_order": {
+            "type": "number",
+            "description": "Ordem no carrossel hero (crescente; null vai para o fim da lista)",
             "nullable": true
           },
           "start_date": {
@@ -6003,8 +6219,12 @@
           "description",
           "essay_title",
           "category",
+          "hero_image",
+          "hero_image_alt",
           "cover_image",
-          "cover_image_alt",
+          "key_image",
+          "is_featured",
+          "featured_order",
           "start_date",
           "end_date",
           "ended_at",
@@ -6085,14 +6305,34 @@
             "description": "Categoria da campanha",
             "nullable": true
           },
-          "cover_image": {
+          "hero_image": {
             "type": "string",
-            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "description": "URL da imagem HERO — arte widescreen do carrossel do topo da landing (antiga cover_image, renomeada). Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
-          "cover_image_alt": {
+          "hero_image_alt": {
             "type": "string",
-            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "nullable": true
+          },
+          "key_image": {
+            "type": "string",
+            "description": "URL da arte de preview da CHAVE exibida nos cards do marketplace de revenda (tamanho próprio, distinto da capa).",
+            "nullable": true
+          },
+          "is_featured": {
+            "type": "boolean",
+            "description": "Campanha destacada no carrossel hero da landing (seleção do tenant admin). Apenas campanhas Active aparecem em GET /campaigns/featured.",
+            "default": false
+          },
+          "featured_order": {
+            "type": "number",
+            "description": "Ordem no carrossel hero (crescente; null vai para o fim da lista)",
             "nullable": true
           },
           "start_date": {
@@ -6259,7 +6499,7 @@
           },
           "ariaLabel": {
             "type": "string",
-            "description": "Alias de cover_image_alt (texto de acessibilidade da capa)",
+            "description": "Alias de hero_image_alt (texto de acessibilidade da imagem hero)",
             "example": "Retrato da modelo em estúdio com fundo escuro",
             "nullable": true
           },
@@ -6276,8 +6516,12 @@
           "description",
           "essay_title",
           "category",
+          "hero_image",
+          "hero_image_alt",
           "cover_image",
-          "cover_image_alt",
+          "key_image",
+          "is_featured",
+          "featured_order",
           "start_date",
           "end_date",
           "ended_at",
@@ -6309,6 +6553,209 @@
           "essayTitle",
           "ariaLabel",
           "completionDate"
+        ]
+      },
+      "CampaignCardDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico (tema exibido no card)",
+            "example": "A Intimidade como Arte",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ],
+            "example": "Active"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "URL servível da imagem de capa isolada do card (cover_image). Pode ser null quando a campanha ainda não tem capa.",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/cover-123.jpg",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto alternativo de acessibilidade (hero_image_alt da campanha)",
+            "example": "Retrato da modelo em estúdio com fundo escuro",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
+            "example": "Lupita Abayomi",
+            "nullable": true
+          },
+          "modelProfession": {
+            "type": "string",
+            "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
+            "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 630
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 900
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-08-15",
+            "nullable": true
+          },
+          "daysRemaining": {
+            "type": "number",
+            "description": "Dias restantes até end_date (mínimo 0; null quando a campanha não tem end_date)",
+            "example": 15,
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "essayTitle",
+          "category",
+          "status",
+          "coverImage",
+          "ariaLabel",
+          "modelName",
+          "modelProfession",
+          "fundingPercentage",
+          "currentKeys",
+          "totalKeys",
+          "endDate",
+          "daysRemaining",
+          "completionDate"
+        ]
+      },
+      "CampaignHeroDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) — título grande do hero",
+            "example": "Lupita Abayomi",
+            "nullable": true
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico — subtítulo do hero",
+            "example": "A Intimidade como Arte",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "example": "Um ensaio fotográfico que celebra a beleza…",
+            "nullable": true
+          },
+          "heroImage": {
+            "type": "string",
+            "description": "URL servível da imagem hero (arte widescreen do carrossel do topo)",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/hero-123.jpg",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto alternativo de acessibilidade da imagem hero (hero_image_alt)",
+            "example": "Retrato da modelo na praia ao entardecer",
+            "nullable": true
+          },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 630
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 900
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-08-15",
+            "nullable": true
+          },
+          "daysRemaining": {
+            "type": "number",
+            "description": "Dias restantes até end_date (mínimo 0; null quando a campanha não tem end_date)",
+            "example": 15,
+            "nullable": true
+          },
+          "featuredOrder": {
+            "type": "number",
+            "description": "Ordem no carrossel (crescente; null vai para o fim)",
+            "example": 1,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "modelName",
+          "essayTitle",
+          "description",
+          "heroImage",
+          "ariaLabel",
+          "fundingPercentage",
+          "currentKeys",
+          "totalKeys",
+          "endDate",
+          "daysRemaining",
+          "featuredOrder"
         ]
       },
       "Content": {
@@ -6411,7 +6858,7 @@
         "type": "object",
         "properties": {
           "campaign": {
-            "description": "Entidade Campaign completa + aliases camelCase: essayTitle (essay_title), ariaLabel (cover_image_alt da capa), completionDate (ended_at) e custom_fields_resolved (também presente na raiz por retrocompatibilidade).",
+            "description": "Entidade Campaign completa + aliases camelCase: essayTitle (essay_title), ariaLabel (hero_image_alt da imagem hero), completionDate (ended_at) e custom_fields_resolved (também presente na raiz por retrocompatibilidade).",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Campaign"
@@ -6497,14 +6944,34 @@
             "description": "Categoria da campanha",
             "nullable": true
           },
-          "cover_image": {
+          "hero_image": {
             "type": "string",
-            "description": "URL da imagem de capa. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
+            "description": "URL da imagem HERO — arte widescreen do carrossel do topo da landing (antiga cover_image, renomeada). Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md.",
             "nullable": true
           },
-          "cover_image_alt": {
+          "hero_image_alt": {
             "type": "string",
-            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
+            "nullable": true
+          },
+          "cover_image": {
+            "type": "string",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "nullable": true
+          },
+          "key_image": {
+            "type": "string",
+            "description": "URL da arte de preview da CHAVE exibida nos cards do marketplace de revenda (tamanho próprio, distinto da capa).",
+            "nullable": true
+          },
+          "is_featured": {
+            "type": "boolean",
+            "description": "Campanha destacada no carrossel hero da landing (seleção do tenant admin). Apenas campanhas Active aparecem em GET /campaigns/featured.",
+            "default": false
+          },
+          "featured_order": {
+            "type": "number",
+            "description": "Ordem no carrossel hero (crescente; null vai para o fim da lista)",
             "nullable": true
           },
           "start_date": {
@@ -6627,8 +7094,12 @@
           "description",
           "essay_title",
           "category",
+          "hero_image",
+          "hero_image_alt",
           "cover_image",
-          "cover_image_alt",
+          "key_image",
+          "is_featured",
+          "featured_order",
           "start_date",
           "end_date",
           "ended_at",
@@ -6674,20 +7145,25 @@
             "description": "Categoria da campanha",
             "example": "Boudoir"
           },
-          "cover_image": {
+          "hero_image": {
             "type": "string",
-            "description": "URL da imagem de capa",
-            "example": "https://example.com/capa2.jpg"
+            "description": "URL da imagem HERO (arte widescreen do carrossel do topo da landing). Antiga cover_image, renomeada. Enviar \"\" (vazio) remove a imagem.",
+            "example": "https://example.com/hero2.jpg"
           },
-          "cover_image_alt": {
+          "hero_image_alt": {
             "type": "string",
-            "description": "Texto alternativo (aria-label) da imagem de capa para acessibilidade",
+            "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade. Antiga cover_image_alt, renomeada.",
             "example": "Retrato da modelo em estúdio com fundo escuro"
           },
-          "preview_image": {
+          "cover_image": {
             "type": "string",
-            "description": "URL da imagem de PREVIEW (separada do cover_image). Só via GET /campaigns/:id/preview-gallery, não no /public. Enviar \"\" (vazio) remove a preview atual.",
-            "example": "https://example.com/preview2.jpg"
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image. Enviar \"\" (vazio) remove a imagem.",
+            "example": "https://example.com/capa2.jpg"
+          },
+          "key_image": {
+            "type": "string",
+            "description": "URL da arte de preview da CHAVE exibida nos cards do marketplace de revenda. Enviar \"\" (vazio) remove a imagem.",
+            "example": "https://example.com/chave2.jpg"
           },
           "start_date": {
             "type": "string",
@@ -6763,6 +7239,50 @@
             }
           }
         }
+      },
+      "SetCampaignFeaturedDto": {
+        "type": "object",
+        "properties": {
+          "featured": {
+            "type": "boolean",
+            "description": "true destaca a campanha no carrossel hero (exige status Active); false remove o destaque (permitido em qualquer status) e zera a ordem.",
+            "example": true
+          },
+          "order": {
+            "type": "number",
+            "description": "Ordem no carrossel (crescente; campanhas sem ordem vão para o fim). Ignorado quando featured=false.",
+            "example": 1,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "featured"
+        ]
+      },
+      "CampaignFeaturedStateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "description": "Estado atual do destaque",
+            "example": true
+          },
+          "featuredOrder": {
+            "type": "number",
+            "description": "Ordem atual no carrossel (null sem ordem definida)",
+            "example": 1,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "isFeatured",
+          "featuredOrder"
+        ]
       },
       "InteractiveButtonDto": {
         "type": "object",
@@ -8046,9 +8566,24 @@
             "description": "Nome da campanha",
             "nullable": true
           },
+          "campaignKeyImage": {
+            "type": "string",
+            "description": "URL da arte da chave (key_image da campanha, servível) — imagem principal do card no marketplace de revenda",
+            "nullable": true
+          },
           "campaignCoverImage": {
             "type": "string",
-            "description": "URL da capa da campanha (servível)",
+            "description": "URL da capa isolada da campanha (cover_image, servível) — fallback visual quando a campanha não tem key_image",
+            "nullable": true
+          },
+          "campaignEssayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico da campanha",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
             "nullable": true
           },
           "campaignDescription": {
@@ -8103,7 +8638,10 @@
           "status",
           "createdAt",
           "campaignName",
+          "campaignKeyImage",
           "campaignCoverImage",
+          "campaignEssayTitle",
+          "modelName",
           "campaignDescription",
           "sellPriceMin",
           "sellPriceMax",
