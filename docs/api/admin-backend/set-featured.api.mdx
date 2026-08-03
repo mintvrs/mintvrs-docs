@@ -1,0 +1,69 @@
+---
+id: set-featured
+title: "Destacar/remover campanha do carrossel hero da landing (tenant admin)"
+description: "Define o destaque da campanha no carrossel hero (consumido por GET /campaigns/featured). Permissões: SuperAdmin, dono da campanha, Admin dono do tenant ou TenantAdmin do tenant. Regras: `featured: true` exige campanha com status Active (400 caso contrário); `featured: false` é sempre permitido e zera a ordem. `order` define a posição no carrossel (crescente; sem ordem vai para o fim). Campanha destacada que sair de Active some do carrossel automaticamente, mas mantém a marcação para quando for reativada."
+sidebar_label: "Destacar/remover campanha do carrossel hero da landing (tenant admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "patch api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Destacar/remover campanha do carrossel hero da landing (tenant admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"patch"}
+  path={"/campaigns/{campaignId}/featured"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Define o destaque da campanha no carrossel hero (consumido por GET /campaigns/featured). Permissões: SuperAdmin, dono da campanha, Admin dono do tenant ou TenantAdmin do tenant. Regras: `featured: true` exige campanha com status Active (400 caso contrário); `featured: false` é sempre permitido e zera a ordem. `order` define a posição no carrossel (crescente; sem ordem vai para o fim). Campanha destacada que sair de Active some do carrossel automaticamente, mas mantém a marcação para quando for reativada.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./set-featured.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./set-featured.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./set-featured.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

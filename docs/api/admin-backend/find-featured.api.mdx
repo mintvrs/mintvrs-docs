@@ -1,0 +1,69 @@
+---
+id: find-featured
+title: "Campanhas em destaque para o carrossel hero da landing (público)"
+description: "Campanhas Active marcadas como destaque pelo tenant admin (PATCH /campaigns/:id/featured), ordenadas por `featuredOrder` crescente (sem ordem vão para o fim). Cada item traz a arte hero (`heroImage`), nome da modelo (título do hero), tema do ensaio (subtítulo), descrição, progresso de chaves e dias restantes. Campanhas destacadas que deixarem de estar Active saem automaticamente desta lista."
+sidebar_label: "Campanhas em destaque para o carrossel hero da landing (público)"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWMluG0cafpUCgwCkwE0y4pmRT5TkRYkXQZSQDBxDrO4ukmV1d7WrqmnRsoA8RIA5GwNMkINPwVxy5ZvkSeb7q3qVOZBym8PwIHV3Vf378v113YmECbXMrFRpZ79zyJOMp0tu2CS0ciVYwnXII7yHKlEMmy1/lwuWiVgxK1KeWsajRKasezI5O3zGRiFRkIvUjPZlNJoLbnMtol6fKR1hP5HKlGazcuUVPusZCzXkEKkVrGtE4jYnbLX5p2IZ15wpNpdJb8gOQYBJizWr+QfGGdc4shRase6M/h0nfCFmYJeqRDBsTlREsnbt5rPN8RAptx07QIXTq0gNl9hh8qDYhEVvls0vkKDPMq0WkM+QAVi45CthGIhL6KLJIhDbkGyl7ZyZvNnIWJGQV1xDZpymFV0a13B85LlVCbcShnP6u8Mslvg77PQ7KhOak3eOI/hnLtPoSWE5LJJtEmGFNp3912/6HUiTqdQIvF539sZj+td2MA6FCmxSS2s8y2IwprXRW0MbrjsmXMIw9GTXmcARrjVf4xyZ3TS+q+CtCC1JoUlIKz1bGTX2GKtlusCethTn58dH5JywMFnnpt9JocndJ18Wbq1O9jviCs+xaEQvGfo5Tze/OJMqou7C4OWfYlFGTsJlekFu67E/fvqZlYG00DwFnyKeWnI8zzMJH04CvlaJxFKaxzEPaM3qXEAcBBNfn0kb30Oeszpyi1CdK4uA3Hyay1A5merQ3SrPhB2nViYy4hS/lMgTpM02uVqc7xLsqM6R/+qS82Sr0JQWoYhFgNzmLMDTB/7HT//aJlKV1fcIq9PnzAi92nxeiZhEknQuKeqDKxXvpTsiREqWChHbyhjajHKmMtVrCb+0NjP7o5F5MMzNQHBjB7tDnvAPKuXvzRCWHAV5eClso+rNZDQbEcPB7t6D4dtssU0nriV/zqH2PbwvrqxiPEaSp0jUlatBPEQAyUDG3qW3NaW/F+7LBQ62dToVqJxWNQI85ShwXMIRFGCI80iEQm8Te56nEWQ8EZpKddslaZ4E7lRb/K9JXFQtnobSZyMFIAu4QS1MymLaDXOtsfidWJuRVZbH9MQ2/2C743EfRR7lTqXQte2gv4whVOPo3eIcen4rAUWoPLvkUQn3RiWropIbFUdNNg8fEJ9KrLu5nNHWRq/YyuVdjr4h7brJ6W9j4gThjri9R7xjl6NpN79q9GB4/u/4DV68GBwdtb2+N957OBj/dbD7zdas52tzKqjOEZc71TtqNT7GwR6BE11EnNp3svmcSpSY8SNGjBjpieyq6wNLqWBQDy8PtWTd/WZb5DXRwt0SvnLwIW0meLdCGIVcKy6b2KIlwhcS3FBvfZdLarv7r6nHFQ2r2VlaZb0tUrOMNdN/W061Q7oZeHVo3PbZbQsBC1jfXXxTRGl6BgGOqBm6H9b5glBDpypddAhgYqkIaCyE6+zcLvHSKG/zGnxQpfXI47qT67hRLx0iHPBMDpdoNrFaDPFuV9qVzC+c9czv4a6RoFc3qYFYrEIeL5Wx+w/G44dfnJ6cHCMCc+RbV6QrhteLg8n08QX1ApWz6nSvc/OGZIZtkXRTAjkerwQC2ExXyIdMVnzqFw9PlAZAw/dvvz8jf/jQI/HKKIAYOQyn5QdeuPt2QbhEw8FxpgIrkQ0ITTrBprChDJE1J6+mZ2wELLiEwguZAus+vtpnB04AJtbfLoOn4XBIiFASxaXg5Gf48YcBdB4gPpqQLZP0ob23krU+sc2Y+O66oQf33RyoF7kE/wkgHvjo38L0ar5Tgbyyf5J1ceg2d//5HsxviPpcOa5FlL/47jDOAzZxs8gBR1NOIwqGL5js7JCSSR5bOSjYRDRkyBRFwgUukLf2ndYTHe7s/Jj+mH71FbkMaQnA7EKVPg7Yzg65tesd1dvf2WHnaG2EJsjl0EehbxMHarVtn89uO33Wo8DwNmOzVkhVoTBzhGezIXsVaLlA8f1Ny2JKQksH0kJxgUqGqmumYDpDdsw3n7DNMEo0WgQfp2xv6JU486YoA6DbNjmpdeI4hG4Mogmu9JG4Gu4zA6OhGIHpFQEVZTBCIR2lYLMq2masevOenkEKU6iL+Wliyn5pqEEsMPdQiwYqgfswNNVhMc0xb3hf90A0U1TtUY5g7oVIi3P4VBjYH/MDabnDisElSupsWLj2VMXClB519B15UnzidXZl+JFj5gUauRmtNITpA1VowCqzDBQwFFvEKuBxH3AnnctFrrET3hLvUbepZ6MtxkDB5fHCDRXTg72DR44N9IMlBMEnqJhjetab3zLny4qxBGKhGANZlVs0PG8b0/LtbX2ogaMUKjJwSbMgWWhZ8tVV6wavSgeaJBAkm98jN3RAtrYqSAPt08HHnkOBsAeyUWUuI+ogKjECTaObTwDvBY0p7OtExnQJW49IZBFztpJpmDuVa1hhHpXRCUOBkHVm1sCymMUqN1P9N4qsCBISae+c/rFcYB9Zc6r5iKVB8ase6JmOlIY1EPAjOzw9P3JYzH9rB2lxcVFoS9DHl8mRcYlAGQfXZSESncf+GoCMS0DdsMPv98ajl0/OCKj/gB1DVrA/4Wvay54WLvFy1OE2hX8z0bAz3Xm4kAVxceWuNtDywksEDT1xvQAoh8kIk1RcSvxQkK8uOWqyPlCdxUYiKkxHy8Dsqqbjrx0qKX3oIL/hMgSZe6ydWR1zrdMf8o9k5NyWo0+XA5WZBs+SQq+iQDZjI3YAKHAJJWXqiB2JLFZrN53wEEV67ezcr1VxznRFvGlA1A/qD/4mSCUYnJAThG7oA5xUy6055t6QareX/rQ8KfzlzsJfCFm3z9fZ2lZAWLIw1dSXVsdQb37Fd2VQcHkcwX1LLFIDCJUrNBT/JDo5USSBik1t/xdcY1LNYiSJo9t4Zyd7J76D0GDEWala87oL0Qi7l32kojp1meYtSurJIJeV+YrkKw5zn8RUOcDV8jnBKkcITZqQpG/Qu8PxcFxcU8F+aPLU7zNAuIS7S4kCStSR6AxZXkx6RF/jfjcRQ6eYO5zNutnm9wBlxk2St647qpux/9+D/s/dgxbw0gJgjBA+QJeICjcoXBdjSnOUqechmmoI/9P69TXdO5zr+OaGPlP7XfuL0xWNZG7ce/3G3Tk52EqTzSUB684EU3tGiHXF49zD3Fs3pzfN6enp4zOg1P8ASSNHiA==
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Campanhas em destaque para o carrossel hero da landing (público)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/featured"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Campanhas Active marcadas como destaque pelo tenant admin (PATCH /campaigns/:id/featured), ordenadas por `featuredOrder` crescente (sem ordem vão para o fim). Cada item traz a arte hero (`heroImage`), nome da modelo (título do hero), tema do ensaio (subtítulo), descrição, progresso de chaves e dias restantes. Campanhas destacadas que deixarem de estar Active saem automaticamente desta lista.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./find-featured.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./find-featured.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./find-featured.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

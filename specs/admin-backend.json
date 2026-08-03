@@ -1308,9 +1308,497 @@
         ]
       }
     },
+    "/campaigns/{campaignId}/image": {
+      "post": {
+        "description": "Recebe o arquivo via `multipart/form-data` e o backend cuida do S3: não é preciso ter credencial AWS no cliente. Substitui a alternativa antiga (subir por conta própria e mandar a URL no PATCH), que continua funcionando. A imagem anterior é apagada do bucket. Funciona em **qualquer status** da campanha — não existe trava por aprovação.",
+        "operationId": "setCampaignImage",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem (jpg, jpeg, png, gif, webp, avif, svg, bmp, heic, heif; máx 15MB)"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "hero",
+                      "cover",
+                      "key"
+                    ],
+                    "description": "Qual imagem substituir: `hero` (carrossel da landing), `cover` (capa do card) ou `key` (arte da chave no marketplace)"
+                  },
+                  "alt": {
+                    "type": "string",
+                    "description": "Texto alternativo, só para `kind=hero` (grava em hero_image_alt / ariaLabel)"
+                  }
+                },
+                "required": [
+                  "file",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Campanha atualizada, com as URLs já servíveis.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente, `kind` inválido, extensão inválida ou > 15MB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/gallery": {
+      "get": {
+        "description": "Mesma lista de GET /campaigns/:campaignId/preview-gallery (que é pública), mas pensada para a tela de edição: devolve também os itens com `position` para montar os slots.",
+        "operationId": "getGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Galeria pública da campanha para gestão (dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "description": "A galeria tem no máximo 6 itens; o item entra no primeiro slot livre. O backend escolhe o bucket (público) — o cliente não precisa, e não pode, decidir isso. Disponível em qualquer status da campanha.",
+        "operationId": "addGalleryItem",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Foto (máx 15MB) ou vídeo curto (mp4/mov/webm/m4v, máx 100MB)"
+                  },
+                  "aria_label": {
+                    "type": "string",
+                    "description": "Descrição da imagem para leitores de tela (vira o `ariaLabel` da galeria pública)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Título do item. Default: o nome do arquivo."
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item criado, com URL servível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo ausente/inválido ou galeria já com 6 itens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adiciona uma foto à galeria pública (máx 6) — dono/admin",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/gallery/{contentId}": {
+      "patch": {
+        "description": "Substitui a mídia **preservando a posição** do slot e apagando a antiga do bucket. É o caminho certo para \"editar uma imagem\": remover e subir de novo mandaria a foto para o fim da galeria.",
+        "operationId": "replaceGalleryItem",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do item da galeria",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia."
+                  },
+                  "aria_label": {
+                    "type": "string",
+                    "description": "Descrição para leitores de tela"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Título do item"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item atualizado, com URL servível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Arquivo inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha ou item não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Troca a foto de um slot da galeria, no lugar (dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "delete": {
+        "description": "Apaga o registro e o objeto no S3, e compacta as posições restantes para 0..n-1.",
+        "operationId": "removeGalleryItem",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "UUID do item da galeria",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remoção efetuada"
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha ou item não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove um item da galeria pública (dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/gallery/order": {
+      "put": {
+        "description": "Recebe a lista COMPLETA de ids da galeria na ordem desejada; as posições viram 0..n-1. Rejeita listas com repetição, com id de outra campanha ou incompletas — meia reordenação deixaria slots ambíguos.",
+        "operationId": "reorderGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderGalleryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Galeria reordenada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Content"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lista de ids inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reordena a galeria pública (dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
     "/campaigns/{campaignId}/preview-gallery": {
       "get": {
-        "description": "Retorna as mídias (imagem/vídeo) marcadas como `is_api_gallery` da campanha, com URLs servíveis. Estas NÃO aparecem em GET /campaigns/:id/public — o front consome esta rota à parte e decide como usar.",
+        "description": "Retorna as mídias (imagem/vídeo) da galeria pública da campanha (`is_preview`, ativas), com URLs servíveis, ordenadas por `position` (o slot escolhido no admin) e criação como desempate. É a mesma coleção que vem em `gallery` no GET /campaigns/:id/public, numa rota dedicada e sem autenticação. Para gerenciar (subir, trocar, remover, reordenar) use as rotas /campaigns/:campaignId/gallery.",
         "operationId": "getPreviewGallery",
         "parameters": [
           {
@@ -1348,7 +1836,7 @@
             }
           }
         },
-        "summary": "Galeria de previews da campanha exposta SOMENTE via API. Público.",
+        "summary": "Galeria pública da campanha (até 6 fotos). Público, sem token.",
         "tags": [
           "campaigns"
         ]
@@ -4590,6 +5078,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4597,7 +5095,7 @@
             "bearer": []
           }
         ],
-        "summary": "Criar conteúdo",
+        "summary": "Criar conteúdo (dono da campanha ou admin)",
         "tags": [
           "contents"
         ]
@@ -4779,6 +5277,16 @@
               }
             }
           },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Conteúdo não encontrado",
             "content": {
@@ -4795,7 +5303,7 @@
             "bearer": []
           }
         ],
-        "summary": "Atualizar conteúdo",
+        "summary": "Atualizar conteúdo (dono da campanha ou admin)",
         "tags": [
           "contents"
         ]
@@ -4816,6 +5324,16 @@
           "200": {
             "description": "Remoção efetuada"
           },
+          "403": {
+            "description": "Sem permissão sobre a campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Conteúdo não encontrado",
             "content": {
@@ -4832,7 +5350,7 @@
             "bearer": []
           }
         ],
-        "summary": "Remover conteúdo",
+        "summary": "Remover conteúdo (dono da campanha ou admin)",
         "tags": [
           "contents"
         ]
@@ -5945,7 +6463,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image. O front sobe pro S3 e manda a URL aqui.",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Alternativa (recomendada): subir o arquivo direto em POST /campaigns/:campaignId/image com kind=cover, sem precisar de credencial S3 no cliente.",
             "example": "https://example.com/capa.jpg"
           },
           "key_image": {
@@ -6088,7 +6606,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha.",
             "nullable": true
           },
           "key_image": {
@@ -6317,7 +6835,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha.",
             "nullable": true
           },
           "key_image": {
@@ -6797,11 +7315,12 @@
           },
           "is_preview": {
             "type": "boolean",
-            "description": "Conteúdo de preview"
+            "description": "Mídia pública da campanha: entra na galeria de /campaigns/:id/public e de /campaigns/:id/preview-gallery, e é servida por URL direta (bucket público). Quando false, é conteúdo exclusivo atrás da chave (bucket privado)."
           },
-          "is_api_gallery": {
-            "type": "boolean",
-            "description": "Item da galeria de previews exposta SOMENTE via API (GET /campaigns/:id/preview-gallery). Não aparece na página pública /campaigns/:id/public."
+          "position": {
+            "type": "number",
+            "description": "Posição da foto na galeria pública (0..5). Só faz sentido com is_preview=true. Null vai para o fim da lista.",
+            "nullable": true
           },
           "active": {
             "type": "boolean",
@@ -6821,7 +7340,7 @@
           "description",
           "aria_label",
           "is_preview",
-          "is_api_gallery",
+          "position",
           "active",
           "created_at"
         ]
@@ -6956,7 +7475,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image (que era persistida como conteúdo de galeria).",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha.",
             "nullable": true
           },
           "key_image": {
@@ -7157,7 +7676,7 @@
           },
           "cover_image": {
             "type": "string",
-            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Substituiu a antiga preview_image. Enviar \"\" (vazio) remove a imagem.",
+            "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha. Enviar \"\" (vazio) remove a imagem. Alternativa: subir o arquivo direto em POST /campaigns/:campaignId/image com kind=cover.",
             "example": "https://example.com/capa2.jpg"
           },
           "key_image": {
@@ -7389,6 +7908,25 @@
         },
         "required": [
           "buttons"
+        ]
+      },
+      "ReorderGalleryDto": {
+        "type": "object",
+        "properties": {
+          "contentIds": {
+            "description": "Lista COMPLETA dos ids da galeria da campanha, na ordem desejada. As posições viram 0..n-1 seguindo esta lista.",
+            "example": [
+              "f2b1c4d6-1111-4a11-9b11-aaaaaaaaaaaa",
+              "f2b1c4d6-2222-4a22-9b22-bbbbbbbbbbbb"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "contentIds"
         ]
       },
       "CreditBalance": {

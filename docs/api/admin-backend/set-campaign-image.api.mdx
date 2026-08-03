@@ -1,0 +1,69 @@
+---
+id: set-campaign-image
+title: "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)"
+description: "Recebe o arquivo via `multipart/form-data` e o backend cuida do S3: não é preciso ter credencial AWS no cliente. Substitui a alternativa antiga (subir por conta própria e mandar a URL no PATCH), que continua funcionando. A imagem anterior é apagada do bucket. Funciona em **qualquer status** da campanha — não existe trava por aprovação."
+sidebar_label: "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/campaigns/{campaignId}/image"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Recebe o arquivo via `multipart/form-data` e o backend cuida do S3: não é preciso ter credencial AWS no cliente. Substitui a alternativa antiga (subir por conta própria e mandar a URL no PATCH), que continua funcionando. A imagem anterior é apagada do bucket. Funciona em **qualquer status** da campanha — não existe trava por aprovação.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./set-campaign-image.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./set-campaign-image.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./set-campaign-image.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

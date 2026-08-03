@@ -51,6 +51,7 @@ const sidebars: SidebarsConfig = {
         'guias/criar-tenant',
         'guias/configurar-pagamento',
         'guias/criar-campanha',
+        'guias/galeria-campanha',
         'guias/custom-fields',
         'guias/botoes-interativos',
         'guias/marketplace-p2p',

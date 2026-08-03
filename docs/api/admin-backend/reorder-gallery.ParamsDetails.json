@@ -1,0 +1,1 @@
+{"parameters":[{"name":"campaignId","required":true,"in":"path","description":"UUID da campanha","schema":{"type":"string"}}]}

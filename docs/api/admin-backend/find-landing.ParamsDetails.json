@@ -1,0 +1,1 @@
+{"parameters":[{"name":"limit","required":false,"in":"query","description":"Máximo de cards retornados (campanhas ativas mais recentes primeiro)","schema":{"minimum":1,"maximum":24,"default":12,"example":12,"type":"number"}}]}

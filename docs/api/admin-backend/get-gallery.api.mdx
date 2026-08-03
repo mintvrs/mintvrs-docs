@@ -1,0 +1,69 @@
+---
+id: get-gallery
+title: "Galeria pública da campanha para gestão (dono/admin)"
+description: "Mesma lista de GET /campaigns/:campaignId/preview-gallery (que é pública), mas pensada para a tela de edição: devolve também os itens com `position` para montar os slots."
+sidebar_label: "Galeria pública da campanha para gestão (dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Galeria pública da campanha para gestão (dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/{campaignId}/gallery"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Mesma lista de GET /campaigns/:campaignId/preview-gallery (que é pública), mas pensada para a tela de edição: devolve também os itens com `position` para montar os slots.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-gallery.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-gallery.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-gallery.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

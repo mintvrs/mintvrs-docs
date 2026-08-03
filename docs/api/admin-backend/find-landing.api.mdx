@@ -1,0 +1,69 @@
+---
+id: find-landing
+title: "Cards de campanhas ativas para a landing page (público, mais recentes primeiro)"
+description: "Listagem ENXUTA para o carrossel 'campanhas ativas' da landing — separada de GET /campaigns/active (marketplace), que traz o detalhe completo. Retorna no máximo `limit` cards (default 12, máx 24), campanhas Active ordenadas por criação (mais recentes primeiro). Cada card contém apenas o que a landing renderiza: capa isolada (`coverImage`), modelo (`modelName`/`modelProfession`), tema do ensaio (`essayTitle`), progresso de chaves e dias restantes."
+sidebar_label: "Cards de campanhas ativas para a landing page (público, mais recentes primeiro)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Cards de campanhas ativas para a landing page (público, mais recentes primeiro)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/landing"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Listagem ENXUTA para o carrossel "campanhas ativas" da landing — separada de GET /campaigns/active (marketplace), que traz o detalhe completo. Retorna no máximo `limit` cards (default 12, máx 24), campanhas Active ordenadas por criação (mais recentes primeiro). Cada card contém apenas o que a landing renderiza: capa isolada (`coverImage`), modelo (`modelName`/`modelProfession`), tema do ensaio (`essayTitle`), progresso de chaves e dias restantes.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./find-landing.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./find-landing.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./find-landing.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -204,6 +204,24 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/find-landing",
+          label: "Cards de campanhas ativas para a landing page (público, mais recentes primeiro)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/find-ended",
+          label: "Cards de campanhas encerradas — ensaios em produção (público)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/find-featured",
+          label: "Campanhas em destaque para o carrossel hero da landing (público)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/find-mine",
           label: "Listar minhas campanhas (dono autenticado)",
           className: "api-method get",
@@ -234,6 +252,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/set-featured",
+          label: "Destacar/remover campanha do carrossel hero da landing (tenant admin)",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/get-buttons",
           label: "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público.",
           className: "api-method get",
@@ -258,8 +282,44 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/set-campaign-image",
+          label: "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-gallery",
+          label: "Galeria pública da campanha para gestão (dono/admin)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/add-gallery-item",
+          label: "Adiciona uma foto à galeria pública (máx 6) — dono/admin",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/replace-gallery-item",
+          label: "Troca a foto de um slot da galeria, no lugar (dono/admin)",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/remove-gallery-item",
+          label: "Remove um item da galeria pública (dono/admin)",
+          className: "api-method delete",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/reorder-gallery",
+          label: "Reordena a galeria pública (dono/admin)",
+          className: "api-method put",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/get-preview-gallery",
-          label: "Galeria de previews da campanha exposta SOMENTE via API. Público.",
+          label: "Galeria pública da campanha (até 6 fotos). Público, sem token.",
           className: "api-method get",
         },
       ],
@@ -281,7 +341,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/create",
-          label: "Criar conteúdo",
+          label: "Criar conteúdo (dono da campanha ou admin)",
           className: "api-method post",
         },
         {
@@ -305,13 +365,13 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/update",
-          label: "Atualizar conteúdo",
+          label: "Atualizar conteúdo (dono da campanha ou admin)",
           className: "api-method put",
         },
         {
           type: "doc",
           id: "api/admin-backend/remove",
-          label: "Remover conteúdo",
+          label: "Remover conteúdo (dono da campanha ou admin)",
           className: "api-method delete",
         },
       ],

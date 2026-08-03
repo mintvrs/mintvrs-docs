@@ -1,0 +1,69 @@
+---
+id: reorder-gallery
+title: "Reordena a galeria pública (dono/admin)"
+description: "Recebe a lista COMPLETA de ids da galeria na ordem desejada; as posições viram 0..n-1. Rejeita listas com repetição, com id de outra campanha ou incompletas — meia reordenação deixaria slots ambíguos."
+sidebar_label: "Reordena a galeria pública (dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "put api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Reordena a galeria pública (dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/campaigns/{campaignId}/gallery/order"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Recebe a lista COMPLETA de ids da galeria na ordem desejada; as posições viram 0..n-1. Rejeita listas com repetição, com id de outra campanha ou incompletas — meia reordenação deixaria slots ambíguos.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./reorder-gallery.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./reorder-gallery.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./reorder-gallery.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

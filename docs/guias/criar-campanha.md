@@ -17,7 +17,6 @@ curl -X POST https://admin-api.homolog.mintvrs.com/campaigns \
   -d '{
     "name": "Álbum Independente 2025",
     "description": "Apoie meu novo álbum e tenha acesso exclusivo a bastidores e experiências únicas.",
-    "cover_image": "https://s3.amazonaws.com/bucket/campanha-capa.jpg",
     "start_date": "2025-02-01T00:00:00Z",
     "end_date": "2025-06-30T23:59:59Z",
     "goal_value": 50000,
@@ -48,6 +47,12 @@ curl -X POST https://admin-api.homolog.mintvrs.com/campaigns \
   "created_at": "2025-01-15T10:00:00Z"
 }
 ```
+
+:::note Imagens não vão neste corpo
+As imagens da campanha (hero, capa do card, imagem da chave e as até 6 fotos da galeria) sobem por
+rotas `multipart` próprias, depois de a campanha existir. Veja
+**[Imagens da Campanha](./galeria-campanha.md)**.
+:::
 
 ## 2. Adicionar tiers de acesso (Accesses)
 
@@ -81,31 +86,31 @@ curl -X POST https://admin-api.homolog.mintvrs.com/accesses \
 
 ## 3. Adicionar conteúdo exclusivo
 
-```bash
-# Conteúdo de prévia (visível para todos)
-curl -X POST https://admin-api.homolog.mintvrs.com/contents \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "campaignId": "campaign-uuid",
-    "title": "Prévia do Álbum",
-    "type": "Video",
-    "url": "https://youtube.com/watch?v=xxxx",
-    "is_preview": true
-  }'
+Conteúdo exclusivo é o que fica **atrás da chave** (`is_preview: false`), servido por link assinado.
 
-# Conteúdo exclusivo (visível apenas para apoiadores)
+```bash
 curl -X POST https://admin-api.homolog.mintvrs.com/contents \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "campaignId": "campaign-uuid",
+    "campaign_id": "campaign-uuid",
     "title": "Bastidores da Gravação",
     "type": "Video",
     "url": "https://s3.amazonaws.com/bucket/backstage.mp4",
     "is_preview": false
   }'
 ```
+
+:::warning O campo é `campaign_id`, com underline
+A API roda com `forbidNonWhitelisted`, então mandar `campaignId` (camelCase) derruba a request
+inteira com `400 property campaignId should not exist`. Vale para todos os corpos JSON.
+:::
+
+:::tip Mídia pública (`is_preview: true`) vai pela rota de galeria
+Fotos públicas do ensaio não devem ser criadas por aqui — use
+`POST /campaigns/:campaignId/gallery`, que sobe o arquivo, escolhe o bucket certo e controla os 6
+slots. Veja **[Imagens da Campanha](./galeria-campanha.md)**.
+:::
 
 ## 4. Ver campanha pública
 
@@ -138,10 +143,12 @@ Campos extras por tenant (ex.: "Estilo de Ensaio", "Fotógrafo") são definidos 
 
 ## Galeria de preview (fotos públicas)
 
-Habilite a galeria no **wizard de configuração do tenant** (`/campaign-config` → "Galeria de Preview" → Habilitado). Com ela ligada, o formulário de **criar campanha** mostra uma seção com **6 slots** de foto. As fotos aparecem na **página pública** da campanha. Cada foto vira um `Content` com `is_preview: true` e um campo de acessibilidade `aria_label` (texto descritivo da imagem para leitores de tela).
+Habilite a galeria no **wizard de configuração do tenant** (`/campaign-config` → "Galeria de Preview" → Habilitado). Com ela ligada, o formulário de **criar campanha** mostra uma seção com **6 slots** de foto, e a campanha ganha uma tela de galeria onde as fotos podem ser trocadas, reordenadas e removidas **a qualquer momento**, inclusive depois de publicada.
 
-- Upload: `POST /contents` (via `uploadAndCreateContent`) com `{ campaign_id, type: "Image", is_preview: true, aria_label }`.
-- Leitura pública: `GET /campaigns/:campaignId/public` → `gallery: [{ mediaType, mediaUrl, ariaLabel }]` (o `ariaLabel` cai no atributo `aria-label`/`alt` da imagem; fallback = `title`). Os mesmos itens vêm em `previews[]` com o campo `aria_label`.
+- Gerenciar: `POST`/`PATCH`/`DELETE /campaigns/:campaignId/gallery` e `PUT .../gallery/order`.
+- Leitura pública: `GET /campaigns/:campaignId/public` → `gallery: [{ mediaType, mediaUrl, ariaLabel }]` (o `ariaLabel` cai no atributo `aria-label`/`alt` da imagem; fallback = `title`). Os mesmos itens vêm em `previews[]` com o campo `aria_label`, e numa rota dedicada sem token: `GET /campaigns/:campaignId/preview-gallery`.
+
+👉 Guia completo: **[Imagens da Campanha](./galeria-campanha.md)**.
 
 ## Splits de receita
 
