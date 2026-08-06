@@ -241,7 +241,7 @@
       "patch": {
         "operationId": "updateUserTenant",
         "summary": "Vincular tenant a um usuário (SuperAdmin ou Admin)",
-        "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id.",
+        "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id. Para desvincular, envie `tenant_id: null` explicitamente — omitir o campo retorna 400. Cadastros novos já são vinculados automaticamente pela origem da requisição (TENANT_ORIGIN_MAP/DEFAULT_TENANT_ID); este endpoint é para correção manual.",
         "parameters": [
           {
             "name": "id",
@@ -834,8 +834,9 @@
         "properties": {
           "tenant_id": {
             "type": "string",
-            "description": "ID do tenant (UUID) ou null para desvincular",
-            "nullable": true
+            "description": "ID do tenant (UUID), ou `null` para DESVINCULAR. Campo obrigatório: omiti-lo retorna 400 (antes, omitir desvinculava em silêncio).",
+            "nullable": true,
+            "example": "dddddddd-dddd-dddd-dddd-000000000001"
           }
         },
         "required": [
@@ -963,7 +964,8 @@
           },
           "tenant_id": {
             "type": "string",
-            "description": "ID do tenant (UUID)"
+            "description": "ID do tenant (UUID)",
+            "example": "dddddddd-dddd-dddd-dddd-000000000001"
           }
         },
         "required": [
