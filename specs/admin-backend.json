@@ -65,7 +65,7 @@
     },
     "/users": {
       "post": {
-        "operationId": "create",
+        "operationId": "createUser",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -130,7 +130,7 @@
         ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "listUsers",
         "parameters": [
           {
             "name": "role",
@@ -189,7 +189,7 @@
     },
     "/users/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findUser",
         "parameters": [
           {
             "name": "id",
@@ -253,7 +253,7 @@
         ]
       },
       "patch": {
-        "operationId": "update",
+        "operationId": "updateUser",
         "parameters": [
           {
             "name": "id",
@@ -561,7 +561,7 @@
     },
     "/campaigns/mine": {
       "get": {
-        "operationId": "findMine",
+        "operationId": "findMyCampaigns",
         "parameters": [],
         "responses": {
           "200": {
@@ -4216,7 +4216,7 @@
     },
     "/tokens/mine": {
       "get": {
-        "operationId": "findMine",
+        "operationId": "findMyTokens",
         "parameters": [],
         "responses": {
           "200": {
@@ -4256,7 +4256,7 @@
     },
     "/tokens": {
       "get": {
-        "operationId": "findAll",
+        "operationId": "listTokens",
         "parameters": [],
         "responses": {
           "200": {
@@ -4306,7 +4306,7 @@
     },
     "/tokens/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findToken",
         "parameters": [
           {
             "name": "id",
@@ -4418,7 +4418,7 @@
     },
     "/accesses": {
       "post": {
-        "operationId": "create",
+        "operationId": "createAccess",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4475,7 +4475,7 @@
     },
     "/accesses/campaign/{campaignId}": {
       "get": {
-        "operationId": "findByCampaign",
+        "operationId": "findAccessesByCampaign",
         "parameters": [
           {
             "name": "campaignId",
@@ -4524,7 +4524,7 @@
     },
     "/accesses/mine": {
       "get": {
-        "operationId": "findMine",
+        "operationId": "findMyAccesses",
         "parameters": [],
         "responses": {
           "200": {
@@ -4564,7 +4564,7 @@
     },
     "/accesses/{id}": {
       "patch": {
-        "operationId": "update",
+        "operationId": "updateAccess",
         "parameters": [
           {
             "name": "id",
@@ -4628,7 +4628,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeAccess",
         "parameters": [
           {
             "name": "id",
@@ -4680,7 +4680,7 @@
     },
     "/access-types": {
       "post": {
-        "operationId": "create",
+        "operationId": "createAccessType",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4714,7 +4714,7 @@
         ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "listAccessTypes",
         "parameters": [],
         "responses": {
           "200": {
@@ -4737,7 +4737,7 @@
     },
     "/access-types/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findAccessType",
         "parameters": [
           {
             "name": "id",
@@ -4767,7 +4767,7 @@
         ]
       },
       "patch": {
-        "operationId": "update",
+        "operationId": "updateAccessType",
         "parameters": [
           {
             "name": "id",
@@ -4810,7 +4810,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeAccessType",
         "parameters": [
           {
             "name": "id",
@@ -4845,7 +4845,7 @@
     },
     "/main-stars": {
       "post": {
-        "operationId": "create",
+        "operationId": "createMainStar",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4879,7 +4879,7 @@
         ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "listMainStars",
         "parameters": [],
         "responses": {
           "200": {
@@ -4902,7 +4902,7 @@
     },
     "/main-stars/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findMainStar",
         "parameters": [
           {
             "name": "id",
@@ -4932,7 +4932,7 @@
         ]
       },
       "patch": {
-        "operationId": "update",
+        "operationId": "updateMainStar",
         "parameters": [
           {
             "name": "id",
@@ -4975,7 +4975,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeMainStar",
         "parameters": [
           {
             "name": "id",
@@ -5010,7 +5010,7 @@
     },
     "/contents": {
       "get": {
-        "operationId": "findAll",
+        "operationId": "listContents",
         "parameters": [],
         "responses": {
           "200": {
@@ -5058,7 +5058,7 @@
         ]
       },
       "post": {
-        "operationId": "create",
+        "operationId": "createContent",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5115,7 +5115,7 @@
     },
     "/contents/campaign/{campaignId}": {
       "get": {
-        "operationId": "findByCampaign",
+        "operationId": "findContentsByCampaign",
         "parameters": [
           {
             "name": "campaignId",
@@ -5213,7 +5213,7 @@
     },
     "/contents/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findContent",
         "parameters": [
           {
             "name": "id",
@@ -5257,7 +5257,7 @@
         ]
       },
       "put": {
-        "operationId": "update",
+        "operationId": "updateContent",
         "parameters": [
           {
             "name": "id",
@@ -5321,7 +5321,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeContent",
         "parameters": [
           {
             "name": "id",
@@ -5370,7 +5370,7 @@
     },
     "/tenants": {
       "post": {
-        "operationId": "create",
+        "operationId": "createTenant",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5418,7 +5418,7 @@
         ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "listTenants",
         "parameters": [],
         "responses": {
           "200": {
@@ -5507,7 +5507,7 @@
     },
     "/tenants/{id}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findTenant",
         "parameters": [
           {
             "name": "id",
@@ -5544,7 +5544,7 @@
         ]
       },
       "patch": {
-        "operationId": "update",
+        "operationId": "updateTenant",
         "parameters": [
           {
             "name": "id",
@@ -5591,7 +5591,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeTenant",
         "parameters": [
           {
             "name": "id",

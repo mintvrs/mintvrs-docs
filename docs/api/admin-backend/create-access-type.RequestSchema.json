@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"title":{"type":"string","description":"Título do tipo de acesso","example":"VIP"},"description":{"type":"string","description":"Descrição do tipo de acesso","example":"Acesso com benefícios exclusivos"}},"required":["title"],"title":"CreateAccessTypeDto"}}}}}

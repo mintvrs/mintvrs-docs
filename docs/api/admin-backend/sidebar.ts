@@ -16,13 +16,13 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-tenant",
           label: "Criar novo tenant (SuperAdmin ou Admin)",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-tenants",
           label: "Listar tenants (SuperAdmin: todos ou filtro ownerId; Admin: só seus)",
           className: "api-method get",
         },
@@ -40,19 +40,19 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-tenant",
           label: "Detalhes de um tenant",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-tenant",
           label: "Atualizar tenant (SuperAdmin, dono Admin, ou TenantAdmin do proprio tenant — apenas campaignConfig)",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-tenant",
           label: "Apagar tenant (SuperAdmin ou dono Admin)",
           className: "api-method delete",
         },
@@ -222,7 +222,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-mine",
+          id: "api/admin-backend/find-my-campaigns",
           label: "Listar minhas campanhas (dono autenticado)",
           className: "api-method get",
         },
@@ -334,19 +334,19 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-contents",
           label: "Listar conteúdos (filtrado por tenant do caller)",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-content",
           label: "Criar conteúdo (dono da campanha ou admin)",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-by-campaign",
+          id: "api/admin-backend/find-contents-by-campaign",
           label: "Listar conteúdos por campanha",
           className: "api-method get",
         },
@@ -358,19 +358,19 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-content",
           label: "Obter conteúdo por ID",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-content",
           label: "Atualizar conteúdo (dono da campanha ou admin)",
           className: "api-method put",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-content",
           label: "Remover conteúdo (dono da campanha ou admin)",
           className: "api-method delete",
         },
@@ -386,19 +386,19 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/find-mine",
+          id: "api/admin-backend/find-my-tokens",
           label: "Listar tokens do usuário autenticado",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-tokens",
           label: "Listar tokens (filtrado por tenant do caller)",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-token",
           label: "Obter token por ID",
           className: "api-method get",
         },
@@ -768,25 +768,25 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-user",
           label: "Criar um novo usuário",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-users",
           label: "Listar usuários (filtrado por role do caller)",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-user",
           label: "Obter usuário por ID",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-user",
           label: "Atualizar usuário por ID",
           className: "api-method patch",
         },
@@ -802,31 +802,31 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-access",
           label: "Criar forma de acesso para uma campanha",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-by-campaign",
+          id: "api/admin-backend/find-accesses-by-campaign",
           label: "Listar formas de acesso de uma campanha",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-mine",
+          id: "api/admin-backend/find-my-accesses",
           label: "Listar meus acessos (por campanhas que sou dono)",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-access",
           label: "Atualizar forma de acesso (apenas dono da campanha)",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-access",
           label: "Remover forma de acesso (apenas dono da campanha)",
           className: "api-method delete",
         },
@@ -842,31 +842,31 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-access-type",
           label: "Criar tipo de acesso",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-access-types",
           label: "Listar tipos de acesso",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-access-type",
           label: "Obter tipo de acesso por ID",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-access-type",
           label: "Atualizar tipo de acesso",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-access-type",
           label: "Remover tipo de acesso",
           className: "api-method delete",
         },
@@ -882,31 +882,31 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-main-star",
           label: "Criar main star",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-main-stars",
           label: "Listar main stars",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-main-star",
           label: "Obter main star por ID",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-main-star",
           label: "Atualizar main star",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-main-star",
           label: "Remover main star",
           className: "api-method delete",
         },
