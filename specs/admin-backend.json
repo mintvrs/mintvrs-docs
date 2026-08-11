@@ -339,7 +339,7 @@
     },
     "/campaigns": {
       "post": {
-        "operationId": "create",
+        "operationId": "createCampaign",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -404,7 +404,7 @@
         ]
       },
       "get": {
-        "operationId": "findAll",
+        "operationId": "listCampaigns",
         "parameters": [],
         "responses": {
           "200": {
@@ -652,7 +652,7 @@
     },
     "/campaigns/{campaignId}": {
       "get": {
-        "operationId": "findOne",
+        "operationId": "findCampaign",
         "parameters": [
           {
             "name": "campaignId",
@@ -701,7 +701,8 @@
         ]
       },
       "patch": {
-        "operationId": "update",
+        "description": "Atualização parcial: campo ausente é preservado, campo presente é escrito. A resposta traz `accesses` carregado — use-a como estado autoritativo em vez de assumir o resultado no cliente.\n\n`accesses` e `stars` são RECONCILIADOS, não substituídos: envie o `id` de cada item já existente para que `sold`, `valid_until` e o UUID da linha sejam preservados. Itens sem `id` são casados por `accessTypeId` e depois por `level` (estrelas, por nome); o que sobrar do lado do banco é removido.\n\nAtenção ao contrato: o GET emite os aliases camelCase `essayTitle` e `ariaLabel`, mas este PATCH exige `essay_title` e `hero_image_alt` — devolver o objeto do GET sem converter resulta em 400 (`forbidNonWhitelisted`).",
+        "operationId": "updateCampaign",
         "parameters": [
           {
             "name": "campaignId",
@@ -764,7 +765,17 @@
             }
           },
           "404": {
-            "description": "Campanha não encontrada",
+            "description": "Campanha ou tipo de acesso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Remoção de um tier que já possui chaves vendidas. Ajuste a quantidade para o total vendido em vez de removê-lo.",
             "content": {
               "application/json": {
                 "schema": {
@@ -785,7 +796,7 @@
         ]
       },
       "delete": {
-        "operationId": "remove",
+        "operationId": "removeCampaign",
         "parameters": [
           {
             "name": "campaignId",
@@ -1087,7 +1098,7 @@
     },
     "/campaigns/{campaignId}/button-layout-image": {
       "post": {
-        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Formatos: jpg, jpeg, png, gif, webp. Tamanho máximo: 5MB. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).",
+        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).\n\n**Resolução exigida: exatamente 2700x1080 (5:2), em webp, png ou jpg** — é o slot \"Fotos 05\" do guia de mídia (ilustração de fundo de ensaio). Ver GET /media/specs.",
         "operationId": "setButtonLayoutImage",
         "parameters": [
           {
@@ -1111,7 +1122,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Imagem de fundo (jpg, jpeg, png, gif ou webp; máx 5MB)"
+                    "description": "Ilustração de fundo do ensaio: ilustração de fundo do ensaio — 2700x1080 exatos, webp, png ou jpg (guia: Fotos 05)"
                   }
                 },
                 "required": [
@@ -1310,7 +1321,7 @@
     },
     "/campaigns/{campaignId}/image": {
       "post": {
-        "description": "Recebe o arquivo via `multipart/form-data` e o backend cuida do S3: não é preciso ter credencial AWS no cliente. Substitui a alternativa antiga (subir por conta própria e mandar a URL no PATCH), que continua funcionando. A imagem anterior é apagada do bucket. Funciona em **qualquer status** da campanha — não existe trava por aprovação.",
+        "description": "Recebe o arquivo via `multipart/form-data` e o backend cuida do S3: não é preciso ter credencial AWS no cliente. A imagem anterior é apagada do bucket. Funciona em **qualquer status** da campanha — não existe trava por aprovação.\n\n**Resolução exigida por `kind` (medidas do guia de mídia do cliente):**\n- hero — banner principal (hero): 1820x780, webp ou jpg (guia: Fotos 01)\n- hero_mobile — banner principal mobile: 600x750, webp ou jpg (guia: Fotos 02)\n- cover — capa do card: 450x600, webp ou jpg (guia: Fotos 03)\n- key — arte da chave: 450x600, webp ou jpg (guia: Fotos 03)\n\nA validação é por resolução EXATA: 1 px de diferença é recusado com 400, e a mensagem informa a medida esperada e a recebida. A orientação EXIF é aplicada antes de medir, então uma foto de iPhone girada é avaliada pela medida que aparece na tela, não pela dos bytes.\n\n**`hero` e `hero_mobile` são artes DIFERENTES, não variações geradas da mesma imagem.** O guia pede 21:9 no desktop e 4:5 no mobile; não existe recorte automático que produza um a partir do outro, então cada um tem seu upload e sua coluna. O cliente escolhe por breakpoint e, quando `hero_image_mobile` for nulo, deve usar `hero_image` como fallback.\n\nA lista de regras também está disponível como JSON em **GET /media/specs**, para o cliente montar o `accept` do input e a mensagem de erro sem reimplementar a tabela.",
         "operationId": "setCampaignImage",
         "parameters": [
           {
@@ -1333,20 +1344,21 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Imagem (jpg, jpeg, png, gif, webp, avif, svg, bmp, heic, heif; máx 15MB)"
+                    "description": "Arquivo da imagem. A resolução precisa bater EXATAMENTE com a do `kind` escolhido — veja a lista abaixo ou consulte GET /media/specs."
                   },
                   "kind": {
                     "type": "string",
                     "enum": [
                       "hero",
+                      "hero_mobile",
                       "cover",
                       "key"
                     ],
-                    "description": "Qual imagem substituir: `hero` (carrossel da landing), `cover` (capa do card) ou `key` (arte da chave no marketplace)"
+                    "description": "`hero`: hero — banner principal (hero): 1820x780, webp ou jpg (guia: Fotos 01) · `hero_mobile`: hero_mobile — banner principal mobile: 600x750, webp ou jpg (guia: Fotos 02) · `cover`: cover — capa do card: 450x600, webp ou jpg (guia: Fotos 03) · `key`: key — arte da chave: 450x600, webp ou jpg (guia: Fotos 03)"
                   },
                   "alt": {
                     "type": "string",
-                    "description": "Texto alternativo, só para `kind=hero` (grava em hero_image_alt / ariaLabel)"
+                    "description": "Texto alternativo, só para `kind=hero` e `kind=hero_mobile` (grava em hero_image_alt / ariaLabel; é a mesma foto em dois recortes, então o alt é compartilhado)"
                   }
                 },
                 "required": [
@@ -1369,7 +1381,7 @@
             }
           },
           "400": {
-            "description": "Arquivo ausente, `kind` inválido, extensão inválida ou > 15MB",
+            "description": "Arquivo ausente, `kind` inválido, ou arquivo fora do guia: extensão, tamanho ou **resolução** incorretos",
             "content": {
               "application/json": {
                 "schema": {
@@ -1414,7 +1426,7 @@
             "bearer": []
           }
         ],
-        "summary": "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)",
+        "summary": "Upload de imagem da campanha — hero, hero mobile, capa do card ou arte da chave (dono/admin)",
         "tags": [
           "campaigns"
         ]
@@ -6074,6 +6086,29 @@
           "votes"
         ]
       }
+    },
+    "/media/specs": {
+      "get": {
+        "description": "Devolve a tabela que o backend aplica em TODO upload — transcrição do guia de medidas do cliente.\n\nServe para o cliente montar o `accept` do input, exibir a medida esperada e recusar o arquivo antes de subir, sem reimplementar a tabela e sem depender desta documentação ficar atualizada.\n\nComo usar: pegue o spec pelo `slot` (ou pelo `kindParam`, quando for subir por `POST /campaigns/:campaignId/image`). Se `mode` = `exact`, a imagem precisa bater exatamente com uma das medidas de `sizes`. Se `mode` = `boundedRatio`, precisa ter uma das proporções de `ratios` (compare em inteiro: `w * r.h === h * r.w`) e caber em um dos tetos de `maxSizes`.\n\nATENÇÃO: o banner desktop (`campaign_hero`, 1820x780) e o mobile (`campaign_hero_mobile`, 600x750) são artes DIFERENTES, cada uma com seu upload — não são variações geradas da mesma imagem. A escolha entre elas é do cliente, por breakpoint; quando a mobile for nula, use a desktop.\n\nPúblico e sem autenticação: são regras de formulário, não dado sensível.",
+        "operationId": "getSpecs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaSpecsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Regras de mídia aceitas (medidas, formatos e pesos)",
+        "tags": [
+          "media"
+        ]
+      }
     }
   },
   "info": {
@@ -6351,6 +6386,11 @@
       "CreateAccessItemDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do tier já existente. Enviado no PATCH /campaigns/:id para casar este item com a linha gravada, preservando `sold`, `valid_until` e o próprio UUID (transactions.access_id aponta para ele e NÃO tem foreign key, então recriar a linha orfana o histórico de compras). Ausente = tier novo. Ignorado em POST /campaigns.",
+            "example": "uuid-access-id"
+          },
           "level": {
             "type": "string",
             "description": "Controle de acesso (nível)",
@@ -6405,6 +6445,10 @@
       "CampaignStarItemDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da estrela já existente. Enviado no PATCH /campaigns/:id para casar este item com a linha gravada, preservando o registro on-chain (xion_transaction_hash) quando o split não mudou. Ausente = estrela nova."
+          },
           "star_name": {
             "type": "string",
             "description": "Nome da estrela"
@@ -6460,6 +6504,11 @@
             "type": "string",
             "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade. Antiga cover_image_alt, renomeada.",
             "example": "Retrato da modelo em estúdio com fundo escuro"
+          },
+          "hero_image_mobile": {
+            "type": "string",
+            "description": "URL da imagem HERO na versão MOBILE (\"Fotos 02\" do guia: 600x750, 4:5). Alternativa recomendada: POST /campaigns/:campaignId/image com kind=hero_mobile, que valida a resolução.",
+            "example": "https://example.com/hero-mobile.webp"
           },
           "cover_image": {
             "type": "string",
@@ -6604,6 +6653,11 @@
             "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
             "nullable": true
           },
+          "hero_image_mobile": {
+            "type": "string",
+            "description": "URL da imagem HERO na versão MOBILE — \"Fotos 02\" do guia de mídia (600x750, 4:5). Coluna própria porque a hero desktop é 21:9 e não há recorte automático que produza um 4:5 aceitável. NULL = o consumidor faz fallback para hero_image.",
+            "nullable": true
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha.",
@@ -6739,6 +6793,7 @@
           "category",
           "hero_image",
           "hero_image_alt",
+          "hero_image_mobile",
           "cover_image",
           "key_image",
           "is_featured",
@@ -6831,6 +6886,11 @@
           "hero_image_alt": {
             "type": "string",
             "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
+            "nullable": true
+          },
+          "hero_image_mobile": {
+            "type": "string",
+            "description": "URL da imagem HERO na versão MOBILE — \"Fotos 02\" do guia de mídia (600x750, 4:5). Coluna própria porque a hero desktop é 21:9 e não há recorte automático que produza um 4:5 aceitável. NULL = o consumidor faz fallback para hero_image.",
             "nullable": true
           },
           "cover_image": {
@@ -7036,6 +7096,7 @@
           "category",
           "hero_image",
           "hero_image_alt",
+          "hero_image_mobile",
           "cover_image",
           "key_image",
           "is_featured",
@@ -7220,6 +7281,12 @@
             "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/hero-123.jpg",
             "nullable": true
           },
+          "heroImageMobile": {
+            "type": "string",
+            "description": "URL servível da imagem hero MOBILE (\"Fotos 02\" do guia: 600x750, 4:5). NULL quando a campanha ainda não tem arte mobile — nesse caso use heroImage como fallback.",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/hero_mobile-123.webp",
+            "nullable": true
+          },
           "ariaLabel": {
             "type": "string",
             "description": "Texto alternativo de acessibilidade da imagem hero (hero_image_alt)",
@@ -7267,6 +7334,7 @@
           "essayTitle",
           "description",
           "heroImage",
+          "heroImageMobile",
           "ariaLabel",
           "fundingPercentage",
           "currentKeys",
@@ -7473,6 +7541,11 @@
             "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade (antiga cover_image_alt, renomeada). É a fonte do alias `ariaLabel` nas respostas.",
             "nullable": true
           },
+          "hero_image_mobile": {
+            "type": "string",
+            "description": "URL da imagem HERO na versão MOBILE — \"Fotos 02\" do guia de mídia (600x750, 4:5). Coluna própria porque a hero desktop é 21:9 e não há recorte automático que produza um 4:5 aceitável. NULL = o consumidor faz fallback para hero_image.",
+            "nullable": true
+          },
           "cover_image": {
             "type": "string",
             "description": "URL da imagem de CAPA isolada (estilo capa de revista) usada nos cards de campanha.",
@@ -7615,6 +7688,7 @@
           "category",
           "hero_image",
           "hero_image_alt",
+          "hero_image_mobile",
           "cover_image",
           "key_image",
           "is_featured",
@@ -7673,6 +7747,11 @@
             "type": "string",
             "description": "Texto alternativo (aria-label) da imagem hero para acessibilidade. Antiga cover_image_alt, renomeada.",
             "example": "Retrato da modelo em estúdio com fundo escuro"
+          },
+          "hero_image_mobile": {
+            "type": "string",
+            "description": "URL da imagem HERO na versão MOBILE (\"Fotos 02\" do guia: 600x750, 4:5). Enviar \"\" (vazio) remove a imagem. ATENÇÃO: a URL enviada aqui NÃO passa pela validação de resolução (não há bytes para medir) — prefira POST /campaigns/:campaignId/image com kind=hero_mobile.",
+            "example": "https://example.com/hero-mobile.webp"
           },
           "cover_image": {
             "type": "string",
@@ -10275,6 +10354,140 @@
           "campaignId",
           "votesCount",
           "hasVoted"
+        ]
+      },
+      "PixelSizeDto": {
+        "type": "object",
+        "properties": {
+          "w": {
+            "type": "number",
+            "description": "Largura em pixels",
+            "example": 1820
+          },
+          "h": {
+            "type": "number",
+            "description": "Altura em pixels",
+            "example": 780
+          }
+        },
+        "required": [
+          "w",
+          "h"
+        ]
+      },
+      "MediaSpecDto": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "string",
+            "description": "Identificador do slot. É o valor usado nas rotas de upload.",
+            "example": "campaign_hero"
+          },
+          "kindParam": {
+            "type": "string",
+            "description": "Valor do parâmetro `kind` em POST /campaigns/:campaignId/image, quando o slot for de imagem escalar da campanha. Ausente nos demais slots.",
+            "example": "hero"
+          },
+          "label": {
+            "type": "string",
+            "description": "Rótulo em PT-BR do slot, para exibir ao usuário",
+            "example": "banner principal (hero)"
+          },
+          "guideRef": {
+            "type": "string",
+            "description": "Seção correspondente no guia de mídia do cliente",
+            "example": "Fotos 01"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Natureza do arquivo",
+            "enum": [
+              "image",
+              "video"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "description": "`exact` = precisa bater com uma das medidas de `sizes`. `boundedRatio` = precisa ter uma das proporções de `ratios` e caber em um dos tetos de `maxSizes`.",
+            "enum": [
+              "exact",
+              "boundedRatio"
+            ]
+          },
+          "sizes": {
+            "description": "Medidas exatas aceitas. Presente apenas quando mode = exact.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PixelSizeDto"
+            }
+          },
+          "ratios": {
+            "description": "Proporções aceitas (w:h). Presente apenas quando mode = boundedRatio.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PixelSizeDto"
+            }
+          },
+          "maxSizes": {
+            "description": "Tetos de resolução. Presente apenas quando mode = boundedRatio.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PixelSizeDto"
+            }
+          },
+          "extensions": {
+            "description": "Extensões aceitas, em minúsculas e sem o ponto",
+            "example": [
+              "webp",
+              "jpg",
+              "jpeg"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accept": {
+            "type": "string",
+            "description": "Valor pronto para o atributo accept de um `input type=\"file\"`",
+            "example": ".webp,.jpg,.jpeg"
+          },
+          "maxBytes": {
+            "type": "number",
+            "description": "Tamanho máximo em bytes",
+            "example": 15728640
+          },
+          "humanDimensions": {
+            "type": "string",
+            "description": "Descrição das medidas aceitas, pronta para exibir",
+            "example": "1820 × 780 px"
+          }
+        },
+        "required": [
+          "slot",
+          "label",
+          "guideRef",
+          "kind",
+          "mode",
+          "extensions",
+          "accept",
+          "maxBytes",
+          "humanDimensions"
+        ]
+      },
+      "MediaSpecsResponseDto": {
+        "type": "object",
+        "properties": {
+          "specs": {
+            "description": "Regras de mídia por slot. Transcrição do guia de medidas do cliente; é a MESMA tabela que o backend aplica em cada upload.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaSpecDto"
+            }
+          }
+        },
+        "required": [
+          "specs"
         ]
       }
     }

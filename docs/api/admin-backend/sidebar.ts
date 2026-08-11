@@ -186,13 +186,13 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create",
+          id: "api/admin-backend/create-campaign",
           label: "Criar uma nova campanha (dono = usuário autenticado)",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-all",
+          id: "api/admin-backend/list-campaigns",
           label: "Listar campanhas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
           className: "api-method get",
         },
@@ -234,19 +234,19 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-one",
+          id: "api/admin-backend/find-campaign",
           label: "Obter campanha por ID (com custom_fields_resolved)",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/update",
+          id: "api/admin-backend/update-campaign",
           label: "Atualizar campanha (apenas dono)",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove",
+          id: "api/admin-backend/remove-campaign",
           label: "Remover campanha (SuperAdmin sempre; Admin se for do tenant dele; dono da campanha)",
           className: "api-method delete",
         },
@@ -283,7 +283,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/set-campaign-image",
-          label: "Upload de imagem da campanha — hero, capa do card ou arte da chave (dono/admin)",
+          label: "Upload de imagem da campanha — hero, hero mobile, capa do card ou arte da chave (dono/admin)",
           className: "api-method post",
         },
         {
@@ -1041,6 +1041,18 @@ const sidebar: SidebarsConfig = {
           id: "api/admin-backend/consultar",
           label: "[Backoffice] Verifica CPF + nome + data de nascimento na Receita Federal",
           className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "media",
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/get-specs",
+          label: "Regras de mídia aceitas (medidas, formatos e pesos)",
+          className: "api-method get",
         },
       ],
     },
