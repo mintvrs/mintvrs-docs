@@ -1122,7 +1122,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Ilustração de fundo do ensaio: ilustração de fundo do ensaio — 2700x1080 exatos, webp, png ou jpg (guia: Fotos 05)"
+                    "description": "Ilustração de fundo do ensaio: exatamente 2700 × 1080 px, webp, png ou jpg, máx 15MB (guia: Fotos 05)"
                   }
                 },
                 "required": [
@@ -1150,7 +1150,7 @@
             }
           },
           "400": {
-            "description": "Arquivo ausente, extensão inválida ou maior que 5MB",
+            "description": "Arquivo ausente, formato inválido, fora de 2700x1080 ou maior que 15MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -1203,7 +1203,7 @@
     },
     "/campaigns/{campaignId}/buttons/{buttonId}/file": {
       "post": {
-        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Valida a extensão + mimetype contra o regex do tipo, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. Formatos por tipo — IMAGE: jpg, jpeg, png, gif, webp, avif, svg (≤10MB); VIDEO: mp4, mov, webm, m4v, avi, mkv (≤200MB); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB). Retorna o botão atualizado com a URL servível.",
+        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB). Retorna o botão atualizado com a URL servível.",
         "operationId": "uploadButtonFile",
         "parameters": [
           {
@@ -1236,7 +1236,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Arquivo do botão (o formato aceito depende de `type`)"
+                    "description": "Arquivo do botão (o formato aceito depende de `type`). IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB)"
                   },
                   "type": {
                     "type": "string",
@@ -1434,7 +1434,7 @@
     },
     "/campaigns/{campaignId}/gallery": {
       "get": {
-        "description": "Mesma lista de GET /campaigns/:campaignId/preview-gallery (que é pública), mas pensada para a tela de edição: devolve também os itens com `position` para montar os slots.",
+        "description": "Mesma resposta de GET /campaigns/:campaignId/preview-gallery (item completo, com `id` e `position`), atrás de token: é a rota para a tela de edição montar os slots e ter o `id` que PATCH, DELETE e PUT /gallery/order pedem. Quem devolve a forma reduzida (`mediaType`/`mediaUrl`/`ariaLabel`, sem id nem position) é o campo `gallery` do GET /campaigns/:id/public.",
         "operationId": "getGallery",
         "parameters": [
           {
@@ -1506,7 +1506,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Foto (máx 15MB) ou vídeo curto (mp4/mov/webm/m4v, máx 100MB)"
+                    "description": "Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -1571,7 +1571,7 @@
             "bearer": []
           }
         ],
-        "summary": "Adiciona uma foto à galeria pública (máx 6) — dono/admin",
+        "summary": "Adiciona uma foto ou vídeo à galeria pública (máx 6) — dono/admin",
         "tags": [
           "campaigns"
         ]
@@ -1611,7 +1611,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia."
+                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia. Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -1810,7 +1810,7 @@
     },
     "/campaigns/{campaignId}/preview-gallery": {
       "get": {
-        "description": "Retorna as mídias (imagem/vídeo) da galeria pública da campanha (`is_preview`, ativas), com URLs servíveis, ordenadas por `position` (o slot escolhido no admin) e criação como desempate. É a mesma coleção que vem em `gallery` no GET /campaigns/:id/public, numa rota dedicada e sem autenticação. Para gerenciar (subir, trocar, remover, reordenar) use as rotas /campaigns/:campaignId/gallery.",
+        "description": "Retorna as mídias (imagem/vídeo) da galeria pública da campanha (`is_preview`, ativas), com URLs servíveis, ordenadas por `position` (o slot escolhido no admin) e criação como desempate. São os mesmos itens que aparecem em `gallery` no GET /campaigns/:id/public, mas aqui no formato completo (`id`, `position`, `title`, `aria_label`) — lá a lista vem reduzida a `mediaType`/`mediaUrl`/`ariaLabel`. Para gerenciar (subir, trocar, remover, reordenar) use as rotas /campaigns/:campaignId/gallery.",
         "operationId": "getPreviewGallery",
         "parameters": [
           {

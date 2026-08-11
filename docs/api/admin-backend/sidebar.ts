@@ -295,7 +295,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/add-gallery-item",
-          label: "Adiciona uma foto à galeria pública (máx 6) — dono/admin",
+          label: "Adiciona uma foto ou vídeo à galeria pública (máx 6) — dono/admin",
           className: "api-method post",
         },
         {
