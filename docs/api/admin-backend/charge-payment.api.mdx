@@ -1,0 +1,69 @@
+---
+id: charge-payment
+title: "Processar pagamento via gateway do tenant"
+description: "Cobrança avulsa (PaymentIntent), fora do fluxo de checkout. Valor em centavos. Não cria chave nem crédito — é ferramenta de operação."
+sidebar_label: "Processar pagamento via gateway do tenant"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Processar pagamento via gateway do tenant"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/gateways/payments/charge"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Cobrança avulsa (PaymentIntent), fora do fluxo de checkout. Valor em centavos. Não cria chave nem crédito — é ferramenta de operação.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./charge-payment.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./charge-payment.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./charge-payment.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

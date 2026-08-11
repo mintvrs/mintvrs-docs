@@ -1,0 +1,1 @@
+{"responses":{"200":{"description":"Lista de providers suportados","content":{"application/json":{"schema":{"type":"object","properties":{"providers":{"description":"Identificadores aceitos no campo `provider`","example":["stripe"],"type":"array","items":{"type":"string"}}},"required":["providers"],"title":"PaymentProvidersDto"}}}}}}

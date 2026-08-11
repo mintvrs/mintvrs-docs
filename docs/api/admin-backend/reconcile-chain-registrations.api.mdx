@@ -1,0 +1,69 @@
+---
+id: reconcile-chain-registrations
+title: "Reprocessar chaves pagas que ficaram sem registro on-chain"
+description: "Compra de chave não depende mais da blockchain: se a chain estiver fora no momento do pagamento, a chave é gravada com `chainStatus = pending` e o comprador segue com a chave válida. Este endpoint drena essa fila — pega as `pending` mais antigas, tenta registrar de novo e preenche `transactionHash`/`explorerUrl` nas que passarem. Idempotente: o que falhar continua `pending` para a próxima rodada, e o que já está `confirmed` nunca é tocado."
+sidebar_label: "Reprocessar chaves pagas que ficaram sem registro on-chain"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Reprocessar chaves pagas que ficaram sem registro on-chain"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/transactions/reconcile-chain"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Compra de chave não depende mais da blockchain: se a chain estiver fora no momento do pagamento, a chave é gravada com `chainStatus = pending` e o comprador segue com a chave válida. Este endpoint drena essa fila — pega as `pending` mais antigas, tenta registrar de novo e preenche `transactionHash`/`explorerUrl` nas que passarem. Idempotente: o que falhar continua `pending` para a próxima rodada, e o que já está `confirmed` nunca é tocado.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./reconcile-chain-registrations.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./reconcile-chain-registrations.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./reconcile-chain-registrations.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

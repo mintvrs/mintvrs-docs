@@ -1,0 +1,69 @@
+---
+id: create-payment-gateway
+title: "Configurar gateway de pagamento para o tenant"
+description: "Guarda a credencial do provider para este tenant. É esta chave que gera as sessões de checkout — o front nunca recebe nem envia chave de gateway."
+sidebar_label: "Configurar gateway de pagamento para o tenant"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Configurar gateway de pagamento para o tenant"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/gateways"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Guarda a credencial do provider para este tenant. É esta chave que gera as sessões de checkout — o front nunca recebe nem envia chave de gateway.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-payment-gateway.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-payment-gateway.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-payment-gateway.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -86,49 +86,49 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/create-gateway",
+          id: "api/admin-backend/create-payment-gateway",
           label: "Configurar gateway de pagamento para o tenant",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/find-by-tenant",
+          id: "api/admin-backend/list-payment-gateways",
           label: "Listar gateways configurados do tenant",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/remove-gateway",
+          id: "api/admin-backend/remove-payment-gateway",
           label: "Remover gateway",
           className: "api-method delete",
         },
         {
           type: "doc",
-          id: "api/admin-backend/toggle-gateway",
+          id: "api/admin-backend/toggle-payment-gateway",
           label: "Ativar/desativar gateway",
           className: "api-method patch",
         },
         {
           type: "doc",
-          id: "api/admin-backend/test-connection",
+          id: "api/admin-backend/test-gateway-connection",
           label: "Testar conexao com o provider",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/list-providers",
+          id: "api/admin-backend/list-payment-providers",
           label: "Listar providers de pagamento suportados",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/create-checkout",
+          id: "api/admin-backend/create-credits-checkout",
           label: "Gerar link de checkout para compra de créditos",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/confirm-checkout",
+          id: "api/admin-backend/confirm-credits-checkout",
           label: "Confirmar checkout e creditar saldo (polling após retorno do Stripe)",
           className: "api-method post",
         },
@@ -141,7 +141,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/confirm-key-purchase",
-          label: "Confirmar compra de chave via Stripe e registrar on-chain",
+          label: "Confirmar compra de chave via Stripe (registro on-chain é assíncrono)",
           className: "api-method post",
         },
         {
@@ -164,13 +164,13 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/admin-backend/charge",
+          id: "api/admin-backend/charge-payment",
           label: "Processar pagamento via gateway do tenant",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/refund",
+          id: "api/admin-backend/refund-payment",
           label: "Processar estorno via gateway do tenant",
           className: "api-method post",
         },
@@ -527,13 +527,19 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/register",
-          label: "Registrar compra Web2 on-chain",
+          label: "Registrar compra Web2 (registro on-chain best-effort)",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/register-mock",
           label: "Registrar transação mock (apenas SuperAdmin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/reconcile-chain-registrations",
+          label: "Reprocessar chaves pagas que ficaram sem registro on-chain",
           className: "api-method post",
         },
         {

@@ -1,0 +1,1 @@
+{"responses":{"200":{"description":"Resultado do teste de conexão","content":{"application/json":{"schema":{"type":"object","properties":{"valid":{"type":"boolean","description":"true = a chave respondeu à chamada de validação do provider","example":true}},"required":["valid"],"title":"GatewayConnectionTestDto"}}}}}}

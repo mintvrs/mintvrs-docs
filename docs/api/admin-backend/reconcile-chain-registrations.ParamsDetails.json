@@ -1,0 +1,1 @@
+{"parameters":[{"name":"limit","required":false,"in":"query","description":"Quantas chaves processar nesta rodada (1–200, padrão 50)","schema":{"example":50,"type":"string"}}]}

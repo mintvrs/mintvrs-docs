@@ -1,0 +1,69 @@
+---
+id: confirm-credits-checkout
+title: "Confirmar checkout e creditar saldo (polling após retorno do Stripe)"
+description: "Idempotente: creditar duas vezes a mesma sessão não duplica saldo. O webhook da Stripe faz o mesmo trabalho como rede de segurança para quem fechou a aba antes do retorno, então este endpoint é o caminho rápido, não o único."
+sidebar_label: "Confirmar checkout e creditar saldo (polling após retorno do Stripe)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Confirmar checkout e creditar saldo (polling após retorno do Stripe)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/gateways/checkout/confirm"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Idempotente: creditar duas vezes a mesma sessão não duplica saldo. O webhook da Stripe faz o mesmo trabalho como rede de segurança para quem fechou a aba antes do retorno, então este endpoint é o caminho rápido, não o único.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./confirm-credits-checkout.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./confirm-credits-checkout.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./confirm-credits-checkout.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

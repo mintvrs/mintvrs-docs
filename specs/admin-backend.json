@@ -2530,11 +2530,19 @@
     },
     "/gateways": {
       "post": {
-        "operationId": "createGateway",
+        "description": "Guarda a credencial do provider para este tenant. É esta chave que gera as sessões de checkout — o front nunca recebe nem envia chave de gateway.",
+        "operationId": "createPaymentGateway",
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Gateway configurado"
+            "description": "Gateway configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantGateway"
+                }
+              }
+            }
           },
           "401": {
             "description": "Nao autorizado",
@@ -2558,11 +2566,32 @@
         ]
       },
       "get": {
-        "operationId": "findByTenant",
+        "description": "A credencial volta mascarada (`****` + os 4 últimos caracteres) — a chave em claro não sai do backend.",
+        "operationId": "listPaymentGateways",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Lista de gateways"
+            "description": "Lista de gateways, com a credencial mascarada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantGateway"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2578,12 +2607,13 @@
     },
     "/gateways/{id}": {
       "delete": {
-        "operationId": "removeGateway",
+        "operationId": "removePaymentGateway",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "UUID do gateway configurado",
             "schema": {
               "type": "string"
             }
@@ -2592,6 +2622,16 @@
         "responses": {
           "200": {
             "description": "Gateway removido"
+          },
+          "404": {
+            "description": "Gateway não encontrado neste tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2607,12 +2647,14 @@
     },
     "/gateways/{id}/toggle": {
       "patch": {
-        "operationId": "toggleGateway",
+        "description": "Gateway inativo deixa de gerar checkout: as sessões passam a falhar até que outro provider ativo assuma.",
+        "operationId": "togglePaymentGateway",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "UUID do gateway configurado",
             "schema": {
               "type": "string"
             }
@@ -2620,7 +2662,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Gateway atualizado"
+            "description": "Gateway atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantGateway"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Gateway não encontrado neste tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2636,11 +2695,19 @@
     },
     "/gateways/test-connection": {
       "post": {
-        "operationId": "testConnection",
+        "description": "Valida a credencial contra o provider sem persistir nada. Use antes de salvar um gateway novo.",
+        "operationId": "testGatewayConnection",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Resultado do teste de conexão"
+            "description": "Resultado do teste de conexão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayConnectionTestDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2656,11 +2723,19 @@
     },
     "/gateways/providers": {
       "get": {
-        "operationId": "listProviders",
+        "description": "Público. Os valores aceitos no campo `provider` dos checkouts.",
+        "operationId": "listPaymentProviders",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Lista de providers suportados"
+            "description": "Lista de providers suportados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProvidersDto"
+                }
+              }
+            }
           }
         },
         "summary": "Listar providers de pagamento suportados",
@@ -2671,7 +2746,8 @@
     },
     "/gateways/checkout/credits": {
       "post": {
-        "operationId": "createCheckout",
+        "description": "Aqui o valor **vem do cliente** por definição — é o usuário quem escolhe quanto de crédito comprar (`amount`, em centavos). Diferente da compra de chave, onde o preço é do tier. Redirecione para `checkoutUrl` e confirme depois em `POST /gateways/checkout/confirm`. Crédito é usado apenas nas ofertas P2P do marketplace.",
+        "operationId": "createCreditsCheckout",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2685,10 +2761,27 @@
         },
         "responses": {
           "200": {
-            "description": "URL de checkout gerada"
+            "description": "URL de checkout gerada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Body inválido (amount/successUrl/cancelUrl obrigatórios)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2711,7 +2804,8 @@
     },
     "/gateways/checkout/confirm": {
       "post": {
-        "operationId": "confirmCheckout",
+        "description": "Idempotente: creditar duas vezes a mesma sessão não duplica saldo. O webhook da Stripe faz o mesmo trabalho como rede de segurança para quem fechou a aba antes do retorno, então este endpoint é o caminho rápido, não o único.",
+        "operationId": "confirmCreditsCheckout",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2725,10 +2819,27 @@
         },
         "responses": {
           "200": {
-            "description": "Status da confirmação do checkout"
+            "description": "Status da confirmação do checkout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutConfirmationDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2751,6 +2862,7 @@
     },
     "/gateways/checkout/key-purchase": {
       "post": {
+        "description": "O front escolhe **qual** tier comprar (`accessId` + `quantity`); o servidor decide **quanto** custa. O preço unitário é lido de `accesses.price_card` (fallback `accesses.price`), que vive em reais, e convertido para centavos — `fiatAmount` no corpo é ignorado. O valor efetivamente cobrado volta em `unitAmount`/`totalAmount`: use-os na tela de confirmação. O tier é validado aqui, **antes** de qualquer cobrança: precisa pertencer à campanha, ter preço configurado, estar dentro da validade e ter estoque. A sessão **reserva** as chaves por `expiresInSeconds` — duas sessões abertas para a última chave não passam as duas, e `accesses.sold` nunca ultrapassa `quantity`. Checkout abandonado devolve o estoque sozinho quando a reserva vence. Em seguida, redirecione o navegador para `checkoutUrl` e guarde `sessionId` para `POST /gateways/checkout/confirm-key-purchase`.",
         "operationId": "createKeyPurchaseCheckout",
         "parameters": [],
         "requestBody": {
@@ -2765,10 +2877,37 @@
         },
         "responses": {
           "200": {
-            "description": "URL de checkout e sessionId"
+            "description": "Sessão criada, com o preço derivado do tier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyCheckoutSessionDto"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Body inválido (campaignId UUID, fiatAmount inteiro positivo, URLs obrigatórias)",
+            "description": "Body inválido (campaignId/accessId UUID, URLs obrigatórias), tier de outra campanha, tier vencido, tier sem preço configurado ou estoque insuficiente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tier (accessId) não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2791,6 +2930,7 @@
     },
     "/gateways/checkout/confirm-key-purchase": {
       "post": {
+        "description": "Chame no retorno do `successUrl`, com o `sessionId` guardado. Idempotente por sessão, inclusive sob chamadas **simultâneas** (duas abas, double-submit, retry): a reivindicação é feita no banco, então uma sessão nunca vira duas chaves. Se outra requisição estiver processando a mesma sessão, a resposta vem com `reason: processing` — repita em instantes. Se o tier tiver esgotado entre o pagamento e a confirmação, a cobrança é **estornada automaticamente** e a resposta vem com `reason: sold_out`. O registro on-chain é **best-effort** e não bloqueia a compra — a chave já vale como posse (aparece no marketplace, no `hasKey` e no resumo de chaves) assim que o pagamento é confirmado. Consulte `chainStatus`: em `pending`, `transactionHash` e `explorerUrl` vêm `null` e são preenchidos depois pela reconciliação (`POST /transactions/reconcile-chain`). Não monte a URL do explorer no front — quando vier `null`, esconda o link.",
         "operationId": "confirmKeyPurchase",
         "parameters": [],
         "requestBody": {
@@ -2805,10 +2945,27 @@
         },
         "responses": {
           "200": {
-            "description": "Status da confirmação e hash da transação on-chain"
+            "description": "Status da confirmação, da chave criada e do registro on-chain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyPurchaseConfirmationDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2823,7 +2980,7 @@
             "bearer": []
           }
         ],
-        "summary": "Confirmar compra de chave via Stripe e registrar on-chain",
+        "summary": "Confirmar compra de chave via Stripe (registro on-chain é assíncrono)",
         "tags": [
           "payment-gateways"
         ]
@@ -2831,6 +2988,7 @@
     },
     "/gateways/checkout/offer-funding": {
       "post": {
+        "description": "O `shortfall` é sempre recalculado no servidor (saldo disponível = saldo − travado); o valor enviado pelo cliente não é usado. Se a oferta couber no saldo, a resposta vem só com `shortfall: 0` e o cliente cria a oferta direto em `POST /marketplace/offers`. O anúncio é validado antes de qualquer cobrança.",
         "operationId": "createOfferFundingCheckout",
         "parameters": [],
         "requestBody": {
@@ -2845,10 +3003,27 @@
         },
         "responses": {
           "200": {
-            "description": "shortfall e, quando > 0, URL de checkout + sessionId"
+            "description": "shortfall e, quando > 0, URL de checkout + sessionId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferFundingCheckoutSessionDto"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Body inválido (listingId UUID, price/expiresInDays inteiros positivos, URLs obrigatórias)",
+            "description": "Body inválido (listingId UUID, price/expiresInDays inteiros positivos, URLs obrigatórias) ou anúncio não ofertável",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2871,6 +3046,7 @@
     },
     "/gateways/checkout/confirm-offer-funding": {
       "post": {
+        "description": "Idempotente por sessão. Se o anúncio saiu do ar entre o pagamento e a confirmação, a parcela cobrada no cartão é estornada automaticamente e a resposta volta com `reason: listing_unavailable`.",
         "operationId": "confirmOfferFunding",
         "parameters": [],
         "requestBody": {
@@ -2885,10 +3061,27 @@
         },
         "responses": {
           "200": {
-            "description": "Status da confirmação e oferta criada"
+            "description": "Status da confirmação e oferta criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferFundingConfirmationDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Body inválido (sessionId obrigatório)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2911,6 +3104,7 @@
     },
     "/gateways/webhook/stripe/{tenantId}": {
       "post": {
+        "description": "Rede de segurança durável para quem fechou a aba depois de pagar: liquida compra de crédito e financiamento de oferta sem depender do retorno do navegador. A assinatura é verificada sobre o corpo bruto com o secret do tenant — sem secret configurado, rejeita (fail-closed).",
         "operationId": "handleStripeWebhook",
         "parameters": [
           {
@@ -2933,7 +3127,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Webhook recebido"
+            "description": "Webhook recebido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeWebhookAckDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Assinatura ausente/inválida, tenantId malformado ou webhook secret não configurado",
@@ -2964,7 +3165,8 @@
     },
     "/gateways/payments/charge": {
       "post": {
-        "operationId": "charge",
+        "description": "Cobrança avulsa (PaymentIntent), fora do fluxo de checkout. Valor em centavos. Não cria chave nem crédito — é ferramenta de operação.",
+        "operationId": "chargePayment",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2978,7 +3180,24 @@
         },
         "responses": {
           "200": {
-            "description": "Pagamento processado"
+            "description": "Pagamento processado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2994,11 +3213,29 @@
     },
     "/gateways/payments/refund": {
       "post": {
-        "operationId": "refund",
+        "description": "Estorno total ou parcial de uma cobrança do provider. `amount` ausente estorna o valor cheio.",
+        "operationId": "refundPayment",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Estorno processado"
+            "description": "Estorno processado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3150,6 +3387,7 @@
     },
     "/transactions/register": {
       "post": {
+        "description": "A chave é sempre persistida. O registro on-chain é tentado na hora e, se falhar, a chave nasce com `chainStatus = pending` e `transactionHash`/`explorerUrl` em `null` — sem derrubar a compra. Drene a fila com `POST /transactions/reconcile-chain`.",
         "operationId": "register",
         "parameters": [],
         "requestBody": {
@@ -3189,7 +3427,7 @@
             "bearer": []
           }
         ],
-        "summary": "Registrar compra Web2 on-chain",
+        "summary": "Registrar compra Web2 (registro on-chain best-effort)",
         "tags": [
           "transactions"
         ]
@@ -3237,6 +3475,65 @@
           }
         ],
         "summary": "Registrar transação mock (apenas SuperAdmin)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/reconcile-chain": {
+      "post": {
+        "description": "Compra de chave não depende mais da blockchain: se a chain estiver fora no momento do pagamento, a chave é gravada com `chainStatus = pending` e o comprador segue com a chave válida. Este endpoint drena essa fila — pega as `pending` mais antigas, tenta registrar de novo e preenche `transactionHash`/`explorerUrl` nas que passarem. Idempotente: o que falhar continua `pending` para a próxima rodada, e o que já está `confirmed` nunca é tocado.",
+        "operationId": "reconcileChainRegistrations",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantas chaves processar nesta rodada (1–200, padrão 50)",
+            "schema": {
+              "example": 50,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainReconciliationDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reprocessar chaves pagas que ficaram sem registro on-chain",
         "tags": [
           "transactions"
         ]
@@ -6589,6 +6886,85 @@
           "name"
         ]
       },
+      "Access": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do acesso"
+          },
+          "level": {
+            "type": "string",
+            "description": "Nível de acesso"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço do acesso",
+            "nullable": true
+          },
+          "price_pix": {
+            "type": "number",
+            "description": "Preço via PIX (em reais)",
+            "nullable": true
+          },
+          "price_card": {
+            "type": "number",
+            "description": "Preço via cartão (em reais)",
+            "nullable": true
+          },
+          "benefits": {
+            "type": "array",
+            "description": "Benefícios do tier (lista de bullets)",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade disponível",
+            "nullable": true
+          },
+          "sold": {
+            "type": "number",
+            "description": "Quantidade já vendida deste tier"
+          },
+          "reserved": {
+            "type": "number",
+            "description": "Chaves seguradas por checkouts abertos. Disponível = `quantity - sold - reserved`. A reserva volta ao estoque quando a sessão do Stripe expira."
+          },
+          "valid_until": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Válido até",
+            "nullable": true
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "level",
+          "price",
+          "price_pix",
+          "price_card",
+          "benefits",
+          "quantity",
+          "sold",
+          "reserved",
+          "valid_until",
+          "created_at",
+          "updated_at"
+        ]
+      },
       "MainStar": {
         "type": "object",
         "properties": {
@@ -6731,6 +7107,13 @@
             "type": "string",
             "description": "ID do tenant",
             "nullable": true
+          },
+          "accesses": {
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Access"
+            }
           },
           "main_star": {
             "description": "Artista principal (modelo) da campanha",
@@ -6966,6 +7349,13 @@
             "type": "string",
             "description": "ID do tenant",
             "nullable": true
+          },
+          "accesses": {
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Access"
+            }
           },
           "main_star": {
             "description": "Artista principal (modelo) da campanha",
@@ -7619,6 +8009,13 @@
             "type": "string",
             "description": "ID do tenant",
             "nullable": true
+          },
+          "accesses": {
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Access"
+            }
           },
           "main_star": {
             "description": "Artista principal (modelo) da campanha",
@@ -8568,6 +8965,92 @@
           "cw20ContractAddress"
         ]
       },
+      "TenantGateway": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do gateway"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provedor de pagamento (stripe)"
+          },
+          "publishableKey": {
+            "type": "string",
+            "description": "Chave Publicável"
+          },
+          "apiKeyEncrypted": {
+            "type": "string",
+            "description": "Chave Secreta/Privada (Encrypted)"
+          },
+          "webhookSecret": {
+            "type": "string",
+            "description": "Webhook secret",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Gateway ativo"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "provider",
+          "publishableKey",
+          "apiKeyEncrypted",
+          "webhookSecret",
+          "active",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "GatewayConnectionTestDto": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "description": "true = a chave respondeu à chamada de validação do provider",
+            "example": true
+          }
+        },
+        "required": [
+          "valid"
+        ]
+      },
+      "PaymentProvidersDto": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "description": "Identificadores aceitos no campo `provider`",
+            "example": [
+              "stripe"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "providers"
+        ]
+      },
       "CheckoutDto": {
         "type": "object",
         "properties": {
@@ -8612,6 +9095,30 @@
           "cancelUrl"
         ]
       },
+      "CheckoutSessionDto": {
+        "type": "object",
+        "properties": {
+          "checkoutUrl": {
+            "type": "string",
+            "description": "URL do Stripe Checkout. O front deve redirecionar o navegador para cá — não embutir em iframe.",
+            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão. Guarde-o: é o que vai no corpo do endpoint de confirmação depois do retorno.",
+            "example": "cs_test_a1B2c3d4E5f6"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider que gerou a sessão",
+            "example": "stripe"
+          }
+        },
+        "required": [
+          "checkoutUrl",
+          "sessionId"
+        ]
+      },
       "ConfirmCheckoutDto": {
         "type": "object",
         "properties": {
@@ -8632,6 +9139,29 @@
           "sessionId"
         ]
       },
+      "CheckoutConfirmationDto": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "description": "true = pagamento confirmado e saldo creditado",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do pagamento na Stripe quando ainda não confirmado (`unpaid`, `no_payment_required`). Continue o polling enquanto vier `unpaid`.",
+            "example": "paid"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Motivo da recusa quando `confirmed = false` com pagamento já pago. `invalid_metadata` = sessão não é de compra de créditos.",
+            "example": "invalid_metadata"
+          }
+        },
+        "required": [
+          "confirmed"
+        ]
+      },
       "KeyPurchaseCheckoutDto": {
         "type": "object",
         "properties": {
@@ -8641,7 +9171,8 @@
           },
           "fiatAmount": {
             "type": "number",
-            "description": "Preço unitário em centavos (o backend cobra fiatAmount × quantity)",
+            "deprecated": true,
+            "description": "**Ignorado.** O preço é derivado do tier (`accessId`) no servidor e devolvido em `unitAmount`/`totalAmount`. Aceito apenas para não quebrar clientes antigos; pode ser omitido e será removido.",
             "example": 5000
           },
           "successUrl": {
@@ -8658,7 +9189,7 @@
           },
           "accessId": {
             "type": "string",
-            "description": "ID (UUID) do access/tier comprado. Obrigatório: é o que incrementa as chaves vendidas (accesses.sold) e move a % de financiamento."
+            "description": "ID (UUID) do access/tier comprado. Obrigatório: define o **preço cobrado**, incrementa as chaves vendidas (`accesses.sold`) e move a % de financiamento. O tier precisa pertencer a `campaignId`, ter preço configurado, estar dentro da validade e ter estoque."
           },
           "tenantId": {
             "type": "string",
@@ -8667,10 +9198,123 @@
         },
         "required": [
           "campaignId",
-          "fiatAmount",
           "successUrl",
           "cancelUrl",
           "accessId"
+        ]
+      },
+      "KeyCheckoutSessionDto": {
+        "type": "object",
+        "properties": {
+          "checkoutUrl": {
+            "type": "string",
+            "description": "URL do Stripe Checkout para redirecionar o comprador",
+            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão, usado depois em `/gateways/checkout/confirm-key-purchase`",
+            "example": "cs_test_a1B2c3d4E5f6"
+          },
+          "unitAmount": {
+            "type": "number",
+            "description": "Preço unitário **em centavos** que o servidor derivou do tier (`price_card`, ou `price` como fallback). Exiba este valor — ele é a fonte da verdade, não o preço que o front calculou.",
+            "example": 9990
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total cobrado em centavos (`unitAmount` × `quantity`)",
+            "example": 19980
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade de chaves na sessão",
+            "example": 2
+          },
+          "level": {
+            "type": "string",
+            "description": "Nível do tier comprado, como cadastrado na campanha",
+            "example": "VIP"
+          },
+          "available": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis neste tier **depois** de descontar esta reserva. `null` = tier sem limite de estoque.",
+            "nullable": true,
+            "example": 37
+          },
+          "expiresInSeconds": {
+            "type": "number",
+            "description": "Por quanto tempo (em segundos) esta sessão segura o estoque. Passado o prazo sem pagamento, as chaves voltam para o tier e o link deixa de valer.",
+            "example": 1800
+          }
+        },
+        "required": [
+          "checkoutUrl",
+          "sessionId",
+          "unitAmount",
+          "totalAmount",
+          "quantity",
+          "level",
+          "available",
+          "expiresInSeconds"
+        ]
+      },
+      "KeyPurchaseConfirmationDto": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "description": "true = pagamento confirmado e chave criada. A chave já conta como posse (marketplace, resumo de chaves) mesmo que o registro on-chain ainda não tenha saído.",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do pagamento na Stripe quando ainda não confirmado. Continue o polling enquanto vier `unpaid`.",
+            "example": "paid"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Motivo quando `confirmed = false` com pagamento já pago. `processing` = outra requisição está criando a chave desta mesma sessão; repita a chamada em instantes. `sold_out` = o tier esgotou entre o pagamento e a confirmação e a cobrança foi **estornada automaticamente**; não haverá chave. `invalid_metadata` = a sessão não é de compra de chave.",
+            "enum": [
+              "processing",
+              "sold_out",
+              "invalid_metadata"
+            ],
+            "example": "processing"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID (UUID) da chave criada — use-o para listar na revenda",
+            "example": "c0ffee00-1234-4abc-9def-0123456789ab"
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Hash on-chain. `null` quando `chainStatus` != `confirmed` — a compra é válida do mesmo jeito, o registro sai na reconciliação.",
+            "nullable": true,
+            "example": "A1B2C3D4E5F6..."
+          },
+          "explorerUrl": {
+            "type": "string",
+            "description": "Link do explorer. `null` junto com `transactionHash` — não monte a URL no front, esconda o botão \"ver na blockchain\" quando vier null.",
+            "nullable": true,
+            "example": "https://explorer.example.com/tx/A1B2C3D4E5F6..."
+          },
+          "chainStatus": {
+            "type": "string",
+            "description": "Estado do registro on-chain: `confirmed` = hash disponível; `pending` = pago, registro na fila; `failed` = exige ação manual.",
+            "enum": [
+              "pending",
+              "confirmed",
+              "failed"
+            ],
+            "example": "pending"
+          }
+        },
+        "required": [
+          "confirmed",
+          "transactionHash",
+          "explorerUrl",
+          "chainStatus"
         ]
       },
       "OfferFundingCheckoutDto": {
@@ -8709,6 +9353,201 @@
           "expiresInDays",
           "successUrl",
           "cancelUrl"
+        ]
+      },
+      "OfferFundingCheckoutSessionDto": {
+        "type": "object",
+        "properties": {
+          "shortfall": {
+            "type": "number",
+            "description": "Diferença em centavos entre o preço da oferta e o saldo disponível. `0` = cabe no saldo: não há checkout, crie a oferta direto em `POST /marketplace/offers`.",
+            "example": 2500
+          },
+          "checkoutUrl": {
+            "type": "string",
+            "description": "URL do Stripe Checkout. Ausente quando `shortfall = 0`.",
+            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão. Ausente quando `shortfall = 0`.",
+            "example": "cs_test_a1B2c3d4E5f6"
+          }
+        },
+        "required": [
+          "shortfall"
+        ]
+      },
+      "MarketplaceOffer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da oferta"
+          },
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
+            "nullable": true
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador que fez a oferta"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "nullable": true
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor (dono do anúncio, denormalizado)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
+          },
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da oferta",
+            "enum": [
+              "pending",
+              "countered",
+              "accepted",
+              "rejected",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de expiração da oferta"
+          },
+          "lockCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction de lock (escrow)",
+            "nullable": true
+          },
+          "stripeFundedAmount": {
+            "type": "number",
+            "description": "Parcela do price comprada via Stripe especificamente para financiar ESTA oferta (centavos). 0 quando coberta pelo saldo pré-existente. É o valor estornado no cartão quando a oferta é recusada/expira/cancelada.",
+            "default": 0
+          },
+          "fundingCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction (type=add, provider=stripe) que financiou a parcela Stripe. Alvo do refundStripe no release.",
+            "nullable": true
+          },
+          "fundingSessionId": {
+            "type": "string",
+            "description": "sessionId do checkout Stripe que financiou a oferta (idempotência na confirmação/webhook).",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de aceitação",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "transactionId",
+          "campaignId",
+          "tenantId",
+          "buyerId",
+          "buyerEmail",
+          "buyerName",
+          "sellerId",
+          "price",
+          "counterPrice",
+          "status",
+          "expiresAt",
+          "lockCreditTxId",
+          "stripeFundedAmount",
+          "fundingCreditTxId",
+          "fundingSessionId",
+          "acceptedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "OfferFundingConfirmationDto": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "description": "true = pagamento confirmado, crédito lançado e oferta criada",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do pagamento na Stripe quando ainda não confirmado",
+            "example": "paid"
+          },
+          "reason": {
+            "type": "string",
+            "description": "`listing_unavailable` = o anúncio saiu do ar entre o pagamento e a confirmação; a parcela cobrada no cartão foi estornada automaticamente. `invalid_metadata` = sessão não é de financiamento de oferta.",
+            "example": "listing_unavailable"
+          },
+          "offer": {
+            "description": "Oferta criada quando `confirmed = true`",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceOffer"
+              }
+            ]
+          }
+        },
+        "required": [
+          "confirmed"
+        ]
+      },
+      "StripeWebhookAckDto": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "description": "Sempre `true`. A Stripe só precisa do 200 — qualquer assinatura inválida vira 400 antes daqui.",
+            "example": true
+          }
+        },
+        "required": [
+          "received"
         ]
       },
       "ChargeDto": {
@@ -8752,6 +9591,95 @@
         "required": [
           "amount",
           "currency"
+        ]
+      },
+      "ChargeResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da cobrança no provider",
+            "example": "pi_3ABC..."
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da cobrança",
+            "enum": [
+              "succeeded",
+              "pending",
+              "failed"
+            ],
+            "example": "succeeded"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor em centavos",
+            "example": 9990
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda",
+            "example": "brl"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider que processou",
+            "example": "stripe"
+          },
+          "providerTransactionId": {
+            "type": "string",
+            "description": "ID da transação no provider (PaymentIntent, na Stripe)",
+            "example": "pi_3ABC..."
+          },
+          "receiptUrl": {
+            "type": "string",
+            "description": "URL do recibo, quando o provider devolve",
+            "example": "https://pay.stripe.com/receipts/..."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "amount",
+          "currency",
+          "provider",
+          "providerTransactionId"
+        ]
+      },
+      "RefundResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do estorno no provider",
+            "example": "re_3ABC..."
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do estorno",
+            "enum": [
+              "succeeded",
+              "pending",
+              "failed"
+            ],
+            "example": "succeeded"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor estornado em centavos",
+            "example": 9990
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider que processou",
+            "example": "stripe"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "amount",
+          "provider"
         ]
       },
       "Transaction": {
@@ -8806,23 +9734,27 @@
           },
           "transactionHash": {
             "type": "string",
-            "description": "Hash da transação on-chain"
+            "description": "Hash da transação on-chain. `null` enquanto `chainStatus` não for `confirmed`.",
+            "nullable": true
           },
           "cw20ContractAddress": {
             "type": "string",
-            "description": "Endereço do contrato CW20"
+            "description": "Endereço do contrato CW20. `null` enquanto `chainStatus` não for `confirmed`.",
+            "nullable": true
           },
           "mintedTo": {
             "type": "string",
-            "description": "Endereço de mint"
+            "description": "Endereço de mint. `null` enquanto `chainStatus` não for `confirmed`.",
+            "nullable": true
           },
           "memo": {
             "type": "string",
-            "description": "Memo da transação"
+            "description": "Memo canônico da compra (JSON). Sempre presente — é gravado localmente, independente da chain."
           },
           "explorerUrl": {
             "type": "string",
-            "description": "URL do explorer"
+            "description": "URL do explorer. `null` enquanto `chainStatus` não for `confirmed` (ou se o explorer não estiver configurado).",
+            "nullable": true
           },
           "userId": {
             "type": "string",
@@ -8836,13 +9768,32 @@
           },
           "status": {
             "type": "string",
-            "description": "Status da transação",
+            "description": "Status do **pagamento**. É este campo que define posse: uma chave `completed` conta no marketplace e no resumo de chaves mesmo sem registro on-chain.",
             "enum": [
               "completed",
               "pending",
               "failed",
               "refunded"
             ]
+          },
+          "chainStatus": {
+            "type": "string",
+            "description": "Status do registro **on-chain**, independente do pagamento. `pending` = paga e na fila de reconciliação; `confirmed` = `transactionHash`/`explorerUrl` preenchidos; `failed` = reconciliação esgotou as tentativas.",
+            "enum": [
+              "pending",
+              "confirmed",
+              "failed"
+            ]
+          },
+          "chainAttempts": {
+            "type": "number",
+            "description": "Quantas vezes a reconciliação já tentou registrar esta chave na chain. Ao esgotar o limite, `chainStatus` vira `failed` e a linha sai da fila.",
+            "example": 0
+          },
+          "chainLastError": {
+            "type": "string",
+            "description": "Erro da última tentativa de registro on-chain",
+            "nullable": true
           },
           "createdAt": {
             "format": "date-time",
@@ -8870,6 +9821,9 @@
           "userId",
           "accessId",
           "status",
+          "chainStatus",
+          "chainAttempts",
+          "chainLastError",
           "createdAt"
         ]
       },
@@ -9036,6 +9990,54 @@
             "example": "2026-01-15T12:00:00Z"
           }
         }
+      },
+      "ChainReconciliationDto": {
+        "type": "object",
+        "properties": {
+          "scanned": {
+            "type": "number",
+            "description": "Quantas chaves em `pending` entraram nesta rodada (limitado por `limit`)",
+            "example": 12
+          },
+          "confirmed": {
+            "type": "number",
+            "description": "Quantas passaram a `confirmed` e ganharam hash",
+            "example": 12
+          },
+          "stillPending": {
+            "type": "number",
+            "description": "Quantas continuam `pending` — a chain recusou de novo, mas ainda há tentativas. Rode outra vez depois.",
+            "example": 0
+          },
+          "givenUp": {
+            "type": "number",
+            "description": "Quantas viraram `failed` por esgotar as tentativas. Exigem ação manual — a chave continua paga e válida.",
+            "example": 0
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "`true` = outra rodada já estava em andamento e esta foi ignorada (a trava impede mint duplicado). Nada foi processado.",
+            "example": false
+          },
+          "transactionIds": {
+            "description": "IDs (UUID) das chaves confirmadas nesta rodada",
+            "example": [
+              "c0ffee00-1234-4abc-9def-0123456789ab"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "scanned",
+          "confirmed",
+          "stillPending",
+          "givenUp",
+          "skipped",
+          "transactionIds"
+        ]
       },
       "PurchaseDto": {
         "type": "object",
@@ -9432,134 +10434,6 @@
           "expiresInDays"
         ]
       },
-      "MarketplaceOffer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID da oferta"
-          },
-          "listingId": {
-            "type": "string",
-            "description": "ID do anúncio (listing) alvo da oferta"
-          },
-          "transactionId": {
-            "type": "string",
-            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
-          },
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha (denormalizado)"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
-            "nullable": true
-          },
-          "buyerId": {
-            "type": "string",
-            "description": "ID do comprador que fez a oferta"
-          },
-          "buyerEmail": {
-            "type": "string",
-            "description": "Email do comprador",
-            "nullable": true
-          },
-          "buyerName": {
-            "type": "string",
-            "description": "Nome do comprador",
-            "nullable": true
-          },
-          "sellerId": {
-            "type": "string",
-            "description": "ID do vendedor (dono do anúncio, denormalizado)"
-          },
-          "price": {
-            "type": "number",
-            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
-          },
-          "counterPrice": {
-            "type": "number",
-            "description": "Valor da contra-oferta do vendedor em centavos",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "description": "Status da oferta",
-            "enum": [
-              "pending",
-              "countered",
-              "accepted",
-              "rejected",
-              "cancelled",
-              "expired"
-            ]
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data/hora de expiração da oferta"
-          },
-          "lockCreditTxId": {
-            "type": "string",
-            "description": "ID da CreditTransaction de lock (escrow)",
-            "nullable": true
-          },
-          "stripeFundedAmount": {
-            "type": "number",
-            "description": "Parcela do price comprada via Stripe especificamente para financiar ESTA oferta (centavos). 0 quando coberta pelo saldo pré-existente. É o valor estornado no cartão quando a oferta é recusada/expira/cancelada.",
-            "default": 0
-          },
-          "fundingCreditTxId": {
-            "type": "string",
-            "description": "ID da CreditTransaction (type=add, provider=stripe) que financiou a parcela Stripe. Alvo do refundStripe no release.",
-            "nullable": true
-          },
-          "fundingSessionId": {
-            "type": "string",
-            "description": "sessionId do checkout Stripe que financiou a oferta (idempotência na confirmação/webhook).",
-            "nullable": true
-          },
-          "acceptedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data/hora de aceitação",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de atualização"
-          }
-        },
-        "required": [
-          "id",
-          "listingId",
-          "transactionId",
-          "campaignId",
-          "tenantId",
-          "buyerId",
-          "buyerEmail",
-          "buyerName",
-          "sellerId",
-          "price",
-          "counterPrice",
-          "status",
-          "expiresAt",
-          "lockCreditTxId",
-          "stripeFundedAmount",
-          "fundingCreditTxId",
-          "fundingSessionId",
-          "acceptedAt",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
       "CreateOfferDto": {
         "type": "object",
         "properties": {
@@ -9738,80 +10612,6 @@
         "required": [
           "campaignId",
           "level"
-        ]
-      },
-      "Access": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID do acesso"
-          },
-          "level": {
-            "type": "string",
-            "description": "Nível de acesso"
-          },
-          "price": {
-            "type": "number",
-            "description": "Preço do acesso",
-            "nullable": true
-          },
-          "price_pix": {
-            "type": "number",
-            "description": "Preço via PIX (em reais)",
-            "nullable": true
-          },
-          "price_card": {
-            "type": "number",
-            "description": "Preço via cartão (em reais)",
-            "nullable": true
-          },
-          "benefits": {
-            "type": "array",
-            "description": "Benefícios do tier (lista de bullets)",
-            "nullable": true,
-            "items": {
-              "type": "string"
-            }
-          },
-          "quantity": {
-            "type": "number",
-            "description": "Quantidade disponível",
-            "nullable": true
-          },
-          "sold": {
-            "type": "number",
-            "description": "Quantidade já vendida deste tier"
-          },
-          "valid_until": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Válido até",
-            "nullable": true
-          },
-          "created_at": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de atualização"
-          }
-        },
-        "required": [
-          "id",
-          "level",
-          "price",
-          "price_pix",
-          "price_card",
-          "benefits",
-          "quantity",
-          "sold",
-          "valid_until",
-          "created_at",
-          "updated_at"
         ]
       },
       "UpdateAccessDto": {

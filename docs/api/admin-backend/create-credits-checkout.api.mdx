@@ -1,0 +1,69 @@
+---
+id: create-credits-checkout
+title: "Gerar link de checkout para compra de créditos"
+description: "Aqui o valor **vem do cliente** por definição — é o usuário quem escolhe quanto de crédito comprar (`amount`, em centavos). Diferente da compra de chave, onde o preço é do tier. Redirecione para `checkoutUrl` e confirme depois em `POST /gateways/checkout/confirm`. Crédito é usado apenas nas ofertas P2P do marketplace."
+sidebar_label: "Gerar link de checkout para compra de créditos"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Gerar link de checkout para compra de créditos"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/gateways/checkout/credits"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Aqui o valor **vem do cliente** por definição — é o usuário quem escolhe quanto de crédito comprar (`amount`, em centavos). Diferente da compra de chave, onde o preço é do tier. Redirecione para `checkoutUrl` e confirme depois em `POST /gateways/checkout/confirm`. Crédito é usado apenas nas ofertas P2P do marketplace.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-credits-checkout.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-credits-checkout.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-credits-checkout.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      
