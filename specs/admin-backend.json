@@ -3917,7 +3917,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketplaceListing"
+                  "$ref": "#/components/schemas/BuyListingResultDto"
                 }
               }
             }
@@ -4339,7 +4339,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
+                  "$ref": "#/components/schemas/OfferSettlementResultDto"
                 }
               }
             }
@@ -4385,7 +4385,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
+                  "$ref": "#/components/schemas/OfferSettlementResultDto"
                 }
               }
             }
@@ -7838,13 +7838,38 @@
           },
           "fieldType": {
             "type": "string",
-            "description": "Tipo do campo",
+            "enum": [
+              "short_text",
+              "paragraph",
+              "number",
+              "checkbox",
+              "dropdown",
+              "datetime",
+              "preview"
+            ],
+            "description": "Tipo do campo — é ele que determina COMO interpretar `value`:\n- `short_text` / `paragraph` → string\n- `number` → string com conteúdo numérico (o admin envia o valor cru do input)\n- `dropdown` → string, uma das opções definidas no config do tenant\n- `checkbox` → **array de strings** (multi-seleção), NÃO booleano\n- `datetime` → string `YYYY-MM-DD`, só data, sem hora nem fuso\n- `preview` → campo de upload: `value` vem `null` e a mídia sai nos arrays `previews`/`gallery` da resposta da campanha\n\nA lista NÃO é validada pelo servidor (o config do tenant é JSON livre), então trate valor desconhecido com fallback para texto. `null` acontece quando a definição foi removida do config do tenant mas o valor continuou salvo na campanha (campo órfão) — nesse caso o `label` também vem com o id cru.",
             "nullable": true,
             "example": "short_text"
           },
           "value": {
-            "type": "object",
-            "description": "Valor preenchido na campanha (null se vazio)",
+            "description": "Valor preenchido na campanha, exatamente como está gravado no JSON `custom_fields`. **O tipo varia conforme `fieldType`** — veja a lista naquele campo. Em especial: `checkbox` devolve um ARRAY de strings (não booleano) e `datetime` devolve `YYYY-MM-DD` (não timestamp ISO). `null` quando o campo foi definido mas não preenchido, e sempre em campos `preview`.\n\nO backend não valida o conteúdo de `custom_fields`, então cheque com `Array.isArray` / `typeof` antes de renderizar.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
             "nullable": true,
             "example": "Boudoir"
           }
@@ -9004,11 +9029,13 @@
           },
           "balance": {
             "type": "number",
-            "description": "Saldo total em centavos da moeda configurada"
+            "description": "Saldo TOTAL em centavos, **incluindo o que está travado**. O disponível para gastar é `balance - lockedBalance` — é essa a conta que o servidor faz para autorizar uma compra. Exibir `balance` cru como \"disponível\" mostra dinheiro que o usuário não pode usar.",
+            "example": 2015000
           },
           "lockedBalance": {
             "type": "number",
-            "description": "Saldo bloqueado em campanhas ativas (em centavos)"
+            "description": "Parte do `balance` que está travada em operações em andamento, em centavos. Vem de compra de chave em curso e de oferta P2P aberta (o valor fica em escrow até a oferta ser aceita, recusada ou expirar). Está DENTRO de `balance`, não somado a ele.",
+            "example": 50000
           },
           "currency": {
             "type": "string",
@@ -9092,7 +9119,7 @@
           },
           "type": {
             "type": "string",
-            "description": "Tipo de transação: add ou subtract",
+            "description": "Tipo do lançamento:\n- `add` — crédito comprado ou concedido\n- `subtract` — débito direto\n- `refund` — estorno\n- `lock` — valor travado em operação em andamento (entra no `lockedBalance`)\n- `unlock` — destrava o valor sem gastá-lo (oferta recusada ou expirada)\n- `consume` — consome um valor travado (a operação se concretizou)\n- `compensation` — crédito de cortesia; veja `isNonRefundable` e `expiresAt`\n\n`amount` é sempre POSITIVO — é magnitude, não sinal: use o `type` para saber se soma ou subtrai do saldo.",
             "enum": [
               "add",
               "subtract",
@@ -10286,7 +10313,8 @@
           },
           "buyerName": {
             "type": "string",
-            "description": "Nome do comprador"
+            "description": "Nome do dono ATUAL da chave, não necessariamente de quem a comprou originalmente: na revenda P2P este campo é reescrito junto com `userId`. Snapshot do momento da compra/ transferência — não acompanha alteração posterior do cadastro.",
+            "example": "Maria Souza"
           },
           "buyerEmail": {
             "type": "string",
@@ -10303,7 +10331,8 @@
           },
           "fiatAmount": {
             "type": "string",
-            "description": "Valor fiat"
+            "description": "Valor pago por ESTA chave, em **CENTAVOS**, como string (`\"50000\"` = R$ 500,00). ⚠️ Unidade diferente de `campaign.goal_value`/`campaign.raised`, que vêm em REAIS no mesmo ecossistema. Uma linha = uma chave, então o total de um pedido é a soma das linhas.",
+            "example": "50000"
           },
           "tokens": {
             "type": "string",
@@ -10549,7 +10578,8 @@
         "properties": {
           "accessId": {
             "type": "string",
-            "description": "ID do tier. `null` agrupa as chaves sem tier resolvido.",
+            "description": "ID do tier (`accesses.id`). `null` agrupa as chaves cujo tier não pôde ser resolvido (registros legados) — elas não somem da conta.",
+            "example": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
             "nullable": true
           },
           "level": {
@@ -10560,7 +10590,8 @@
           },
           "typeTitle": {
             "type": "string",
-            "description": "Título do tipo de acesso, quando houver",
+            "description": "Título do tipo de acesso vinculado ao tier (`access_types.title`). `null` quando o tier não tem tipo associado — a maioria dos casos.",
+            "example": "Acesso total",
             "nullable": true
           },
           "count": {
@@ -10965,11 +10996,15 @@
           },
           "sellerEmail": {
             "type": "string",
-            "description": "E-mail do vendedor"
+            "description": "E-mail do vendedor no momento em que o anúncio foi criado. `null` em anúncios antigos, criados antes de o campo passar a ser preenchido.",
+            "example": "maria.souza@exemplo.com",
+            "nullable": true
           },
           "sellerName": {
             "type": "string",
-            "description": "Nome do vendedor"
+            "description": "Nome do vendedor no momento em que o anúncio foi criado — snapshot, não acompanha alteração posterior do cadastro. `null` em anúncios antigos.",
+            "example": "Maria Souza",
+            "nullable": true
           },
           "campaignId": {
             "type": "string",
@@ -10977,7 +11012,9 @@
           },
           "tenantId": {
             "type": "string",
-            "description": "UUID do tenant"
+            "description": "UUID do tenant do anúncio. `null` em anúncios cuja campanha não tinha tenant vinculado.",
+            "format": "uuid",
+            "nullable": true
           },
           "price": {
             "type": "number",
@@ -11455,6 +11492,22 @@
           "updatedAt"
         ]
       },
+      "BuyListingResultDto": {
+        "type": "object",
+        "properties": {
+          "listing": {
+            "description": "O anúncio já liquidado, com `status: \"sold\"`, `buyerId`/`buyerEmail` preenchidos e `soldAt` carimbado. A posse da chave já foi transferida e o vendedor já foi creditado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceListing"
+              }
+            ]
+          }
+        },
+        "required": [
+          "listing"
+        ]
+      },
       "HasKeyDto": {
         "type": "object",
         "properties": {
@@ -11539,6 +11592,31 @@
             "maximum": 30
           }
         }
+      },
+      "OfferSettlementResultDto": {
+        "type": "object",
+        "properties": {
+          "offer": {
+            "description": "A oferta aceita, com `status: \"accepted\"`. As demais ofertas vivas do mesmo anúncio são automaticamente rejeitadas e têm o crédito destravado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceOffer"
+              }
+            ]
+          },
+          "listing": {
+            "description": "O anúncio liquidado por esta oferta, com `status: \"sold\"`. Atenção: `listing.price` é o preço ORIGINAL do anúncio — o valor efetivamente pago é o da oferta (`offer.price`, ou `offer.counterPrice` quando o aceite foi de contra-oferta).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceListing"
+              }
+            ]
+          }
+        },
+        "required": [
+          "offer",
+          "listing"
+        ]
       },
       "CounterOfferDto": {
         "type": "object",
@@ -12138,33 +12216,35 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "UUID da sugestão — use para votar"
+            "description": "UUID da sugestão. É este o id que vai em `POST /model-suggestions/{id}/vote`.",
+            "example": "dddd0000-0000-0000-0000-000000000001"
           },
           "platform": {
             "type": "string",
             "enum": [
               "instagram"
             ],
-            "description": "Plataforma do perfil"
+            "description": "Rede social do perfil. Hoje só `instagram`.",
+            "example": "instagram"
           },
           "username": {
             "type": "string",
-            "description": "Username normalizado, sem \"@\"",
+            "description": "Username normalizado: sempre minúsculo e SEM o \"@\". Acrescente o \"@\" na exibição.",
             "example": "gabriela_guimaraes"
           },
           "profileUrl": {
             "type": "string",
-            "description": "URL pública do perfil",
+            "description": "URL pública do perfil, já montada a partir de `platform` + `username` — não precisa concatenar.",
             "example": "https://instagram.com/gabriela_guimaraes"
           },
           "votesCount": {
             "type": "number",
-            "description": "Total de votos",
+            "description": "Total de votos do perfil. Conta apenas sugestões aprovadas.",
             "example": 127
           },
           "rankingPosition": {
             "type": "number",
-            "description": "Posição no ranking (1 = mais votada), calculada DENTRO do escopo retornado (tenant + plataforma + limit).",
+            "description": "Posição no ranking, 1 = mais votada. Calculada DENTRO do escopo retornado (plataforma + limit) — não é uma posição global absoluta.",
             "example": 1
           }
         },
@@ -12181,20 +12261,27 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "UUID da sugestão.",
+            "example": "dddd0000-0000-0000-0000-000000000001"
           },
           "platform": {
             "type": "string",
             "enum": [
               "instagram"
-            ]
+            ],
+            "description": "Rede social do perfil sugerido.",
+            "example": "instagram"
           },
           "username": {
             "type": "string",
+            "description": "Username normalizado (minúsculo, sem \"@\").",
             "example": "gabriela_guimaraes"
           },
           "profileUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "URL pública do perfil, já montada.",
+            "example": "https://instagram.com/gabriela_guimaraes"
           },
           "status": {
             "type": "string",
@@ -12202,21 +12289,26 @@
               "pending",
               "approved",
               "rejected"
-            ]
+            ],
+            "description": "Onde a sugestão está na moderação. `pending` = em análise; `approved` = no ranking; `rejected` = recusada (veja `rejectionReason`).",
+            "example": "pending"
           },
           "rejectionReason": {
             "type": "string",
-            "description": "Motivo, quando rejeitada",
+            "description": "Motivo da recusa, escrito pelo moderador. Só vem preenchido quando `status` é `rejected`, e mesmo assim o motivo é opcional — pode ser `null`.",
+            "example": "Perfil não corresponde ao posicionamento da marca",
             "nullable": true
           },
           "votesCount": {
             "type": "number",
-            "description": "Votos acumulados",
+            "description": "Votos acumulados por este perfil. Sugestões `pending` podem ter votos (quem sugere já apoia), mas eles não aparecem no ranking público até a aprovação.",
             "example": 12
           },
           "createdAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "description": "Quando a sugestão foi criada. Timestamp ISO 8601 em UTC.",
+            "example": "2026-08-18T12:00:00.000Z"
           }
         },
         "required": [
@@ -12234,6 +12326,7 @@
         "type": "object",
         "properties": {
           "items": {
+            "description": "Sugestões em que este usuário foi o PRIMEIRO a sugerir o perfil, da mais recente para a mais antiga. Vem vazio se ele nunca sugeriu nada. Perfis que ele apenas apoiou (alguém sugeriu antes) NÃO aparecem aqui — veja `GET /model-suggestions/me/votes`.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MyModelSuggestionDto"
@@ -12248,7 +12341,11 @@
         "type": "object",
         "properties": {
           "suggestionIds": {
-            "description": "IDs das sugestões em que já votei — para desabilitar o botão \"+1\"",
+            "description": "IDs de todas as sugestões em que o usuário já votou, incluindo as que ele mesmo sugeriu (sugerir conta como apoio). Use para desabilitar o botão \"+1\" das linhas correspondentes. Vem vazio se ele nunca votou. Não é paginado.",
+            "example": [
+              "dddd0000-0000-0000-0000-000000000001",
+              "dddd0000-0000-0000-0000-000000000002"
+            ],
             "type": "array",
             "items": {
               "type": "string"
@@ -12287,16 +12384,20 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "UUID da sugestão (nova ou já existente)"
+            "description": "UUID da sugestão. Quando `alreadyExisted` é `true`, este é o id da sugestão que JÁ existia — use-o para levar o usuário a votar nela.",
+            "example": "dddd0000-0000-0000-0000-000000000001"
           },
           "platform": {
             "type": "string",
             "enum": [
               "instagram"
-            ]
+            ],
+            "description": "Rede social do perfil sugerido.",
+            "example": "instagram"
           },
           "username": {
             "type": "string",
+            "description": "Username já normalizado pelo servidor (minúsculo, sem \"@\").",
             "example": "gabriela_guimaraes"
           },
           "status": {
@@ -12306,11 +12407,12 @@
               "approved",
               "rejected"
             ],
-            "description": "Estado atual. `pending` = na fila de moderação; `approved` = já está no ranking."
+            "description": "Estado atual. `pending` = na fila de moderação, ainda não aparece no ranking. `approved` = já está no ranking e pode receber votos.",
+            "example": "pending"
           },
           "alreadyExisted": {
             "type": "boolean",
-            "description": "Se `true`, o perfil já tinha sido sugerido por alguém e esta chamada apenas registrou o seu apoio. Use o `status` para decidir a mensagem: `approved` → mande o usuário ao ranking; `pending` → \"já está em análise\".",
+            "description": "Se `true`, o perfil já tinha sido sugerido por alguém e esta chamada apenas registrou o seu apoio — **não é erro** (HTTP 200 em vez de 201). Combine com `status` para decidir a mensagem: `approved` → \"já está no ranking, vote nele\"; `pending` → \"já está em análise\".",
             "example": false
           },
           "verificationStatus": {
@@ -12320,7 +12422,8 @@
               "not_found",
               "unverified"
             ],
-            "description": "Resultado da checagem de existência. `unverified` significa que não deu para checar — não que o perfil seja inválido."
+            "description": "Resultado da checagem automática de existência do perfil. `verified` = existe; `not_found` = a rede respondeu que não existe; `unverified` = NÃO foi possível checar (serviço indisponível) — não significa que o perfil seja inválido.",
+            "example": "verified"
           }
         },
         "required": [
@@ -12337,10 +12440,12 @@
         "properties": {
           "statusCode": {
             "type": "number",
+            "description": "Código HTTP, sempre 409 neste DTO.",
             "example": 409
           },
           "error": {
             "type": "string",
+            "description": "Rótulo HTTP do erro. Não use para lógica — use o `code`.",
             "example": "Conflict"
           },
           "code": {
@@ -12372,16 +12477,17 @@
         "properties": {
           "suggestionId": {
             "type": "string",
-            "description": "UUID da sugestão votada"
+            "description": "UUID da sugestão votada.",
+            "example": "dddd0000-0000-0000-0000-000000000001"
           },
           "hasVoted": {
             "type": "boolean",
-            "description": "Sempre `true` após um voto aceito",
+            "description": "Sempre `true` quando o voto foi aceito. Não existe desfazer voto.",
             "example": true
           },
           "votesCount": {
             "type": "number",
-            "description": "Total de votos após o seu",
+            "description": "Total de votos do perfil já contando o seu — use para atualizar a linha na hora.",
             "example": 128
           }
         },
@@ -12395,21 +12501,27 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "UUID da sugestão.",
+            "example": "dddd0000-0000-0000-0000-000000000001"
           },
           "platform": {
             "type": "string",
             "enum": [
               "instagram"
-            ]
+            ],
+            "description": "Rede social do perfil sugerido.",
+            "example": "instagram"
           },
           "username": {
             "type": "string",
+            "description": "Username normalizado (minúsculo, sem \"@\").",
             "example": "gabriela_guimaraes"
           },
           "profileUrl": {
             "type": "string",
-            "description": "Link do perfil — a conferência manual quando a checagem não rolou"
+            "description": "Link do perfil. É a conferência manual do moderador quando `verificationStatus` não é `verified`.",
+            "example": "https://instagram.com/gabriela_guimaraes"
           },
           "status": {
             "type": "string",
@@ -12417,7 +12529,9 @@
               "pending",
               "approved",
               "rejected"
-            ]
+            ],
+            "description": "Etapa atual na moderação.",
+            "example": "pending"
           },
           "verificationStatus": {
             "type": "string",
@@ -12426,38 +12540,51 @@
               "not_found",
               "unverified"
             ],
-            "description": "`not_found` merece atenção (a API disse que o perfil não existe); `unverified` quer dizer que não deu para checar."
+            "description": "Resultado da checagem automática. `not_found` merece atenção (a rede disse que o perfil não existe); `unverified` quer dizer apenas que não foi possível checar.",
+            "example": "verified"
           },
           "verifiedAt": {
             "format": "date-time",
             "type": "string",
+            "description": "Quando a checagem automática rodou. `null` quando ela não pôde ser feita (`verificationStatus: \"unverified\"`).",
+            "example": "2026-08-18T12:00:00.000Z",
             "nullable": true
           },
           "votesCount": {
             "type": "number",
-            "description": "Quantas pessoas apoiaram este perfil. Em sugestões `pending` os votos ainda não aparecem publicamente, mas contam aqui — é o sinal de demanda para moderar.",
+            "description": "Quantas pessoas apoiaram este perfil. Em sugestões `pending` esses votos ainda não aparecem publicamente, mas contam aqui — é o sinal de demanda para priorizar a moderação.",
             "example": 4
           },
           "suggestedByUserId": {
             "type": "string",
+            "description": "ID do usuário que sugeriu o perfil PRIMEIRO. `null` em registros sem autor identificado.",
+            "example": "88888888-8888-8888-8888-888888888888",
             "nullable": true
           },
           "rejectionReason": {
             "type": "string",
+            "description": "Motivo da recusa. `null` quando não foi recusada, ou quando o moderador não informou.",
+            "example": "Perfil não corresponde ao posicionamento da marca",
             "nullable": true
           },
           "reviewedByUserId": {
             "type": "string",
+            "description": "ID do admin que aprovou ou recusou. `null` enquanto a sugestão não foi moderada.",
+            "example": "77777777-7777-7777-7777-777777777777",
             "nullable": true
           },
           "reviewedAt": {
             "format": "date-time",
             "type": "string",
+            "description": "Quando foi moderada. `null` enquanto está `pending`.",
+            "example": "2026-08-18T12:00:00.000Z",
             "nullable": true
           },
           "createdAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "description": "Quando a sugestão foi criada. Timestamp ISO 8601 em UTC.",
+            "example": "2026-08-18T12:00:00.000Z"
           }
         },
         "required": [
@@ -12480,6 +12607,7 @@
         "type": "object",
         "properties": {
           "items": {
+            "description": "Sugestões do tenant, da mais recente para a mais antiga, já aplicados os filtros de `status`/`platform`. Vem vazio quando não há nenhuma no filtro pedido.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AdminModelSuggestionDto"
@@ -12506,6 +12634,7 @@
         "properties": {
           "success": {
             "type": "boolean",
+            "description": "Sempre `true` quando a exclusão foi concluída. Erros vêm como status HTTP 4xx.",
             "example": true
           }
         },
@@ -12561,7 +12690,7 @@
           },
           "keysCount": {
             "type": "number",
-            "description": "Chaves que o usuário possui",
+            "description": "Chaves que este usuário possui — o número exibido como \"75 Chaves\" na linha.",
             "example": 75
           },
           "isMe": {
@@ -12581,7 +12710,12 @@
         "type": "object",
         "properties": {
           "me": {
-            "$ref": "#/components/schemas/MyRankingDto"
+            "description": "A posição do próprio usuário logado. Vem SEMPRE, independente da página pedida — é o que alimenta o card \"Posição no Ranking\" sem precisar carregar a lista inteira.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MyRankingDto"
+              }
+            ]
           },
           "podium": {
             "description": "Top 3, repetido em TODAS as páginas para o pódio continuar na tela enquanto o usuário navega. Em rankings com menos de 3 participantes vem incompleto.",
@@ -12599,22 +12733,22 @@
           },
           "page": {
             "type": "number",
-            "description": "Página retornada",
+            "description": "Página efetivamente retornada (1-based). Ecoa o `page` da requisição.",
             "example": 32
           },
           "limit": {
             "type": "number",
-            "description": "Itens por página",
+            "description": "Itens por página efetivamente aplicados. Ecoa o `limit` da requisição, ou o default (10) quando ele foi omitido.",
             "example": 5
           },
           "totalItems": {
             "type": "number",
-            "description": "Total de participantes",
+            "description": "Total de usuários no ranking do tenant — mesmo número de `me.totalParticipants`. Só entram usuários com ao menos 1 chave.",
             "example": 412
           },
           "totalPages": {
             "type": "number",
-            "description": "Total de páginas",
+            "description": "Total de páginas com o `limit` atual. `0` quando ninguém tem chave ainda.",
             "example": 83
           }
         },
