@@ -7438,11 +7438,13 @@
           },
           "level": {
             "type": "string",
-            "description": "Nível de acesso"
+            "description": "Nome do tier exibido ao usuário, definido por campanha (ex.: \"VIP\", \"Ouro\", \"Premium\"). É este o texto que aparece em `tiers[].level` de `GET /transactions/me/summary`.",
+            "example": "VIP"
           },
           "price": {
             "type": "number",
-            "description": "Preço do acesso",
+            "description": "Preço base do tier **em REAIS** (mesma unidade de `price_pix` e `price_card`, e ao contrário do `price` do marketplace, que é em centavos). Quando `price_pix`/`price_card` estão preenchidos, eles têm precedência para o método correspondente.",
+            "example": 500,
             "nullable": true
           },
           "price_pix": {
@@ -7465,12 +7467,14 @@
           },
           "quantity": {
             "type": "number",
-            "description": "Quantidade disponível",
+            "description": "Estoque TOTAL do tier — **não** é o que ainda está disponível. Disponível = `quantity - sold - reserved`. `null` significa estoque ilimitado (e nesse caso o tier soma 0 nos agregados `totalKeys`/`fundingPercentage` da campanha).",
+            "example": 900,
             "nullable": true
           },
           "sold": {
             "type": "number",
-            "description": "Quantidade já vendida deste tier"
+            "description": "Chaves já vendidas deste tier. Não é decrementado em estorno nem em revenda P2P.",
+            "example": 630
           },
           "reserved": {
             "type": "number",
@@ -7479,7 +7483,7 @@
           "valid_until": {
             "format": "date-time",
             "type": "string",
-            "description": "Válido até",
+            "description": "Data/hora limite de validade do acesso. `null` = sem prazo.",
             "nullable": true
           },
           "created_at": {
@@ -7534,6 +7538,72 @@
           "profile_photo",
           "name",
           "custom_fields"
+        ]
+      },
+      "InteractiveButtonDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do botão = nome do ícone escolhido pelo dono (o frontend mapeia para um SVG)",
+            "example": "mic"
+          },
+          "x": {
+            "type": "number",
+            "description": "Posição X em percentual (0-100)",
+            "example": 42.5
+          },
+          "y": {
+            "type": "number",
+            "description": "Posição Y em percentual (0-100)",
+            "example": 73.1
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Botão habilitado (default true)",
+            "default": true
+          },
+          "width": {
+            "type": "number",
+            "description": "Largura em percentual (0-100)",
+            "example": 12
+          },
+          "height": {
+            "type": "number",
+            "description": "Altura em percentual (0-100)",
+            "example": 8
+          },
+          "order": {
+            "type": "number",
+            "description": "Ordem de renderização",
+            "example": 0
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de arquivo que o botão abre. Define quais formatos o upload aceita.",
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "FILE"
+            ],
+            "example": "VIDEO"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL pública do arquivo do botão. Definida pelo endpoint de upload (POST /campaigns/:id/buttons/:buttonId/file); enviar aqui no PUT é opcional e o valor já salvo é preservado.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/campaigns/`id`/buttons/video-123.mp4"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Nome original do arquivo enviado no botão",
+            "example": "teaser.mp4"
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y"
         ]
       },
       "Campaign": {
@@ -7599,12 +7669,16 @@
           },
           "start_date": {
             "type": "string",
-            "description": "Data de início",
+            "format": "date",
+            "description": "Data de início, só a data (`YYYY-MM-DD`), SEM hora e sem fuso — não é ISO completo. Não confunda com `created_at`/`ended_at`, que são timestamps.",
+            "example": "2026-08-01",
             "nullable": true
           },
           "end_date": {
             "type": "string",
-            "description": "Data de fim",
+            "format": "date",
+            "description": "Data de fim, só a data (`YYYY-MM-DD`), SEM hora e sem fuso. É a base do `daysRemaining` dos cards.",
+            "example": "2026-09-15",
             "nullable": true
           },
           "ended_at": {
@@ -7615,7 +7689,8 @@
           },
           "goal_value": {
             "type": "string",
-            "description": "Valor objetivo (meta financeira)",
+            "description": "Meta financeira **em REAIS**, como string decimal (ex.: `\"45000.00\"`). ⚠️ Atenção: este campo NÃO está em centavos, ao contrário de `price` do marketplace e de `fiatAmount` das transações. Não divida por 100.",
+            "example": "45000.00",
             "nullable": true
           },
           "status": {
@@ -7630,11 +7705,13 @@
           },
           "raised": {
             "type": "string",
-            "description": "Valor arrecadado"
+            "description": "Valor arrecadado **em REAIS**, como string decimal (ex.: `\"12500.00\"`). ⚠️ Mesma pegadinha do `goal_value`: NÃO está em centavos. Não divida por 100.",
+            "example": "12500.00"
           },
           "backers": {
             "type": "number",
-            "description": "Número de apoiadores"
+            "description": "Número de compras primárias da campanha. Incrementa a cada compra e NÃO é decrementado em revenda P2P — não é a contagem de donos distintos.",
+            "example": 128
           },
           "lastNotifiedMilestone": {
             "type": "number",
@@ -7688,16 +7765,17 @@
             "nullable": true
           },
           "interactive_buttons": {
-            "type": "array",
-            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo (`button_layout_image`). `x`/`y` são percentuais 0–100 do tamanho da imagem, não pixels — assim o posicionamento sobrevive a qualquer resolução de tela. `null` quando a campanha não usa a etapa de botões (`interactive_buttons_enabled: false`).",
             "nullable": true,
+            "type": "array",
             "items": {
-              "type": "object"
+              "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
           "platform_fee": {
             "type": "string",
-            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
+            "example": "3.00",
             "nullable": false
           },
           "created_at": {
@@ -7841,12 +7919,16 @@
           },
           "start_date": {
             "type": "string",
-            "description": "Data de início",
+            "format": "date",
+            "description": "Data de início, só a data (`YYYY-MM-DD`), SEM hora e sem fuso — não é ISO completo. Não confunda com `created_at`/`ended_at`, que são timestamps.",
+            "example": "2026-08-01",
             "nullable": true
           },
           "end_date": {
             "type": "string",
-            "description": "Data de fim",
+            "format": "date",
+            "description": "Data de fim, só a data (`YYYY-MM-DD`), SEM hora e sem fuso. É a base do `daysRemaining` dos cards.",
+            "example": "2026-09-15",
             "nullable": true
           },
           "ended_at": {
@@ -7857,7 +7939,8 @@
           },
           "goal_value": {
             "type": "string",
-            "description": "Valor objetivo (meta financeira)",
+            "description": "Meta financeira **em REAIS**, como string decimal (ex.: `\"45000.00\"`). ⚠️ Atenção: este campo NÃO está em centavos, ao contrário de `price` do marketplace e de `fiatAmount` das transações. Não divida por 100.",
+            "example": "45000.00",
             "nullable": true
           },
           "status": {
@@ -7872,11 +7955,13 @@
           },
           "raised": {
             "type": "string",
-            "description": "Valor arrecadado"
+            "description": "Valor arrecadado **em REAIS**, como string decimal (ex.: `\"12500.00\"`). ⚠️ Mesma pegadinha do `goal_value`: NÃO está em centavos. Não divida por 100.",
+            "example": "12500.00"
           },
           "backers": {
             "type": "number",
-            "description": "Número de apoiadores"
+            "description": "Número de compras primárias da campanha. Incrementa a cada compra e NÃO é decrementado em revenda P2P — não é a contagem de donos distintos.",
+            "example": 128
           },
           "lastNotifiedMilestone": {
             "type": "number",
@@ -7930,16 +8015,17 @@
             "nullable": true
           },
           "interactive_buttons": {
-            "type": "array",
-            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo (`button_layout_image`). `x`/`y` são percentuais 0–100 do tamanho da imagem, não pixels — assim o posicionamento sobrevive a qualquer resolução de tela. `null` quando a campanha não usa a etapa de botões (`interactive_buttons_enabled: false`).",
             "nullable": true,
+            "type": "array",
             "items": {
-              "type": "object"
+              "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
           "platform_fee": {
             "type": "string",
-            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
+            "example": "3.00",
             "nullable": false
           },
           "created_at": {
@@ -8512,12 +8598,16 @@
           },
           "start_date": {
             "type": "string",
-            "description": "Data de início",
+            "format": "date",
+            "description": "Data de início, só a data (`YYYY-MM-DD`), SEM hora e sem fuso — não é ISO completo. Não confunda com `created_at`/`ended_at`, que são timestamps.",
+            "example": "2026-08-01",
             "nullable": true
           },
           "end_date": {
             "type": "string",
-            "description": "Data de fim",
+            "format": "date",
+            "description": "Data de fim, só a data (`YYYY-MM-DD`), SEM hora e sem fuso. É a base do `daysRemaining` dos cards.",
+            "example": "2026-09-15",
             "nullable": true
           },
           "ended_at": {
@@ -8528,7 +8618,8 @@
           },
           "goal_value": {
             "type": "string",
-            "description": "Valor objetivo (meta financeira)",
+            "description": "Meta financeira **em REAIS**, como string decimal (ex.: `\"45000.00\"`). ⚠️ Atenção: este campo NÃO está em centavos, ao contrário de `price` do marketplace e de `fiatAmount` das transações. Não divida por 100.",
+            "example": "45000.00",
             "nullable": true
           },
           "status": {
@@ -8543,11 +8634,13 @@
           },
           "raised": {
             "type": "string",
-            "description": "Valor arrecadado"
+            "description": "Valor arrecadado **em REAIS**, como string decimal (ex.: `\"12500.00\"`). ⚠️ Mesma pegadinha do `goal_value`: NÃO está em centavos. Não divida por 100.",
+            "example": "12500.00"
           },
           "backers": {
             "type": "number",
-            "description": "Número de apoiadores"
+            "description": "Número de compras primárias da campanha. Incrementa a cada compra e NÃO é decrementado em revenda P2P — não é a contagem de donos distintos.",
+            "example": 128
           },
           "lastNotifiedMilestone": {
             "type": "number",
@@ -8601,16 +8694,17 @@
             "nullable": true
           },
           "interactive_buttons": {
-            "type": "array",
-            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo",
+            "description": "Botões interativos posicionados em percentual sobre a imagem de fundo (`button_layout_image`). `x`/`y` são percentuais 0–100 do tamanho da imagem, não pixels — assim o posicionamento sobrevive a qualquer resolução de tela. `null` quando a campanha não usa a etapa de botões (`interactive_buttons_enabled: false`).",
             "nullable": true,
+            "type": "array",
             "items": {
-              "type": "object"
+              "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
           "platform_fee": {
             "type": "string",
-            "description": "Taxa da plataforma no royalty de revenda (%)",
+            "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
+            "example": "3.00",
             "nullable": false
           },
           "created_at": {
@@ -8831,72 +8925,6 @@
           "id",
           "isFeatured",
           "featuredOrder"
-        ]
-      },
-      "InteractiveButtonDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Identificador do botão = nome do ícone escolhido pelo dono (o frontend mapeia para um SVG)",
-            "example": "mic"
-          },
-          "x": {
-            "type": "number",
-            "description": "Posição X em percentual (0-100)",
-            "example": 42.5
-          },
-          "y": {
-            "type": "number",
-            "description": "Posição Y em percentual (0-100)",
-            "example": 73.1
-          },
-          "enabled": {
-            "type": "boolean",
-            "description": "Botão habilitado (default true)",
-            "default": true
-          },
-          "width": {
-            "type": "number",
-            "description": "Largura em percentual (0-100)",
-            "example": 12
-          },
-          "height": {
-            "type": "number",
-            "description": "Altura em percentual (0-100)",
-            "example": 8
-          },
-          "order": {
-            "type": "number",
-            "description": "Ordem de renderização",
-            "example": 0
-          },
-          "type": {
-            "type": "string",
-            "description": "Tipo de arquivo que o botão abre. Define quais formatos o upload aceita.",
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "FILE"
-            ],
-            "example": "VIDEO"
-          },
-          "fileUrl": {
-            "type": "string",
-            "description": "URL pública do arquivo do botão. Definida pelo endpoint de upload (POST /campaigns/:id/buttons/:buttonId/file); enviar aqui no PUT é opcional e o valor já salvo é preservado.",
-            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/campaigns/`id`/buttons/video-123.mp4"
-          },
-          "fileName": {
-            "type": "string",
-            "description": "Nome original do arquivo enviado no botão",
-            "example": "teaser.mp4"
-          }
-        },
-        "required": [
-          "id",
-          "x",
-          "y"
         ]
       },
       "CampaignButtonsResponseDto": {
