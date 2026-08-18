@@ -1,0 +1,69 @@
+---
+id: delete-model-suggestion
+title: "[Backoffice] Excluir sugestão de vez"
+description: "Apaga a sugestão e os votos dela, e LIBERA o handle para ser sugerido de novo. Para apenas tirar do ranking mantendo o histórico, use `reject`."
+sidebar_label: "[Backoffice] Excluir sugestão de vez"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "delete api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[Backoffice] Excluir sugestão de vez"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/model-suggestions/{suggestionId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Apaga a sugestão e os votos dela, e LIBERA o handle para ser sugerido de novo. Para apenas tirar do ranking mantendo o histórico, use `reject`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./delete-model-suggestion.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./delete-model-suggestion.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./delete-model-suggestion.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -180,7 +180,7 @@ Estados: `pending` → `accepted` / `rejected` / `cancelled` / `expired`, e `cou
 
 ## Métricas de revenda por campanha
 
-`GET /campaigns/active` já retorna, por campanha, a **faixa de preço de revenda** e a **quantidade à venda** no marketplace, além de votos/ranking:
+`GET /campaigns/active` já retorna, por campanha, a **faixa de preço de revenda** e a **quantidade à venda** no marketplace:
 
 ```json
 {
@@ -188,11 +188,10 @@ Estados: `pending` → `accepted` / `rejected` / `cancelled` / `expired`, e `cou
   "name": "Ensaio X",
   "currentKeys": 12,
   "totalKeys": 100,
+  "keysRemaining": 88,
   "sellPriceMin": 1500,
   "sellPriceMax": 5000,
-  "keysForSale": 4,
-  "votesCount": 42,
-  "rankingPosition": 3
+  "keysForSale": 4
 }
 ```
 

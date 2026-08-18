@@ -69,6 +69,118 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | essayTitle | `campaign.name` |
 | modelName | `campaign.main_star.name` |
 
+## Ensaios Apoiados (SUPPORTED_ESSAYS) e Minhas Chaves
+**`GET /transactions/me/summary`** (Bearer) → `{ totalKeys, totalEssaysSupported, byCampaign[] }`.
+
+**Não existe endpoint separado de "Ensaios Apoiados"** — é este. Cada item de `byCampaign` é um
+ensaio apoiado, com os dados da campanha já embutidos (dispensa o fan-out `GET /campaigns/:id`).
+
+| Card do PDF | Ler de |
+|---|---|
+| nº de ensaios apoiados | `totalEssaysSupported` (raiz) |
+| total de chaves do usuário | `totalKeys` (raiz) |
+| nome do ensaio | `byCampaign[].campaign.essayTitle` *(fallback: `campaign.name`)* |
+| modelo | `byCampaign[].campaign.modelName` |
+| capa / arte da chave | `campaign.coverImage` / `campaign.keyImage` |
+| **chaves vendidas** | `byCampaign[].campaign.currentKeys` |
+| **chaves restantes** | `byCampaign[].campaign.keysRemaining` |
+| total de chaves do ensaio | `byCampaign[].campaign.totalKeys` |
+| % financiado | `byCampaign[].campaign.fundingPercentage` |
+| **tipo de chave comprada** | `byCampaign[].tiers[]` |
+| minhas chaves nesse ensaio | `byCampaign[].count` |
+
+:::warning `totalKeys` aparece duas vezes
+Na **raiz** é o total de chaves **do usuário**. Dentro de `campaign` é o total de chaves **do ensaio**.
+:::
+
+O tipo de chave é uma **lista**, porque o usuário pode ter chaves de tiers diferentes no mesmo ensaio:
+
+```json
+{
+  "campaignId": "uuid",
+  "count": 3,
+  "campaign": { "essayTitle": "A Intimidade como Arte", "currentKeys": 630, "totalKeys": 900, "keysRemaining": 270, "fundingPercentage": 70 },
+  "tiers": [
+    { "accessId": "uuid-vip", "level": "VIP", "typeTitle": "Acesso total", "count": 2 },
+    { "accessId": "uuid-ouro", "level": "Ouro", "typeTitle": null, "count": 1 }
+  ],
+  "keys": [
+    { "transactionId": "uuid", "accessId": "uuid-vip", "tierLevel": "VIP", "tierTypeTitle": "Acesso total", "purchasedAt": "2026-08-01T12:00:00.000Z" }
+  ]
+}
+```
+
+A soma dos `tiers[].count` é sempre igual a `count`. Chaves antigas sem tier resolvido caem num grupo
+com `accessId: null` — não somem da conta.
+
+> `keysRemaining` é `totalKeys − currentKeys` e **não desconta** chaves seguradas por checkouts em
+> aberto. É o número de vitrine: o checkout pode recusar uma compra que o card ainda mostrava.
+
+## Dashboard do usuário — os 4 cards de topo
+
+| Card do print | Ler de |
+|---|---|
+| **Chaves Adquiridas** | `GET /transactions/me/summary` → `totalKeys` |
+| **Ensaios Apoiados** | `GET /transactions/me/summary` → `totalEssaysSupported` |
+| **Posição no Ranking** | `GET /ranking/users` → `me.position` |
+| **Crédito** | `GET /credits/balance` → `balance` ÷ 100 |
+
+## Ranking dos Usuários (USER_RANKING)
+**`GET /ranking/users?page=&limit=`** (Bearer) — **uma chamada alimenta a aba inteira e o card**.
+
+```json
+{
+  "me":     { "position": 160, "keysCount": 72, "page": 32, "totalParticipants": 412 },
+  "podium": [
+    { "position": 1, "displayName": "M****", "keysCount": 238, "isMe": false },
+    { "position": 2, "displayName": "B****", "keysCount": 238, "isMe": false },
+    { "position": 3, "displayName": "C****", "keysCount": 201, "isMe": false }
+  ],
+  "items":  [
+    { "position": 158, "displayName": "J****", "keysCount": 75, "isMe": false },
+    { "position": 160, "displayName": "P****", "keysCount": 72, "isMe": true  }
+  ],
+  "page": 32, "limit": 5, "totalItems": 412, "totalPages": 83
+}
+```
+
+| Elemento da tela | Ler de |
+|---|---|
+| card "Posição no Ranking" | `me.position` |
+| cards 1ª/2ª/3ª posição (pódio) | `podium[]` — vem em **todas** as páginas, não só na primeira |
+| linhas `#158 · Nome · 75 Chaves` | `items[]` → `position`, `displayName`, `keysCount` |
+| destaque da linha do próprio usuário | `items[].isMe` |
+| paginação (01, 02, 03…) | `page`, `totalPages` |
+| abrir a lista já na posição do usuário | `me.page` |
+
+**`me.position` é exata e não depende da paginação.** Se o usuário é o 160º e você pedir `page=1`,
+`me.position` continua 160 — é por isso que o card funciona sem carregar a lista toda. Para abrir a
+aba já na altura dele, chame com o `limit` que você vai usar e navegue para `me.page`.
+
+### Nomes são mascarados
+`displayName` traz **só o primeiro nome, com a primeira letra visível e o resto em asterisco**
+(`Pedro Pelicioni` → `P****`). Sobrenome, e-mail e id de terceiros nunca saem da API. Sem nome
+utilizável, vem `***` — o campo **nunca é nulo**, não precisa de tratamento de ausência.
+
+### Regras do ranking
+
+- **Critério: chaves possuídas.** É o mesmo número de `totalKeys` em `/transactions/me/summary` — se
+  divergir, é bug.
+- **Escopado ao tenant** do usuário logado, sem parâmetro.
+- **Empate não compartilha posição**: dois usuários com 238 chaves ficam em 1º e 2º. O desempate é
+  quem comprou primeiro, e é estável entre chamadas.
+- **Estorno sai da conta**; **revenda P2P transfere a posição** para o novo dono (o ranking mede posse
+  atual, coerente com o rótulo "Chaves Adquiridas").
+- Quem ainda **não tem chave** não participa: `me.position` e `me.page` vêm `null` — mostre `—`.
+
+| Parâmetro | Valores |
+|---|---|
+| `page` | ≥ 1 (default **1**) |
+| `limit` | 1–100 (default **10**) |
+
+**Omita** os parâmetros para usar o default — mandar `?page=` vazio vira NaN e resulta em 400. Só os
+parâmetros da tabela são aceitos; qualquer outro responde 400.
+
 ## Carteira — saldo
 **`GET /credits/balance`** (Bearer; usuário precisa de tenant vinculado).
 
@@ -94,13 +206,11 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 
 | Tela / endpoint do PDF | Situação |
 |---|---|
-| `/votes` (ranking de sugestão) | adiado |
 | `/notifications` | desabilitado (até configurar Twilio) |
 | `/legal/terms-of-use`, `/legal/privacy-policy` | não nesta fase |
 | `/wallet/withdrawal`, `/wallet/deposit` (saque/depósito) | não definido |
 | `/checkout/pix` | em standby |
 | `/campaign/:id/essay` (interactiveTags) | não priorizado |
-| `/dashboard` do usuário | em definição (depende da regra de ranking) |
 | `/articles`, `/article/:id` (blog) | fora do escopo (não é nossa API) |
 | `/heroCarousel`, `/finishedEssays`, `/campaigns` (público filtrado) | derivar de `/campaigns/active` por enquanto |
 
@@ -121,5 +231,12 @@ Agregador pessoal do usuário logado (cards de resumo + abas `MY_KEYS`, `SUPPORT
 - saldo (userCredit) → `GET /credits/balance`
 - MY_LISTINGS → `GET /marketplace/my-listings`
 
-O pedaço que **falta no backend** é o **ranking global de usuários** (`USER_RANKING` / `rankingPosition`) — critério e escopo ainda em definição.
+- **SUPPORTED_ESSAYS** → `GET /transactions/me/summary` (ver abaixo)
+
+- **USER_RANKING** → `GET /ranking/users` (ver abaixo)
+
+**Todos os pedaços do dashboard já têm endpoint.** Não sobrou nada em definição.
+
+Cuidado para não confundir dois rankings diferentes: o `USER_RANKING` abaixo posiciona **usuários**;
+o [ranking de sugestão de modelos](./ranking-sugestao-modelos.md) posiciona **perfis do Instagram**.
 

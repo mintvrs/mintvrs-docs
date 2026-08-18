@@ -1,0 +1,1 @@
+{"parameters":[{"name":"username","required":true,"in":"query","description":"Username do Instagram a ser verificado","schema":{"example":"nasa","type":"string"}}]}

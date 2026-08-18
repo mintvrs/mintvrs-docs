@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"reason":{"type":"string","description":"Motivo da rejeição (fica registrado na sugestão)","example":"Perfil não corresponde ao posicionamento da marca","maxLength":500}},"title":"RejectModelSuggestionDto"}}}}}

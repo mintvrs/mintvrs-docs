@@ -434,6 +434,7 @@
     },
     "/campaigns/active": {
       "get": {
+        "description": "Endpoint público (sem token). Além da entidade da campanha, traz os agregados computados: `currentKeys`/`totalKeys`/`keysRemaining`/`fundingPercentage` (chaves), `sellPriceMin`/`sellPriceMax`/`keysForSale` (revenda no marketplace) e `custom_fields_resolved` (campos flexíveis já com o label do tenant).",
         "operationId": "findActive",
         "parameters": [],
         "responses": {
@@ -3301,6 +3302,7 @@
     },
     "/transactions/me/summary": {
       "get": {
+        "description": "Resposta autossuficiente: cada grupo traz `campaign` (dados da campanha e da modelo — nome, foto de perfil, profissão, capa, arte da chave, contrato NFT e agregados de financiamento) e `keys`, com a data de compra de CADA chave. Não é necessário o fan-out `GET /campaigns/:id` por campanha. Posse = transação `completed` do usuário autenticado, independente do `chainStatus`.",
         "operationId": "myKeysSummary",
         "parameters": [],
         "responses": {
@@ -3829,6 +3831,7 @@
     },
     "/marketplace/my-listings": {
       "get": {
+        "description": "Anúncios do usuário autenticado (todos os status), do mais recente ao mais antigo. Cada item traz `campaign` com os dados da campanha e da modelo já embutidos — tema do ensaio (`essayTitle`), `modelName`/`modelProfession`/`modelProfilePhoto` e artes — para a tela \"Meus Anúncios\" dispensar o fan-out `GET /campaigns/:id` por anúncio.",
         "operationId": "myListings",
         "parameters": [],
         "responses": {
@@ -3839,7 +3842,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MarketplaceListing"
+                    "$ref": "#/components/schemas/MyListingViewDto"
                   }
                 }
               }
@@ -6218,6 +6221,669 @@
         ]
       }
     },
+    "/instagram/exists": {
+      "get": {
+        "description": "Consulta a API externa hikerapi.com para checar se o username informado existe no Instagram (200 = existe, 404 = não existe).",
+        "operationId": "checkUsername",
+        "parameters": [
+          {
+            "name": "username",
+            "required": true,
+            "in": "query",
+            "description": "Username do Instagram a ser verificado",
+            "schema": {
+              "example": "nasa",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da verificação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstagramCheckResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas TenantAdmin, Admin ou SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Backoffice] Verifica se um username do Instagram existe",
+        "tags": [
+          "instagram"
+        ]
+      }
+    },
+    "/model-suggestions/ranking": {
+      "get": {
+        "description": "Lista os perfis APROVADOS ordenados por número de votos (1 = mais votado). Não exige autenticação. Sugestões pendentes ou recusadas não aparecem aqui. Envie `tenantSlug` para escopar por tenant — sem ele o ranking é global. Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
+        "operationId": "listModelSuggestionRanking",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantos perfis retornar (1–50). OMITA o parâmetro para usar o default — enviar `?limit=` vazio vira NaN e resulta em 400.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por plataforma. Sem o parâmetro, traz todas.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram"
+              ]
+            }
+          },
+          {
+            "name": "tenantSlug",
+            "required": false,
+            "in": "query",
+            "description": "Slug do tenant para escopar o ranking. Sem ele o ranking é GLOBAL (todos os tenants). Slug inexistente responde 404 — nunca cai em global silenciosamente. Recomendado enviar desde já: quando o escopo por tenant virar padrão, nada muda para quem já manda.",
+            "schema": {
+              "example": "mkc",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RankingItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetro fora do contrato: `limit` fora de 1–50, valor não numérico, ou query param não documentado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "tenantSlug informado não existe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ranking público de perfis sugeridos",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/me": {
+      "get": {
+        "description": "Traz as sugestões em que este usuário foi o PRIMEIRO a sugerir o perfil, com o `status` da moderação e o `rejectionReason` quando recusada. Se ele apoiou um perfil que outra pessoa já tinha sugerido, isso aparece em `GET /model-suggestions/me/votes`, não aqui.",
+        "operationId": "listMyModelSuggestions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyModelSuggestionsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Perfis que EU sugeri, com o estado da moderação",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/me/votes": {
+      "get": {
+        "description": "Use para desabilitar o botão \"+1\" dos perfis já votados — não existe desfazer voto.",
+        "operationId": "listMyModelSuggestionVotes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyVotesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "IDs das sugestões em que eu já votei",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions": {
+      "post": {
+        "description": "A sugestão entra na fila de moderação (`pending`) e só aparece no ranking depois de aprovada por um admin do tenant. Sugerir também registra o seu apoio ao perfil.\n\nÉ idempotente por perfil: se alguém já sugeriu o mesmo handle, responde **200** com `alreadyExisted: true` e o `id` existente (use o `status` para decidir a mensagem) em vez de erro. Só perfil já recusado responde 409.\n\nO username é normalizado (minúsculo, sem \"@\") antes de validar. Limite: 5 sugestões por minuto por usuário.",
+        "operationId": "createModelSuggestion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModelSuggestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O perfil JÁ tinha sido sugerido (`alreadyExisted: true`) e esta chamada apenas registrou o seu apoio. **Não é erro** — é o caminho mais comum. O `id` devolvido é o da sugestão existente; use o `status` para decidir a mensagem (`approved` → mande o usuário votar nela; `pending` → \"já está em análise\").",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateModelSuggestionResultDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Perfil sugerido pela primeira vez — entrou na fila de moderação (`status: pending`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateModelSuggestionResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Username em formato inválido ou plataforma não suportada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Perfil já analisado e recusado — veja `code`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSuggestionConflictDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de sugestões por minuto excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sugerir um perfil de modelo",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/{suggestionId}/vote": {
+      "post": {
+        "description": "Um voto por usuário por perfil, sem desfazer. Votar de novo responde 409 (`code: ALREADY_VOTED`); votar em sugestão não aprovada responde 409 (`code: NOT_APPROVED`).",
+        "operationId": "voteModelSuggestion",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da sugestão",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoteResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sugestão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Já votou (`ALREADY_VOTED`) ou sugestão ainda não aprovada (`NOT_APPROVED`) — decida pelo campo `code`, não pelo texto de `message`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSuggestionConflictDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dar \"+1\" num perfil sugerido",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/admin": {
+      "get": {
+        "description": "Escopado ao tenant de quem chama; SuperAdmin vê todos os tenants. `votesCount` conta também os apoios em sugestões pendentes — é o sinal de demanda para priorizar a moderação.",
+        "operationId": "listModelSuggestionsAdmin",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar pela etapa da moderação. Sem o parâmetro, traz todas.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por plataforma",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "instagram"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModelSuggestionsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas TenantAdmin ou SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Backoffice] Fila de moderação das sugestões",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/{suggestionId}/approve": {
+      "patch": {
+        "description": "Também serve para reverter uma rejeição — aprovar limpa o motivo registrado.",
+        "operationId": "approveModelSuggestion",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da sugestão",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModelSuggestionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sugestão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Backoffice] Aprovar sugestão (entra no ranking público)",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/{suggestionId}/reject": {
+      "patch": {
+        "description": "Sai do ranking, mas os votos já dados são preservados (a rejeição é reversível). O mesmo handle não pode ser sugerido de novo enquanto a rejeição estiver de pé.",
+        "operationId": "rejectModelSuggestion",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da sugestão",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectModelSuggestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminModelSuggestionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sugestão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Backoffice] Recusar sugestão",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/model-suggestions/{suggestionId}": {
+      "delete": {
+        "description": "Apaga a sugestão e os votos dela, e LIBERA o handle para ser sugerido de novo. Para apenas tirar do ranking mantendo o histórico, use `reject`.",
+        "operationId": "deleteModelSuggestion",
+        "parameters": [
+          {
+            "name": "suggestionId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da sugestão",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sugestão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Backoffice] Excluir sugestão de vez",
+        "tags": [
+          "model-suggestions"
+        ]
+      }
+    },
+    "/ranking/users": {
+      "get": {
+        "description": "Uma chamada alimenta os três pedaços da tela: `me` (card \"Posição no Ranking\"), `podium` (1º/2º/3º) e `items` (lista paginada).\n\n**`me.position` é exata**, mesmo que o usuário esteja fora da página pedida — não depende do `limit`. Use `me.page` para abrir a lista já na posição dele.\n\nEscopado ao tenant do token. Conta chaves com transação `completed`, então estorno sai do ranking e a revenda P2P transfere a posição para o novo dono — é o mesmo número de `totalKeys` em `GET /transactions/me/summary`.\n\nNomes são mascarados (primeiro nome, primeira letra + asteriscos). Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
+        "operationId": "listUserRanking",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página (1-based). OMITA o parâmetro para usar o default — enviar `?page=` vazio vira NaN e resulta em 400.",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Itens por página (1–100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRankingDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetro fora do contrato: `page` < 1, `limit` fora de 1–100, valor não numérico, ou query param não documentado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ranking de usuários por chaves possuídas",
+        "tags": [
+          "ranking"
+        ]
+      }
+    },
     "/legal/terms-of-use": {
       "get": {
         "operationId": "termsOfUse",
@@ -6259,128 +6925,6 @@
         "summary": "Política de privacidade (público, sem autenticação)",
         "tags": [
           "legal"
-        ]
-      }
-    },
-    "/votes/me": {
-      "get": {
-        "operationId": "listMine",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MyVoteDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar campanhas que eu favoritei",
-        "tags": [
-          "votes"
-        ]
-      }
-    },
-    "/votes/{campaignId}": {
-      "post": {
-        "operationId": "toggle",
-        "parameters": [
-          {
-            "name": "campaignId",
-            "required": true,
-            "in": "path",
-            "description": "UUID da campanha",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VoteToggleDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Favoritar/desfavoritar uma campanha (toggle)",
-        "tags": [
-          "votes"
-        ]
-      },
-      "get": {
-        "operationId": "getForCampaign",
-        "parameters": [
-          {
-            "name": "campaignId",
-            "required": true,
-            "in": "path",
-            "description": "UUID da campanha",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CampaignVotesDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Campanha não encontrada",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Contagem de curtidas da campanha + se eu curti",
-        "tags": [
-          "votes"
         ]
       }
     },
@@ -6476,8 +7020,12 @@
       "description": "Main stars."
     },
     {
-      "name": "votes",
-      "description": "Votos/favoritos de campanhas (curtidas) e ranking."
+      "name": "model-suggestions",
+      "description": "Sugestão de modelos pelos usuários: ranking público, votos e fila de moderação."
+    },
+    {
+      "name": "ranking",
+      "description": "Ranking de usuários por chaves possuídas (dashboard do usuário)."
     },
     {
       "name": "legal",
@@ -7419,21 +7967,15 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 100
           },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
+            "example": 88
+          },
           "fundingPercentage": {
             "type": "number",
             "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
             "example": 70
-          },
-          "votesCount": {
-            "type": "number",
-            "description": "Total de curtidas/favoritos da campanha",
-            "example": 42
-          },
-          "rankingPosition": {
-            "type": "number",
-            "description": "Posição no ranking por nº de curtidas (1 = mais curtida)",
-            "example": 3,
-            "nullable": true
           },
           "sellPriceMin": {
             "type": "number",
@@ -7512,9 +8054,8 @@
           "updated_at",
           "currentKeys",
           "totalKeys",
+          "keysRemaining",
           "fundingPercentage",
-          "votesCount",
-          "rankingPosition",
           "sellPriceMin",
           "sellPriceMax",
           "keysForSale",
@@ -7598,6 +8139,11 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 900
           },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
+            "example": 270
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -7630,6 +8176,7 @@
           "fundingPercentage",
           "currentKeys",
           "totalKeys",
+          "keysRemaining",
           "endDate",
           "daysRemaining",
           "completionDate"
@@ -7698,6 +8245,11 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 900
           },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
+            "example": 270
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -7729,6 +8281,7 @@
           "fundingPercentage",
           "currentKeys",
           "totalKeys",
+          "keysRemaining",
           "endDate",
           "daysRemaining",
           "featuredOrder"
@@ -7859,6 +8412,11 @@
             "description": "Total de chaves — soma de accesses.quantity",
             "example": 100
           },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
+            "example": 270
+          },
           "fundingPercentage": {
             "type": "number",
             "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
@@ -7889,6 +8447,7 @@
           "previews",
           "currentKeys",
           "totalKeys",
+          "keysRemaining",
           "fundingPercentage",
           "totalMediaCount",
           "gallery",
@@ -9827,6 +10386,216 @@
           "createdAt"
         ]
       },
+      "MyKeyCampaignDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico (tema exibido no card)",
+            "example": "A Intimidade como Arte",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ],
+            "example": "Active"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "URL servível da imagem de capa isolada do card (cover_image). Pode ser null quando a campanha ainda não tem capa.",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/cover-123.jpg",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto alternativo de acessibilidade (hero_image_alt da campanha)",
+            "example": "Retrato da modelo em estúdio com fundo escuro",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
+            "example": "Lupita Abayomi",
+            "nullable": true
+          },
+          "modelProfession": {
+            "type": "string",
+            "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
+            "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 630
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 900
+          },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
+            "example": 270
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-08-15",
+            "nullable": true
+          },
+          "daysRemaining": {
+            "type": "number",
+            "description": "Dias restantes até end_date (mínimo 0; null quando a campanha não tem end_date)",
+            "example": 15,
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modela/artista (main_star.profile_photo)",
+            "nullable": true
+          },
+          "keyImage": {
+            "type": "string",
+            "description": "URL servível da arte de preview da CHAVE (key_image)",
+            "nullable": true
+          },
+          "nftContractAddress": {
+            "type": "string",
+            "description": "Endereço do contrato NFT da campanha. `null` enquanto a chave não foi publicada on-chain.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "essayTitle",
+          "category",
+          "status",
+          "coverImage",
+          "ariaLabel",
+          "modelName",
+          "modelProfession",
+          "fundingPercentage",
+          "currentKeys",
+          "totalKeys",
+          "keysRemaining",
+          "endDate",
+          "daysRemaining",
+          "completionDate",
+          "modelProfilePhoto",
+          "keyImage",
+          "nftContractAddress"
+        ]
+      },
+      "KeyTierBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "accessId": {
+            "type": "string",
+            "description": "ID do tier. `null` agrupa as chaves sem tier resolvido.",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "description": "Nome do tier (`accesses.level`)",
+            "example": "VIP",
+            "nullable": true
+          },
+          "typeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso, quando houver",
+            "nullable": true
+          },
+          "count": {
+            "type": "number",
+            "description": "Quantas chaves deste tier o usuário possui nesta campanha",
+            "example": 2
+          }
+        },
+        "required": [
+          "accessId",
+          "level",
+          "typeTitle",
+          "count"
+        ]
+      },
+      "MyKeyDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação que representa esta chave"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "Tier (access) comprado. `null` em linhas legadas ou quando o tier não pôde ser resolvido na compra.",
+            "nullable": true
+          },
+          "tierLevel": {
+            "type": "string",
+            "description": "Nome do tier comprado (`accesses.level`), ex.: \"VIP\", \"Ouro\"",
+            "example": "VIP",
+            "nullable": true
+          },
+          "tierTypeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso vinculado ao tier (`access_types.title`), quando houver",
+            "nullable": true
+          },
+          "purchasedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora da compra desta chave — é este o campo a exibir como \"comprada em\". Coluna `timestamp` (sem timezone). Em revenda P2P a posse é transferida mas `purchased_at` NÃO é reescrito: continua sendo a data da cunhagem original."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de criação da linha. Pode divergir de `purchasedAt` em torno da meia-noite (fusos distintos); prefira `purchasedAt` para exibir a data da compra."
+          }
+        },
+        "required": [
+          "transactionId",
+          "accessId",
+          "tierLevel",
+          "tierTypeTitle",
+          "purchasedAt",
+          "createdAt"
+        ]
+      },
       "KeysByCampaignDto": {
         "type": "object",
         "properties": {
@@ -9843,12 +10612,38 @@
             "type": "number",
             "description": "Quantidade de chaves dessa campanha que o usuário possui",
             "example": 3
+          },
+          "campaign": {
+            "description": "Dados da campanha e da modelo já embutidos — dispensa o fan-out `GET /campaigns/:id`. `null` quando `campaignId` não é um UUID (registros mock/legados) ou a campanha não existe mais. ATENÇÃO: `campaign.totalKeys` é o total de chaves DA CAMPANHA, diferente do `totalKeys` da raiz, que é o total de chaves DO USUÁRIO.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MyKeyCampaignDto"
+              }
+            ]
+          },
+          "tiers": {
+            "description": "Quebra por tipo de chave comprada nesta campanha. A soma dos `count` é igual ao `count` da campanha.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyTierBreakdownDto"
+            }
+          },
+          "keys": {
+            "description": "Uma entrada por chave possuída nesta campanha, da compra mais recente para a mais antiga. `keys.length` é sempre igual a `count`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MyKeyDto"
+            }
           }
         },
         "required": [
           "campaignId",
           "campaignName",
-          "count"
+          "count",
+          "campaign",
+          "tiers",
+          "keys"
         ]
       },
       "MyKeysSummaryDto": {
@@ -9865,7 +10660,7 @@
             "example": 2
           },
           "byCampaign": {
-            "description": "Quebra por campanha",
+            "description": "Quebra por campanha, do grupo com a compra mais recente para o mais antigo",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/KeysByCampaignDto"
@@ -10270,6 +11065,272 @@
           "buyOffersCount"
         ]
       },
+      "CampaignEmbedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico (tema exibido no card)",
+            "example": "A Intimidade como Arte",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled"
+            ],
+            "example": "Active"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "URL servível da imagem de capa isolada do card (cover_image). Pode ser null quando a campanha ainda não tem capa.",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/cover-123.jpg",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto alternativo de acessibilidade (hero_image_alt da campanha)",
+            "example": "Retrato da modelo em estúdio com fundo escuro",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
+            "example": "Lupita Abayomi",
+            "nullable": true
+          },
+          "modelProfession": {
+            "type": "string",
+            "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
+            "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 630
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 900
+          },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
+            "example": 270
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-08-15",
+            "nullable": true
+          },
+          "daysRemaining": {
+            "type": "number",
+            "description": "Dias restantes até end_date (mínimo 0; null quando a campanha não tem end_date)",
+            "example": 15,
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modela/artista (main_star.profile_photo)",
+            "nullable": true
+          },
+          "keyImage": {
+            "type": "string",
+            "description": "URL servível da arte de preview da CHAVE (key_image)",
+            "nullable": true
+          },
+          "nftContractAddress": {
+            "type": "string",
+            "description": "Endereço do contrato NFT da campanha. `null` enquanto a chave não foi publicada on-chain.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "essayTitle",
+          "category",
+          "status",
+          "coverImage",
+          "ariaLabel",
+          "modelName",
+          "modelProfession",
+          "fundingPercentage",
+          "currentKeys",
+          "totalKeys",
+          "keysRemaining",
+          "endDate",
+          "daysRemaining",
+          "completionDate",
+          "modelProfilePhoto",
+          "keyImage",
+          "nftContractAddress"
+        ]
+      },
+      "MyListingViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "UUID da transação (chave) anunciada"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "UUID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "E-mail do vendedor",
+            "nullable": true
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor",
+            "nullable": true
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "UUID do tenant",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço do anúncio em centavos (BRL)",
+            "example": 1500
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "UUID do comprador",
+            "nullable": true
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "E-mail do comprador",
+            "nullable": true
+          },
+          "soldAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da venda",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer on-chain",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação do anúncio"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização do anúncio"
+          },
+          "campaign": {
+            "description": "Campanha do anúncio já embutida — tema do ensaio (`essayTitle`), modelo (`modelName`/`modelProfession`/`modelProfilePhoto`) e artes (`keyImage`/`coverImage`). Dispensa o fan-out `GET /campaigns/:id`. `null` quando a campanha não existe mais (não há FK em `campaign_id`, então um anúncio pode sobreviver à campanha).",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignEmbedDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "buyerId",
+          "buyerEmail",
+          "soldAt",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt",
+          "campaign"
+        ]
+      },
+      "CreateListingDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT a ser vendido)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          }
+        },
+        "required": [
+          "transactionId",
+          "price"
+        ]
+      },
       "MarketplaceListing": {
         "type": "object",
         "properties": {
@@ -10369,23 +11430,6 @@
           "xionExplorerUrl",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "CreateListingDto": {
-        "type": "object",
-        "properties": {
-          "transactionId": {
-            "type": "string",
-            "description": "ID da transação (NFT a ser vendido)"
-          },
-          "price": {
-            "type": "number",
-            "description": "Preço em centavos (BRL)"
-          }
-        },
-        "required": [
-          "transactionId",
-          "price"
         ]
       },
       "HasKeyDto": {
@@ -11054,6 +12098,513 @@
           "message"
         ]
       },
+      "InstagramCheckResultDto": {
+        "type": "object",
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "description": "Indica se o username do Instagram existe"
+          }
+        },
+        "required": [
+          "exists"
+        ]
+      },
+      "RankingItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da sugestão — use para votar"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram"
+            ],
+            "description": "Plataforma do perfil"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username normalizado, sem \"@\"",
+            "example": "gabriela_guimaraes"
+          },
+          "profileUrl": {
+            "type": "string",
+            "description": "URL pública do perfil",
+            "example": "https://instagram.com/gabriela_guimaraes"
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Total de votos",
+            "example": 127
+          },
+          "rankingPosition": {
+            "type": "number",
+            "description": "Posição no ranking (1 = mais votada), calculada DENTRO do escopo retornado (tenant + plataforma + limit).",
+            "example": 1
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "username",
+          "profileUrl",
+          "votesCount",
+          "rankingPosition"
+        ]
+      },
+      "MyModelSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "example": "gabriela_guimaraes"
+          },
+          "profileUrl": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "rejectionReason": {
+            "type": "string",
+            "description": "Motivo, quando rejeitada",
+            "nullable": true
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Votos acumulados",
+            "example": 12
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "username",
+          "profileUrl",
+          "status",
+          "rejectionReason",
+          "votesCount",
+          "createdAt"
+        ]
+      },
+      "MyModelSuggestionsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MyModelSuggestionDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "MyVotesDto": {
+        "type": "object",
+        "properties": {
+          "suggestionIds": {
+            "description": "IDs das sugestões em que já votei — para desabilitar o botão \"+1\"",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "suggestionIds"
+        ]
+      },
+      "CreateModelSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram"
+            ],
+            "description": "Plataforma do perfil. Por ora só `instagram` — TikTok entra quando houver verificação equivalente.",
+            "example": "instagram"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username do perfil. Pode vir com \"@\" e em maiúsculas — é normalizado antes de validar.",
+            "example": "@gabriela_guimaraes",
+            "maxLength": 30
+          }
+        },
+        "required": [
+          "platform",
+          "username"
+        ]
+      },
+      "CreateModelSuggestionResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da sugestão (nova ou já existente)"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "example": "gabriela_guimaraes"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ],
+            "description": "Estado atual. `pending` = na fila de moderação; `approved` = já está no ranking."
+          },
+          "alreadyExisted": {
+            "type": "boolean",
+            "description": "Se `true`, o perfil já tinha sido sugerido por alguém e esta chamada apenas registrou o seu apoio. Use o `status` para decidir a mensagem: `approved` → mande o usuário ao ranking; `pending` → \"já está em análise\".",
+            "example": false
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "not_found",
+              "unverified"
+            ],
+            "description": "Resultado da checagem de existência. `unverified` significa que não deu para checar — não que o perfil seja inválido."
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "username",
+          "status",
+          "alreadyExisted",
+          "verificationStatus"
+        ]
+      },
+      "ModelSuggestionConflictDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 409
+          },
+          "error": {
+            "type": "string",
+            "example": "Conflict"
+          },
+          "code": {
+            "type": "string",
+            "description": "Código estável do conflito — use ESTE campo para decidir o que mostrar:\n\n- `SUGGESTION_REJECTED` (POST /model-suggestions): o perfil já foi analisado e recusado.\n- `ALREADY_VOTED` (POST /:id/vote): você já votou nesse perfil (não há como desfazer).\n- `NOT_APPROVED` (POST /:id/vote): a sugestão ainda está na fila de moderação.\n- `VOTE_FAILED` (POST /:id/vote): falha inesperada ao registrar o voto.",
+            "enum": [
+              "SUGGESTION_REJECTED",
+              "ALREADY_VOTED",
+              "NOT_APPROVED",
+              "VOTE_FAILED"
+            ],
+            "example": "ALREADY_VOTED"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem em pt-BR. Não use para lógica — use o `code`.",
+            "example": "Você já votou neste perfil."
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "code",
+          "message"
+        ]
+      },
+      "VoteResultDto": {
+        "type": "object",
+        "properties": {
+          "suggestionId": {
+            "type": "string",
+            "description": "UUID da sugestão votada"
+          },
+          "hasVoted": {
+            "type": "boolean",
+            "description": "Sempre `true` após um voto aceito",
+            "example": true
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Total de votos após o seu",
+            "example": 128
+          }
+        },
+        "required": [
+          "suggestionId",
+          "hasVoted",
+          "votesCount"
+        ]
+      },
+      "AdminModelSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "instagram"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "example": "gabriela_guimaraes"
+          },
+          "profileUrl": {
+            "type": "string",
+            "description": "Link do perfil — a conferência manual quando a checagem não rolou"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "not_found",
+              "unverified"
+            ],
+            "description": "`not_found` merece atenção (a API disse que o perfil não existe); `unverified` quer dizer que não deu para checar."
+          },
+          "verifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "votesCount": {
+            "type": "number",
+            "description": "Quantas pessoas apoiaram este perfil. Em sugestões `pending` os votos ainda não aparecem publicamente, mas contam aqui — é o sinal de demanda para moderar.",
+            "example": 4
+          },
+          "suggestedByUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejectionReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewedByUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "username",
+          "profileUrl",
+          "status",
+          "verificationStatus",
+          "verifiedAt",
+          "votesCount",
+          "suggestedByUserId",
+          "rejectionReason",
+          "reviewedByUserId",
+          "reviewedAt",
+          "createdAt"
+        ]
+      },
+      "AdminModelSuggestionsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminModelSuggestionDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "RejectModelSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Motivo da rejeição (fica registrado na sugestão)",
+            "example": "Perfil não corresponde ao posicionamento da marca",
+            "maxLength": 500
+          }
+        }
+      },
+      "DeleteResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "MyRankingDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "description": "Posição do usuário logado no ranking do tenant. **`null` quando ele ainda não tem nenhuma chave** — nesse caso ele não participa do ranking.",
+            "example": 160,
+            "nullable": true
+          },
+          "keysCount": {
+            "type": "number",
+            "description": "Chaves que o usuário logado possui",
+            "example": 72
+          },
+          "page": {
+            "type": "number",
+            "description": "Página em que o usuário logado aparece, considerando o `limit` desta chamada. Serve para abrir a lista já na posição dele. `null` quando não participa.",
+            "example": 32,
+            "nullable": true
+          },
+          "totalParticipants": {
+            "type": "number",
+            "description": "Total de usuários no ranking do tenant (com ao menos 1 chave)",
+            "example": 412
+          }
+        },
+        "required": [
+          "position",
+          "keysCount",
+          "page",
+          "totalParticipants"
+        ]
+      },
+      "UserRankingItemDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "description": "Posição no ranking (1 = mais chaves). Empate NÃO compartilha posição.",
+            "example": 158
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Primeiro nome mascarado (primeira letra + asteriscos). `***` quando não há nome utilizável. Nunca é nulo.",
+            "example": "J****"
+          },
+          "keysCount": {
+            "type": "number",
+            "description": "Chaves que o usuário possui",
+            "example": 75
+          },
+          "isMe": {
+            "type": "boolean",
+            "description": "true na linha do usuário logado — use para destacar a linha",
+            "example": false
+          }
+        },
+        "required": [
+          "position",
+          "displayName",
+          "keysCount",
+          "isMe"
+        ]
+      },
+      "UserRankingDto": {
+        "type": "object",
+        "properties": {
+          "me": {
+            "$ref": "#/components/schemas/MyRankingDto"
+          },
+          "podium": {
+            "description": "Top 3, repetido em TODAS as páginas para o pódio continuar na tela enquanto o usuário navega. Em rankings com menos de 3 participantes vem incompleto.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRankingItemDto"
+            }
+          },
+          "items": {
+            "description": "Linhas da página pedida",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRankingItemDto"
+            }
+          },
+          "page": {
+            "type": "number",
+            "description": "Página retornada",
+            "example": 32
+          },
+          "limit": {
+            "type": "number",
+            "description": "Itens por página",
+            "example": 5
+          },
+          "totalItems": {
+            "type": "number",
+            "description": "Total de participantes",
+            "example": 412
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "Total de páginas",
+            "example": 83
+          }
+        },
+        "required": [
+          "me",
+          "podium",
+          "items",
+          "page",
+          "limit",
+          "totalItems",
+          "totalPages"
+        ]
+      },
       "LegalDocumentDto": {
         "type": "object",
         "properties": {
@@ -11088,72 +12639,6 @@
           "version",
           "lastUpdated",
           "content"
-        ]
-      },
-      "MyVoteDto": {
-        "type": "object",
-        "properties": {
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha favoritada"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Quando foi favoritada"
-          }
-        },
-        "required": [
-          "campaignId",
-          "createdAt"
-        ]
-      },
-      "VoteToggleDto": {
-        "type": "object",
-        "properties": {
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha"
-          },
-          "hasVoted": {
-            "type": "boolean",
-            "description": "Se o usuário está favoritando a campanha após o toggle",
-            "example": true
-          },
-          "votesCount": {
-            "type": "number",
-            "description": "Total de curtidas da campanha",
-            "example": 42
-          }
-        },
-        "required": [
-          "campaignId",
-          "hasVoted",
-          "votesCount"
-        ]
-      },
-      "CampaignVotesDto": {
-        "type": "object",
-        "properties": {
-          "campaignId": {
-            "type": "string",
-            "description": "ID da campanha"
-          },
-          "votesCount": {
-            "type": "number",
-            "description": "Total de curtidas da campanha",
-            "example": 42
-          },
-          "hasVoted": {
-            "type": "boolean",
-            "description": "Se o usuário atual curtiu a campanha",
-            "example": false
-          }
-        },
-        "required": [
-          "campaignId",
-          "votesCount",
-          "hasVoted"
         ]
       },
       "PixelSizeDto": {

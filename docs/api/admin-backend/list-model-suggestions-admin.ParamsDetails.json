@@ -1,0 +1,1 @@
+{"parameters":[{"name":"status","required":false,"in":"query","description":"Filtrar pela etapa da moderação. Sem o parâmetro, traz todas.","schema":{"type":"string","enum":["pending","approved","rejected"]}},{"name":"platform","required":false,"in":"query","description":"Filtrar por plataforma","schema":{"type":"string","enum":["instagram"]}}]}

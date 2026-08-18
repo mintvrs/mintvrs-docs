@@ -55,7 +55,7 @@ const sidebars: SidebarsConfig = {
         'guias/custom-fields',
         'guias/botoes-interativos',
         'guias/marketplace-p2p',
-        'guias/favoritos-ranking',
+        'guias/ranking-sugestao-modelos',
         'guias/blockchain',
       ],
     },

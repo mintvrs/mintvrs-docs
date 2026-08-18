@@ -1,0 +1,69 @@
+---
+id: reject-model-suggestion
+title: "[Backoffice] Recusar sugestão"
+description: "Sai do ranking, mas os votos já dados são preservados (a rejeição é reversível). O mesmo handle não pode ser sugerido de novo enquanto a rejeição estiver de pé."
+sidebar_label: "[Backoffice] Recusar sugestão"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "patch api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[Backoffice] Recusar sugestão"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"patch"}
+  path={"/model-suggestions/{suggestionId}/reject"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Sai do ranking, mas os votos já dados são preservados (a rejeição é reversível). O mesmo handle não pode ser sugerido de novo enquanto a rejeição estiver de pé.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./reject-model-suggestion.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./reject-model-suggestion.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./reject-model-suggestion.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

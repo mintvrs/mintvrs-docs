@@ -920,28 +920,80 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "votes",
+      label: "model-suggestions",
       link: {
         type: "doc",
-        id: "api/admin-backend/votes",
+        id: "api/admin-backend/model-suggestions",
       },
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/list-mine",
-          label: "Listar campanhas que eu favoritei",
+          id: "api/admin-backend/list-model-suggestion-ranking",
+          label: "Ranking público de perfis sugeridos",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "api/admin-backend/toggle",
-          label: "Favoritar/desfavoritar uma campanha (toggle)",
+          id: "api/admin-backend/list-my-model-suggestions",
+          label: "Perfis que EU sugeri, com o estado da moderação",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-my-model-suggestion-votes",
+          label: "IDs das sugestões em que eu já votei",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/create-model-suggestion",
+          label: "Sugerir um perfil de modelo",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "api/admin-backend/get-for-campaign",
-          label: "Contagem de curtidas da campanha + se eu curti",
+          id: "api/admin-backend/vote-model-suggestion",
+          label: "Dar '+1' num perfil sugerido",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-model-suggestions-admin",
+          label: "[Backoffice] Fila de moderação das sugestões",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/approve-model-suggestion",
+          label: "[Backoffice] Aprovar sugestão (entra no ranking público)",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/reject-model-suggestion",
+          label: "[Backoffice] Recusar sugestão",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/delete-model-suggestion",
+          label: "[Backoffice] Excluir sugestão de vez",
+          className: "api-method delete",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "ranking",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/ranking",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/list-user-ranking",
+          label: "Ranking de usuários por chaves possuídas",
           className: "api-method get",
         },
       ],
@@ -1047,6 +1099,18 @@ const sidebar: SidebarsConfig = {
           id: "api/admin-backend/consultar",
           label: "[Backoffice] Verifica CPF + nome + data de nascimento na Receita Federal",
           className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "instagram",
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/check-username",
+          label: "[Backoffice] Verifica se um username do Instagram existe",
+          className: "api-method get",
         },
       ],
     },
