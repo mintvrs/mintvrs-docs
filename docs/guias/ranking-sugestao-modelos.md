@@ -7,7 +7,7 @@ sidebar_position: 8
 # Sugestão de Modelos & Ranking
 
 Os usuários **sugerem perfis de modelo** (Instagram) e **votam** nos perfis sugeridos. Os mais
-votados formam o **ranking público** exibido no app.
+votados formam o **ranking** exibido no app.
 
 :::info Substitui o ranking de campanhas
 As curtidas de campanha (`POST/GET /votes/:campaignId`) e os campos `votesCount`/`rankingPosition`
@@ -18,18 +18,19 @@ de `GET /campaigns/active` **foram removidos** — não era o ranking que o prod
 
 ```
 usuário sugere  →  fila de moderação  →  admin aprova  →  entra no ranking  →  usuários votam
-   (logado)          (pending)          (backoffice)       (público)            (logado)
+   (logado)          (pending)          (backoffice)        (logado)            (logado)
 ```
 
-- **Ler o ranking é público** (sem token). **Sugerir e votar exigem Bearer.**
+- **Tudo exige Bearer** — inclusive ler o ranking. Nada aqui é visível para quem não está logado.
 - Sugestão nasce `pending` e **só aparece no ranking depois de aprovada**.
 - **Um voto por usuário por perfil**, sem desfazer. O usuário pode votar em quantos perfis quiser.
 - **Sugerir já conta como apoio**: quem sugere entra automaticamente como votante daquele perfil.
 
-## Ranking público
+## Ranking
 
 ```bash
-curl "https://admin-api.homolog.mintvrs.com/model-suggestions/ranking?limit=5&tenantSlug=mkc"
+curl "https://admin-api.homolog.mintvrs.com/model-suggestions/ranking?limit=5" \
+  -H "Authorization: Bearer <token>"
 ```
 
 ```json
@@ -49,18 +50,13 @@ curl "https://admin-api.homolog.mintvrs.com/model-suggestions/ranking?limit=5&te
 |---|---|
 | `limit` | 1–50 (default **5**). **Omita o parâmetro** para usar o default — mandar `?limit=` vazio dá 400. |
 | `platform` | `instagram` |
-| `tenantSlug` | slug do tenant. **Sem ele o ranking é global** (todos os tenants). Slug inexistente responde **404**, nunca cai em global silenciosamente. |
 
-:::tip Mande `tenantSlug` desde já
-Hoje o ranking sem `tenantSlug` é global. Quando o escopo por tenant virar o padrão (ver o roadmap
-do `X-Tenant-Slug` em [Integração do App Consumidor](./integracao-mkc.md)), quem já manda o parâmetro
-**não muda nada**. Quem não manda vai ver o ranking encolher sem aviso.
-:::
+O ranking é **escopado ao tenant do token** — não há parâmetro de tenant. Numa rota autenticada,
+deixar o cliente escolher o escopo seria um caminho de leitura cruzada entre tenants.
 
-Só os parâmetros da tabela são aceitos — qualquer outro responde 400. A resposta tem
-`Cache-Control: public, max-age=30`.
+Só os parâmetros da tabela são aceitos — qualquer outro responde 400.
 
-`rankingPosition` é calculado **dentro do escopo retornado** (tenant + plataforma + limit). Empates
+`rankingPosition` é calculado **dentro do escopo retornado** (plataforma + limit). Empates
 em número de votos são desempatados pela sugestão mais antiga.
 
 ## Sugerir um perfil

@@ -6282,7 +6282,7 @@
     },
     "/model-suggestions/ranking": {
       "get": {
-        "description": "Lista os perfis APROVADOS ordenados por número de votos (1 = mais votado). Não exige autenticação. Sugestões pendentes ou recusadas não aparecem aqui. Envie `tenantSlug` para escopar por tenant — sem ele o ranking é global. Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
+        "description": "Lista os perfis APROVADOS ordenados por número de votos (1 = mais votado). Sugestões pendentes ou recusadas não aparecem aqui.\n\nEscopado ao tenant do token — não há parâmetro de tenant. Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
         "operationId": "listModelSuggestionRanking",
         "parameters": [
           {
@@ -6307,16 +6307,6 @@
               "enum": [
                 "instagram"
               ]
-            }
-          },
-          {
-            "name": "tenantSlug",
-            "required": false,
-            "in": "query",
-            "description": "Slug do tenant para escopar o ranking. Sem ele o ranking é GLOBAL (todos os tenants). Slug inexistente responde 404 — nunca cai em global silenciosamente. Recomendado enviar desde já: quando o escopo por tenant virar padrão, nada muda para quem já manda.",
-            "schema": {
-              "example": "mkc",
-              "type": "string"
             }
           }
         ],
@@ -6344,8 +6334,8 @@
               }
             }
           },
-          "404": {
-            "description": "tenantSlug informado não existe",
+          "401": {
+            "description": "Não autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -6355,7 +6345,12 @@
             }
           }
         },
-        "summary": "Ranking público de perfis sugeridos",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ranking de perfis sugeridos",
         "tags": [
           "model-suggestions"
         ]

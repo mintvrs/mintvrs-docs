@@ -929,7 +929,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/list-model-suggestion-ranking",
-          label: "Ranking público de perfis sugeridos",
+          label: "Ranking de perfis sugeridos",
           className: "api-method get",
         },
         {
