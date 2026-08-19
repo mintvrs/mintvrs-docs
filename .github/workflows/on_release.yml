@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: widesoftware-dev/github-workflows/.github/actions/gitops-bump@v1.16.8
         with:
-          gitops-repo: 'mkclub69/mk-microservice-ops'
+          gitops-repo: 'mintvrs/mk-microservice-ops'
           gitops-branch: 'main'
           path-template: '{repo}/kustomization.yaml'
           app-id: ${{ vars.APP_ID }}
