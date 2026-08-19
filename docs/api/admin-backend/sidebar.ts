@@ -259,7 +259,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/get-buttons",
-          label: "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público.",
+          label: "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Público.",
           className: "api-method get",
         },
         {

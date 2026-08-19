@@ -958,7 +958,7 @@
     },
     "/campaigns/{campaignId}/buttons": {
       "get": {
-        "description": "Retorna o estado dos botões interativos da campanha: a flag `interactive_buttons_enabled`, a URL pública da imagem de fundo (`button_layout_image`, ou null) e a lista de botões. Cada botão é um círculo com `id` (= nome do ícone que o frontend mapeia para um SVG) e posição `x`/`y` em percentual (0-100). Endpoint público (sem autenticação).",
+        "description": "Leitura pública da tela de ensaio finalizado: `backgroundImageUrl` (imagem de fundo, ou null) e `interactiveTags[]`, cada tag com `posX`/`posY` em percentual (0-100) e um objeto `media` com o que ela abre. `media.type` é IMAGE | VIDEO | AUDIO | TEXT | PROFILE — o app consumidor escolhe o ícone do círculo a partir dele. `media.mediaUrl` traz o arquivo (null em PROFILE e enquanto não há arquivo), `media.profile` traz a ficha da modelo em PROFILE, e `media.article` é sempre null nesta versão (não há entidade de artigo). Só entram tags habilitadas: botões com `enabled: false` são omitidos e, com a etapa desligada na campanha (`interactive_buttons_enabled: false`), `interactiveTags` vem vazio. Sem filtro de status — a tela é a do ensaio finalizado. Endpoint público (sem autenticação). ATENÇÃO: o PUT nesta mesma rota devolve outro shape (o do editor). Quem precisa do layout CRU — `id` do ícone, `enabled`, `order`, `fields` — deve ler `GET /campaigns/:campaignId`, que traz `interactive_buttons`, `button_layout_image` e a flag.",
         "operationId": "getButtons",
         "parameters": [
           {
@@ -974,11 +974,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Layout atual de botões (flag, imagem de fundo e lista).",
+            "description": "Imagem de fundo e tags interativas da tela de ensaio.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CampaignButtonsResponseDto"
+                  "$ref": "#/components/schemas/CampaignEssayResponseDto"
                 }
               }
             }
@@ -1004,13 +1004,13 @@
             }
           }
         },
-        "summary": "Obter botões interativos da campanha (flag, imagem de fundo e botões). Público.",
+        "summary": "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Público.",
         "tags": [
           "campaigns"
         ]
       },
       "put": {
-        "description": "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`) faz a requisição falhar com 400.",
+        "description": "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Botões `type: PROFILE` não têm arquivo: seus dados vão em `fields` (pares `{ id, label, value }`), e a ordem do array é a ordem exibida. Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`, `type`, `fileUrl`, `fileName`, `fields`) faz a requisição falhar com 400.",
         "operationId": "replaceButtons",
         "parameters": [
           {
@@ -1204,7 +1204,7 @@
     },
     "/campaigns/{campaignId}/buttons/{buttonId}/file": {
       "post": {
-        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB). Retorna o botão atualizado com a URL servível.",
+        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Botões `type: PROFILE` são recusados aqui com 400 — seus dados vão em `fields`, pelo PUT /campaigns/:campaignId/buttons. Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB); PROFILE — não aceita arquivo (dados em `fields`). Retorna o botão atualizado com a URL servível.",
         "operationId": "uploadButtonFile",
         "parameters": [
           {
@@ -1237,7 +1237,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Arquivo do botão (o formato aceito depende de `type`). IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB)"
+                    "description": "Arquivo do botão (o formato aceito depende de `type`). IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB); PROFILE — não aceita arquivo (dados em `fields`)"
                   },
                   "type": {
                     "type": "string",
@@ -1247,7 +1247,7 @@
                       "AUDIO",
                       "FILE"
                     ],
-                    "description": "Tipo do arquivo. Se omitido, usa o `type` já definido no botão."
+                    "description": "Tipo do arquivo. Se omitido, usa o `type` já definido no botão. PROFILE não entra aqui: não carrega arquivo."
                   }
                 },
                 "required": [
@@ -7540,6 +7540,60 @@
           "custom_fields"
         ]
       },
+      "ButtonProfileFieldDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do campo. Quando semeado pela configuração de campanha, é o id da definição em campaignConfig.customFields",
+            "example": "1b6d97a1-d339-4750-9424-1d049d259411"
+          },
+          "label": {
+            "type": "string",
+            "description": "Rótulo exibido",
+            "example": "Fotógrafo"
+          },
+          "value": {
+            "type": "string",
+            "description": "Valor exibido",
+            "example": "Ricardo Santos de Almeida"
+          },
+          "section": {
+            "type": "string",
+            "description": "Nome livre da seção que agrupa o campo no editor. Sem seção definida, cai em \"Ensaio\".",
+            "example": "Ensaio"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "ButtonSocialLinksDto": {
+        "type": "object",
+        "properties": {
+          "instagram": {
+            "type": "string",
+            "description": "Link do Instagram",
+            "example": "https://instagram.com/modelo"
+          },
+          "tiktok": {
+            "type": "string",
+            "description": "Link do TikTok",
+            "example": "https://tiktok.com/@modelo"
+          },
+          "youtube": {
+            "type": "string",
+            "description": "Link do YouTube",
+            "example": "https://youtube.com/@modelo"
+          },
+          "facebook": {
+            "type": "string",
+            "description": "Link do Facebook",
+            "example": "https://facebook.com/modelo"
+          }
+        }
+      },
       "InteractiveButtonDto": {
         "type": "object",
         "properties": {
@@ -7585,7 +7639,8 @@
               "IMAGE",
               "VIDEO",
               "AUDIO",
-              "FILE"
+              "FILE",
+              "PROFILE"
             ],
             "example": "VIDEO"
           },
@@ -7598,6 +7653,21 @@
             "type": "string",
             "description": "Nome original do arquivo enviado no botão",
             "example": "teaser.mp4"
+          },
+          "fields": {
+            "description": "Campos label/valor do botão PROFILE, na ordem de exibição. A ordem do array é a ordem exibida. Omitir preserva o que já está salvo; enviar `[]` limpa.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ButtonProfileFieldDto"
+            }
+          },
+          "socialLinks": {
+            "description": "Links das principais redes sociais do botão PROFILE. Omitir preserva o que já está salvo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ButtonSocialLinksDto"
+              }
+            ]
           }
         },
         "required": [
@@ -8078,6 +8148,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
             "example": 88
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "fundingPercentage": {
             "type": "number",
             "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
@@ -8161,6 +8245,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "fundingPercentage",
           "sellPriceMin",
           "sellPriceMax",
@@ -8250,6 +8336,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
             "example": 270
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -8283,6 +8383,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "endDate",
           "daysRemaining",
           "completionDate"
@@ -8356,6 +8458,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
             "example": 270
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -8388,6 +8504,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "endDate",
           "daysRemaining",
           "featuredOrder"
@@ -8410,6 +8528,7 @@
             "enum": [
               "Image",
               "Video",
+              "Audio",
               "Text",
               "Link",
               "File"
@@ -8523,6 +8642,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys)",
             "example": 270
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "fundingPercentage": {
             "type": "number",
             "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
@@ -8554,6 +8687,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "fundingPercentage",
           "totalMediaCount",
           "gallery",
@@ -8952,6 +9087,304 @@
           "featuredOrder"
         ]
       },
+      "EssayTagMediaType": {
+        "type": "string",
+        "enum": [
+          "TEXT",
+          "AUDIO",
+          "VIDEO",
+          "PROFILE",
+          "IMAGE"
+        ],
+        "description": "Tipo de mídia que a tag abre. O app consumidor escolhe o ícone do círculo a partir daqui. TEXT é o antigo FILE (pdf/doc/xls/zip): abre um documento pela `mediaUrl`, NÃO um artigo."
+      },
+      "EssayMediaItemDto": {
+        "type": "object",
+        "properties": {
+          "mediaUrl": {
+            "type": "string",
+            "description": "URL do arquivo que a tag abre. Link REST direto da AWS (https://s3.`região`.amazonaws.com/`bucket`/`key`) — não usar o hostname público customizado, que não é servido. Ver S3-PUBLIC-MEDIA.md."
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Capa do vídeo. Reservado: sempre null nesta fase — o backend não persiste nem gera thumbnail, o app define o poster.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Texto descritivo da mídia (descrição de hover / alt de acessibilidade). Hoje traz o nome original do arquivo enviado; null quando não há.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "mediaUrl",
+          "thumbnailUrl",
+          "description"
+        ]
+      },
+      "EssayArticleDto": {
+        "type": "object",
+        "properties": {
+          "articleTitle": {
+            "type": "string",
+            "description": "Título do artigo"
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria do artigo"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Data de publicação (ISO 8601)"
+          },
+          "articleContent": {
+            "type": "string",
+            "description": "Corpo do artigo em HTML"
+          }
+        },
+        "required": [
+          "articleTitle",
+          "category",
+          "publishedAt",
+          "articleContent"
+        ]
+      },
+      "EssaySocialNetwork": {
+        "type": "string",
+        "enum": [
+          "FACEBOOK",
+          "INSTAGRAM",
+          "YOUTUBE",
+          "REDDIT",
+          "TIKTOK",
+          "PINTEREST"
+        ],
+        "description": "Rede social da modelo"
+      },
+      "EssaySocialMediaDto": {
+        "type": "object",
+        "properties": {
+          "siteName": {
+            "description": "Rede social da modelo",
+            "example": "INSTAGRAM",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EssaySocialNetwork"
+              }
+            ]
+          },
+          "siteUrl": {
+            "type": "string",
+            "description": "Endereço da página na rede social"
+          }
+        },
+        "required": [
+          "siteName",
+          "siteUrl"
+        ]
+      },
+      "EssayProfileRowDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Rótulo da linha (o texto em cinza no card de perfil)",
+            "example": "Fotógrafo"
+          },
+          "text": {
+            "type": "string",
+            "description": "Valor da linha (o texto em preto). String vazia quando o campo não foi preenchido.",
+            "example": "Ricardo Santos de Almeida"
+          }
+        },
+        "required": [
+          "title",
+          "text"
+        ]
+      },
+      "EssayProfileSectionDto": {
+        "type": "object",
+        "properties": {
+          "sectionTitle": {
+            "type": "string",
+            "description": "Título da seção",
+            "example": "Ensaio"
+          },
+          "sectionContent": {
+            "description": "Linhas da seção, na ordem de exibição definida no editor",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayProfileRowDto"
+            }
+          }
+        },
+        "required": [
+          "sectionTitle",
+          "sectionContent"
+        ]
+      },
+      "EssayProfileDto": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star da campanha). Null quando a campanha não tem artista principal.",
+            "nullable": true
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha"
+          },
+          "modelProfilePictureUrl": {
+            "type": "string",
+            "description": "Foto de perfil da modelo (URL servível). Null quando não há.",
+            "nullable": true
+          },
+          "modelProfession": {
+            "type": "string",
+            "description": "Profissão da modelo, mantida em main_star.custom_fields.modelProfession. Null quando não informada.",
+            "nullable": true
+          },
+          "socialMedia": {
+            "description": "Redes sociais da modelo. Reservado: sempre vazio nesta fase — não existe entidade nem coluna de redes sociais no banco.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssaySocialMediaDto"
+            }
+          },
+          "sections": {
+            "description": "Seções da ficha técnica, agrupadas a partir dos campos do botão PROFILE pelo nome livre da seção (sem seção definida, cai em \"Ensaio\").",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayProfileSectionDto"
+            }
+          },
+          "totalMediaCount": {
+            "type": "number",
+            "description": "Total de mídias ativas da campanha (galeria completa) — não é a contagem das mídias alcançáveis por esta tag",
+            "example": 24
+          }
+        },
+        "required": [
+          "modelName",
+          "campaignName",
+          "modelProfilePictureUrl",
+          "modelProfession",
+          "socialMedia",
+          "sections",
+          "totalMediaCount"
+        ]
+      },
+      "EssayTagMediaDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Tipo de mídia que a tag abre. O app consumidor escolhe o ícone do círculo a partir daqui. TEXT é o antigo FILE (pdf/doc/xls/zip): abre um documento pela `mediaUrl`, NÃO um artigo.",
+            "example": "IMAGE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EssayTagMediaType"
+              }
+            ]
+          },
+          "mediaUrl": {
+            "description": "Mídias da tag. Hoje o array tem SEMPRE exatamente um item: o modelo de dados guarda um arquivo por botão. Null para tags PROFILE e para tags que ainda não têm arquivo enviado.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayMediaItemDto"
+            }
+          },
+          "article": {
+            "description": "Artigo aberto pela tag. Reservado: sempre null nesta fase — não existe entidade de artigo no backend.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EssayArticleDto"
+              }
+            ]
+          },
+          "profile": {
+            "description": "Ficha da modelo. Preenchido apenas quando type = PROFILE; null nos outros tipos.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EssayProfileDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "mediaUrl",
+          "article",
+          "profile"
+        ]
+      },
+      "EssayInteractiveTagDto": {
+        "type": "object",
+        "properties": {
+          "posX": {
+            "type": "number",
+            "description": "Posição horizontal em porcentagem (0-100) da largura da imagem RENDERIZADA, medida do canto superior esquerdo, apontando para o CENTRO da tag (renderizar com transform: translate(-50%, -50%)). Não é pixel.",
+            "example": 42.5
+          },
+          "posY": {
+            "type": "number",
+            "description": "Posição vertical em porcentagem (0-100) da altura da imagem RENDERIZADA, medida do canto superior esquerdo, apontando para o CENTRO da tag. Não é pixel.",
+            "example": 31
+          },
+          "media": {
+            "description": "O que a tag abre",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EssayTagMediaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "posX",
+          "posY",
+          "media"
+        ]
+      },
+      "CampaignEssayResponseDto": {
+        "type": "object",
+        "properties": {
+          "backgroundImageUrl": {
+            "type": "string",
+            "description": "URL da imagem de fundo da tela de visualização (URL servível). Null quando a campanha ainda não tem imagem de fundo configurada.",
+            "nullable": true
+          },
+          "interactiveTags": {
+            "description": "Tags interativas posicionadas sobre a imagem, na ordem de renderização. Vazio quando a campanha não tem a etapa de botões habilitada — nesse caso `backgroundImageUrl` ainda pode vir preenchido.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayInteractiveTagDto"
+            }
+          }
+        },
+        "required": [
+          "backgroundImageUrl",
+          "interactiveTags"
+        ]
+      },
+      "UpdateButtonsDto": {
+        "type": "object",
+        "properties": {
+          "buttons": {
+            "description": "Lista completa de botões (substitui o layout inteiro)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InteractiveButtonDto"
+            }
+          }
+        },
+        "required": [
+          "buttons"
+        ]
+      },
       "CampaignButtonsResponseDto": {
         "type": "object",
         "properties": {
@@ -8975,21 +9408,6 @@
         "required": [
           "interactive_buttons_enabled",
           "button_layout_image",
-          "buttons"
-        ]
-      },
-      "UpdateButtonsDto": {
-        "type": "object",
-        "properties": {
-          "buttons": {
-            "description": "Lista completa de botões (substitui o layout inteiro)",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InteractiveButtonDto"
-            }
-          }
-        },
-        "required": [
           "buttons"
         ]
       },
@@ -10517,6 +10935,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
             "example": 270
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -10565,6 +10997,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "endDate",
           "daysRemaining",
           "completionDate",
@@ -11204,6 +11638,20 @@
             "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
             "example": 270
           },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
           "endDate": {
             "type": "string",
             "description": "Data de término (YYYY-MM-DD)",
@@ -11252,6 +11700,8 @@
           "currentKeys",
           "totalKeys",
           "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
           "endDate",
           "daysRemaining",
           "completionDate",
@@ -11899,6 +12349,7 @@
             "enum": [
               "Image",
               "Video",
+              "Audio",
               "Text",
               "Link",
               "File"
@@ -11956,6 +12407,7 @@
             "enum": [
               "Image",
               "Video",
+              "Audio",
               "Text",
               "Link",
               "File"

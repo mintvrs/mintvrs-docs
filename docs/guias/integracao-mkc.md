@@ -12,6 +12,13 @@ A API é **genérica e multi-tenant**: ela devolve as **entidades como são** + 
 
 - 💰 **Valores monetários vêm em centavos (int)** → divida por 100 para obter reais.
 - 🏷️ **`status`** vem no enum interno (`Active | Inactive | Ended | Scheduled`) — o front decide os rótulos.
+- 🎟️ **Esgotado é `saleStatus`, não `status`.** `status` é o estado editorial, gravado pelo admin.
+  Quando as chaves acabam com o **prazo ainda correndo**, a campanha continua `Active` e passa a vir
+  com **`saleStatus: "sold_out"`** (e `isSoldOut: true`). Os dois são **computados na leitura** a partir
+  do estoque das tiers, então mudam no instante em que a última chave vende — nenhuma rota filtra por
+  eles: **campanha esgotada continua saindo** em `/campaigns/active`, `/campaigns/landing` e
+  `/campaigns/featured`, e é o front que decide se esconde, esmaece ou desabilita o botão.
+  Campanha de estoque **ilimitado** (tier sem `quantity`) **nunca** fica esgotada.
 - 🧩 **Campos flexíveis** (fotógrafo, estilo, estúdio, profissão…) vêm em **`custom_fields`** (JSON), tanto na campanha quanto na modelo. Cada tenant define as chaves.
 - 🔐 Endpoints autenticados usam `Authorization: Bearer <accessToken>` (token do Auth Service).
 - ⚠️ Os endpoints **públicos** (`/campaigns/active`, `/campaigns/:campaignId/public`) passarão a **exigir** o header `X-Tenant-Slug: <slug-do-tenant>` e filtrar por tenant. Hoje ainda são globais — **já envie o header** para se preparar (ver **Roadmap** no fim da página).
@@ -36,6 +43,7 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | currentKeys | `currentKeys` *(computado)* |
 | totalKeys | `totalKeys` *(computado)* |
 | status | `status` *(enum interno)* |
+| esgotado | `saleStatus === "sold_out"` (ou `isSoldOut`) *(computado)* |
 | endDate | `end_date` |
 | ariaLabel | usar `name` como fallback |
 
@@ -55,6 +63,7 @@ Nome e avatar do usuário → **`GET /auth/profile`** (Auth Service, Bearer): ca
 | collectorsCount | `campaign.backers` |
 | endDate | `campaign.end_date` |
 | currentKeys / totalKeys | `currentKeys` / `totalKeys` *(computados)* |
+| esgotado | `saleStatus` / `isSoldOut` *(computados; vêm na RAIZ, não dentro de `campaign`)* |
 | totalMediaCount | `totalMediaCount` *(computado)* |
 | gallery | `gallery` → `[{ mediaType, mediaUrl }]` |
 
