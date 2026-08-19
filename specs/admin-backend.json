@@ -2863,7 +2863,7 @@
     },
     "/gateways/checkout/key-purchase": {
       "post": {
-        "description": "O front escolhe **qual** tier comprar (`accessId` + `quantity`); o servidor decide **quanto** custa. O preço unitário é lido de `accesses.price_card` (fallback `accesses.price`), que vive em reais, e convertido para centavos — `fiatAmount` no corpo é ignorado. O valor efetivamente cobrado volta em `unitAmount`/`totalAmount`: use-os na tela de confirmação. O tier é validado aqui, **antes** de qualquer cobrança: precisa pertencer à campanha, ter preço configurado, estar dentro da validade e ter estoque. A sessão **reserva** as chaves por `expiresInSeconds` — duas sessões abertas para a última chave não passam as duas, e `accesses.sold` nunca ultrapassa `quantity`. Checkout abandonado devolve o estoque sozinho quando a reserva vence. Em seguida, redirecione o navegador para `checkoutUrl` e guarde `sessionId` para `POST /gateways/checkout/confirm-key-purchase`.",
+        "description": "O front escolhe **qual** tier comprar (`accessId` + `quantity`); o servidor decide **quanto** custa. O preço unitário é lido de `accesses.price_card` (fallback `accesses.price`), que vive em reais, acrescido da taxa de 20% do mercado primário e convertido para centavos — `fiatAmount` no corpo é ignorado. O valor efetivamente cobrado volta em `unitAmount`/`totalAmount`: use-os na tela de confirmação. O tier é validado aqui, **antes** de qualquer cobrança: precisa pertencer à campanha, ter preço configurado, estar dentro da validade e ter estoque. A sessão **reserva** as chaves por `expiresInSeconds` — duas sessões abertas para a última chave não passam as duas, e `accesses.sold` nunca ultrapassa `quantity`. Checkout abandonado devolve o estoque sozinho quando a reserva vence. Em seguida, redirecione o navegador para `checkoutUrl` e guarde `sessionId` para `POST /gateways/checkout/confirm-key-purchase`.",
         "operationId": "createKeyPurchaseCheckout",
         "parameters": [],
         "requestBody": {
@@ -7457,6 +7457,29 @@
             "description": "Preço via cartão (em reais)",
             "nullable": true
           },
+          "price_final": {
+            "type": "number",
+            "description": "Preço FINAL ao comprador, em reais: `price` + a taxa de 20% do mercado primário. É este o valor que o front deve exibir e é este o valor cobrado no checkout — `price` é apenas a base do split das estrelas. Campo **derivado** (não existe coluna).",
+            "example": 600,
+            "nullable": true
+          },
+          "price_pix_final": {
+            "type": "number",
+            "description": "Preço FINAL via PIX, em reais (`price_pix` + 20% do mercado primário). `null` quando o tier não tem `price_pix`. Campo **derivado**.",
+            "example": 600,
+            "nullable": true
+          },
+          "price_card_final": {
+            "type": "number",
+            "description": "Preço FINAL via cartão, em reais (`price_card` + 20% do mercado primário). `null` quando o tier não tem `price_card`. Campo **derivado**.",
+            "example": 600,
+            "nullable": true
+          },
+          "primary_market_fee_percent": {
+            "type": "number",
+            "description": "Percentual da taxa do mercado primário já embutida nos campos `*_final`. Campo **derivado**.",
+            "example": 20
+          },
           "benefits": {
             "type": "array",
             "description": "Benefícios do tier (lista de bullets)",
@@ -7503,6 +7526,10 @@
           "price",
           "price_pix",
           "price_card",
+          "price_final",
+          "price_pix_final",
+          "price_card_final",
+          "primary_market_fee_percent",
           "benefits",
           "quantity",
           "sold",
@@ -7799,7 +7826,7 @@
             "nullable": true
           },
           "accesses": {
-            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) e são o valor BASE — o que o comprador paga é `price_final` / `price_pix_final` / `price_card_final`, os mesmos valores já com a taxa de 20% do mercado primário. **É esse o valor que o front exibe.** O checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado (com taxa) em `unitAmount`/`totalAmount`.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Access"
@@ -8074,7 +8101,7 @@
             "nullable": true
           },
           "accesses": {
-            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) e são o valor BASE — o que o comprador paga é `price_final` / `price_pix_final` / `price_card_final`, os mesmos valores já com a taxa de 20% do mercado primário. **É esse o valor que o front exibe.** O checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado (com taxa) em `unitAmount`/`totalAmount`.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Access"
@@ -8818,7 +8845,7 @@
             "nullable": true
           },
           "accesses": {
-            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) — o checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado em `unitAmount`/`totalAmount`.",
+            "description": "Tiers de acesso (chaves) da campanha. `price`, `price_pix` e `price_card` vêm **em reais** (`numeric(12,2)`, serializados como string) e são o valor BASE — o que o comprador paga é `price_final` / `price_pix_final` / `price_card_final`, os mesmos valores já com a taxa de 20% do mercado primário. **É esse o valor que o front exibe.** O checkout trabalha em centavos, mas a conversão é feita no servidor: o front manda `accessId` em `POST /gateways/checkout/key-purchase` e recebe de volta o valor cobrado (com taxa) em `unitAmount`/`totalAmount`.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Access"
@@ -10245,7 +10272,7 @@
           },
           "unitAmount": {
             "type": "number",
-            "description": "Preço unitário **em centavos** que o servidor derivou do tier (`price_card`, ou `price` como fallback). Exiba este valor — ele é a fonte da verdade, não o preço que o front calculou.",
+            "description": "Preço unitário **em centavos** que o servidor derivou do tier (`price_card`, ou `price` como fallback) **já com a taxa de 20% do mercado primário**. Exiba este valor — ele é a fonte da verdade, não o preço que o front calculou. Em reais, o mesmo número está em `accesses[].price_card_final` da campanha.",
             "example": 9990
           },
           "totalAmount": {
