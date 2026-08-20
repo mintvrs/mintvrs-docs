@@ -460,7 +460,7 @@
     },
     "/campaigns/landing": {
       "get": {
-        "description": "Listagem ENXUTA para o carrossel \"campanhas ativas\" da landing — separada de GET /campaigns/active (marketplace), que traz o detalhe completo. Retorna no máximo `limit` cards (default 12, máx 24), campanhas Active ordenadas por criação (mais recentes primeiro). Cada card contém apenas o que a landing renderiza: capa isolada (`coverImage`), modelo (`modelName`/`modelProfession`), tema do ensaio (`essayTitle`), progresso de chaves e dias restantes.",
+        "description": "Listagem ENXUTA para o carrossel \"campanhas ativas\" da landing — separada de GET /campaigns/active (marketplace), que traz o detalhe completo. Retorna no máximo `limit` cards (default 12, máx 24), campanhas Active ordenadas por criação (mais recentes primeiro). Cada card contém apenas o que a landing renderiza: capa isolada (`coverImage`), modelo (`modelName`/`modelProfession`/`modelProfilePhoto`), tema do ensaio (`essayTitle`), progresso de chaves e dias restantes.",
         "operationId": "findLanding",
         "parameters": [
           {
@@ -510,7 +510,7 @@
     },
     "/campaigns/ended": {
       "get": {
-        "description": "Campanhas com status Ended, para a seção \"ensaio em produção\" da landing. Mesmo formato de card de GET /campaigns/landing, ordenado por encerramento (`completionDate`) mais recente primeiro.",
+        "description": "Campanhas com status Ended, para a seção \"ensaio em produção\" da landing. Mesmo formato de card de GET /campaigns/landing — incluindo a foto de perfil da modelo em `modelProfilePhoto` — ordenado por encerramento (`completionDate`) mais recente primeiro.",
         "operationId": "findEnded",
         "parameters": [],
         "responses": {
@@ -1204,7 +1204,7 @@
     },
     "/campaigns/{campaignId}/buttons/{buttonId}/file": {
       "post": {
-        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Botões `type: PROFILE` são recusados aqui com 400 — seus dados vão em `fields`, pelo PUT /campaigns/:campaignId/buttons. Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB); PROFILE — não aceita arquivo (dados em `fields`). Retorna o botão atualizado com a URL servível.",
+        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Botões `type: PROFILE` são recusados aqui com 400 — seus dados vão em `fields`, pelo PUT /campaigns/:campaignId/buttons. Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: qualquer tipo de arquivo (≤50MB); PROFILE — não aceita arquivo (dados em `fields`). Retorna o botão atualizado com a URL servível.",
         "operationId": "uploadButtonFile",
         "parameters": [
           {
@@ -1237,7 +1237,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Arquivo do botão (o formato aceito depende de `type`). IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, zip (≤50MB); PROFILE — não aceita arquivo (dados em `fields`)"
+                    "description": "Arquivo do botão (o formato aceito depende de `type`). IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: qualquer tipo de arquivo (≤50MB); PROFILE — não aceita arquivo (dados em `fields`)"
                   },
                   "type": {
                     "type": "string",
@@ -1857,8 +1857,17 @@
     },
     "/credits/balance": {
       "get": {
-        "operationId": "getBalance",
-        "parameters": [],
+        "description": "Cria o saldo zerado na primeira consulta, então nunca dá 404 por usuário sem saldo.\n\n**Disponível para gastar = `balance - lockedBalance`.** Não existe campo com esse valor: `balance` é o TOTAL e já inclui o que está travado em ofertas P2P em aberto. Ambos em CENTAVOS.\n\nCrédito não se compra — ele entra por reembolso de campanha cancelada (`POST /refunds/{caseId}/choose`) ou por vender uma chave no marketplace.",
+        "operationId": "getCreditBalance",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "Saldo atualizado",
@@ -1866,6 +1875,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreditBalance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Usuário sem tenant vinculado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -1935,6 +1974,13 @@
                 "amount_asc"
               ]
             }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
           }
         ],
         "responses": {
@@ -1947,6 +1993,26 @@
                   "items": {
                     "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -1966,7 +2032,15 @@
     "/credits/transactions": {
       "get": {
         "operationId": "getTenantTransactions",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de transações do tenant",
@@ -1977,6 +2051,26 @@
                   "items": {
                     "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -1996,7 +2090,15 @@
     "/credits/all-transactions": {
       "get": {
         "operationId": "getAllTransactions",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de todas as transações",
@@ -2007,6 +2109,26 @@
                   "items": {
                     "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -2025,8 +2147,17 @@
     },
     "/credits/grant": {
       "post": {
+        "description": "**Ferramenta de operação e suporte, NÃO um caminho de usuário.** Serve para corrigir um erro ou dar uma cortesia pontual — nenhuma tela de usuário chama isto.\n\nO caminho normal do usuário ganhar crédito é o reembolso de campanha cancelada (`POST /refunds/{caseId}/choose` com `choice: \"credits\"`) ou a venda de chave no marketplace. A compra avulsa de crédito foi desativada.\n\n`amount` em CENTAVOS. Sem limite e sem confirmação: o `reason` é a trilha de auditoria, preencha-o.",
         "operationId": "grantCredits",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2039,7 +2170,54 @@
         },
         "responses": {
           "200": {
-            "description": "Créditos concedidos com sucesso"
+            "description": "Lançamento de crédito criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body inválido (`amount` precisa ser inteiro ≥ 1)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2047,7 +2225,7 @@
             "bearer": []
           }
         ],
-        "summary": "Conceder créditos manualmente a um usuário",
+        "summary": "[ADMIN] Conceder créditos manualmente a um usuário",
         "tags": [
           "credits"
         ]
@@ -2055,8 +2233,17 @@
     },
     "/credits/refund/me": {
       "post": {
+        "description": "Desfaz um lançamento de ENTRADA de crédito do próprio usuário, dentro de 7 dias corridos da criação. Se o crédito veio de um pagamento no cartão, o estorno vai para o cartão; senão, o crédito é simplesmente retirado do saldo.\n\nRecusa: transação de outra pessoa, já reembolsada, que não seja entrada (`add`/`compensation`), marcada como não-reembolsável, ou fora do prazo.\n\n⚠️ Isto **não** é o reembolso de campanha cancelada — aquele é `POST /refunds/{caseId}/choose`, tem prazo de 30 dias e três opções.",
         "operationId": "refundMyCredits",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2069,7 +2256,54 @@
         },
         "responses": {
           "200": {
-            "description": "Reembolso processado"
+            "description": "Lançamento de estorno criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Transação de outro usuário, já reembolsada, não-reembolsável, de tipo inválido, ou fora do prazo de 7 dias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2077,7 +2311,7 @@
             "bearer": []
           }
         ],
-        "summary": "Usuário solicita reembolso próprio (prazo de 7 dias)",
+        "summary": "Usuário devolve créditos que recebeu (prazo de 7 dias)",
         "tags": [
           "credits"
         ]
@@ -2085,8 +2319,17 @@
     },
     "/credits/refund": {
       "post": {
+        "description": "Roteia por `type`: `credit` apenas retira o valor do saldo; `stripe` faz o estorno real no cartão (exige que a transação original tenha `providerTransactionId`) e também retira do saldo.\n\nSem janela de prazo — é a versão administrativa do `POST /credits/refund/me`.",
         "operationId": "refundCredits",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2099,7 +2342,54 @@
         },
         "responses": {
           "200": {
-            "description": "Reembolso processado"
+            "description": "Lançamento de estorno criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Já reembolsada, valor acima do original, sem ID do provider para estornar, ou estorno recusado pelo Stripe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação ou tenant não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2107,7 +2397,7 @@
             "bearer": []
           }
         ],
-        "summary": "Reembolsar créditos (interno ou Stripe)",
+        "summary": "[ADMIN] Reembolsar um lançamento de crédito (interno ou Stripe)",
         "tags": [
           "credits"
         ]
@@ -2115,8 +2405,17 @@
     },
     "/credits/refund-purchase": {
       "post": {
+        "description": "Estorno pontual de UMA chave, para atendimento. Compra `stripe_direct` volta ao cartão (o `payment_intent` é lido do `memo`); qualquer outra origem vira crédito.\n\n⚠️ **Não use para campanha cancelada.** Ali o caminho é `POST /campaigns/{campaignId}/cancel`, que abre um caso por comprador e deixa cada um escolher. Este endpoint não devolve estoque ao tier, decrementa `backers` por CHAVE (e não por comprador) e não agrupa chaves que compartilham o mesmo `payment_intent`.",
         "operationId": "refundKeyPurchase",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2129,7 +2428,54 @@
         },
         "responses": {
           "200": {
-            "description": "Reembolso de compra processado"
+            "description": "Lançamento de estorno criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Já reembolsada, sem payment intent no memo, ou estorno recusado pelo Stripe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação de compra não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2137,7 +2483,7 @@
             "bearer": []
           }
         ],
-        "summary": "Reembolsar compra de chave",
+        "summary": "[ADMIN] Reembolsar uma chave avulsa",
         "tags": [
           "credits"
         ]
@@ -2747,7 +3093,8 @@
     },
     "/gateways/checkout/credits": {
       "post": {
-        "description": "Aqui o valor **vem do cliente** por definição — é o usuário quem escolhe quanto de crédito comprar (`amount`, em centavos). Diferente da compra de chave, onde o preço é do tier. Redirecione para `checkoutUrl` e confirme depois em `POST /gateways/checkout/confirm`. Crédito é usado apenas nas ofertas P2P do marketplace.",
+        "deprecated": true,
+        "description": "Desativado por decisão de produto: **não se compra mais crédito**. Crédito passou a ser uma das formas de receber de volta o dinheiro de uma campanha cancelada — ele entra por reembolso (`POST /refunds/{caseId}/choose` com `choice: \"credits\"`) e por venda no marketplace P2P, e sai em ofertas P2P.\n\nChave nova continua sendo comprada com cartão em `POST /gateways/checkout/key-purchase`. Este endpoint responde **SEMPRE 400**.\n\nO `POST /gateways/checkout/confirm` continua ativo: ele ainda confirma o financiamento de ofertas P2P, que também cria transação pendente de crédito.",
         "operationId": "createCreditsCheckout",
         "parameters": [],
         "requestBody": {
@@ -2761,18 +3108,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "URL de checkout gerada",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckoutSessionDto"
-                }
-              }
-            }
-          },
           "400": {
-            "description": "Body inválido (amount/successUrl/cancelUrl obrigatórios)",
+            "description": "Sempre retornado: \"A compra avulsa de créditos foi desativada. Crédito é obtido por reembolso de campanha cancelada ou vendendo uma chave no marketplace.\"",
             "content": {
               "application/json": {
                 "schema": {
@@ -2797,7 +3134,7 @@
             "bearer": []
           }
         ],
-        "summary": "Gerar link de checkout para compra de créditos",
+        "summary": "[DESATIVADO] Compra avulsa de créditos — crédito só se ganha por reembolso",
         "tags": [
           "payment-gateways"
         ]
@@ -4511,6 +4848,673 @@
         "summary": "Fazer uma contra-oferta (vendedor)",
         "tags": [
           "marketplace-offers"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/cancel": {
+      "post": {
+        "description": "Declara que o crowdfunding fracassou. A campanha vai para o status `Cancelled` (**terminal** — não se volta dele) e cada comprador de chave ganha um caso de reembolso, com e-mail avisando e levando à página onde escolhe como quer receber.\n\n**Não apaga nada.** As chaves continuam na base como prova do direito ao reembolso, e `campaign.raised` continua registrando o que chegou a ser arrecadado — o que some das vitrines é a campanha, pelo status. Isto substitui o antigo `DELETE /campaigns/:id`, que removia as transações da campanha (destruindo a trilha que embasa qualquer estorno) e concedia crédito de cortesia não-reembolsável sem consultar o comprador.\n\n**Use `dryRun: true` antes.** Ele calcula e devolve o resumo inteiro — quantas pessoas, quanto dinheiro, quanto pode voltar ao cartão — sem escrever nada.\n\nEfeitos colaterais, nesta ordem: anúncios ativos da campanha são cancelados e as ofertas P2P vivas são liberadas (devolvendo o crédito em escrow de cada ofertante); as travas de crédito de compras pagas com saldo são desfeitas — essas chaves NÃO viram caso de reembolso, porque o valor já voltou por ali; e só então os casos são abertos.\n\n**Idempotente.** Rerodar não duplica caso nem paga ninguém duas vezes: reenvia apenas os e-mails que ainda não saíram e refaz o destravamento de créditos que porventura tenha falhado.",
+        "operationId": "cancelCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "Campanha a cancelar",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resumo do cancelamento: casos abertos, dinheiro envolvido e e-mails enviados. Confira `skippedKeys` — `no_beneficiary` ali significa dinheiro que ninguém vai reclamar sozinho.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignCancellationDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`reason` ausente ou fora de 10–500 caracteres",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Você não é dono da campanha nem admin do tenant dela",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar campanha e abrir os reembolsos dos compradores",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/me": {
+      "get": {
+        "description": "Casos pendentes primeiro — são os que exigem ação. Busca pelo id do usuário **e** pelo e-mail: chave comprada antes de existir vínculo de usuário gera caso sem `userId`, e ele só é achável pelo e-mail.\n\nTodos os valores estão em **CENTAVOS**.",
+        "operationId": "listMyRefundCases",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Meus casos, pendentes primeiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RefundCaseSummaryDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Meus reembolsos de campanhas canceladas",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds": {
+      "get": {
+        "description": "Visão operacional de todos os casos. Filtre por `status = partially_failed` para achar o que precisa de `POST /refunds/{caseId}/retry`.",
+        "operationId": "listRefundCases",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por campanha",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por estado do caso",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "processing",
+                "awaiting_payment",
+                "resolved",
+                "partially_failed"
+              ]
+            }
+          },
+          {
+            "name": "beneficiaryEmail",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar pelo e-mail do beneficiário",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantos casos devolver (1–200)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RefundCaseSummaryDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requer papel administrativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar casos de reembolso (admin)",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/{caseId}": {
+      "get": {
+        "description": "**Aceita dois tipos de credencial**: o Bearer do usuário logado, OU o `token` do link do e-mail via query `?token=`. Quem clica no e-mail tipicamente não está logado, e exigir login antes de a pessoa ver quanto tem a receber é o jeito mais fácil de fazer ela desistir e o dinheiro virar crédito por inércia.\n\nQuem não é dono recebe **404**, não 403 — não deve nem saber que o caso existe.\n\n## O que vem em `options`\n\n- `immediateRefund` — os meios de devolução, um por linha. **O PIX aparece SEMPRE**, com `enabled: false` e o motivo em `unavailableReason`: renderize o botão visível porém cinza, não o esconda. No dia em que a Asaas entrar, só o backend muda.\n- `platformCreditAmount` — o valor inteiro vira saldo. O crédito gerado é NORMAL: sem validade e sem restrição, diferente do crédito compensatório antigo.\n- `reallocationBudget` — o teto para trocar por chaves de outra campanha.\n\n## Atenção ao split\n`cardAmount` pode ser menor que `totalAmount`: chave comprada na revenda P2P ou paga com crédito não tem cartão para onde voltar. Nesse caso a opção de cartão devolve o que dá pelo cartão e o restante em crédito, no mesmo ato. `cardAmount + creditAmount === totalAmount`, sempre.\n\nTodos os valores em **CENTAVOS**.",
+        "operationId": "getRefundCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "description": "Token do link do e-mail. Alternativa ao Bearer para quem chega pelo e-mail sem estar logado.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O caso, com as três opções calculadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundCaseDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Caso inexistente — ou existente e de outra pessoa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detalhe do reembolso — é a página que o e-mail abre",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/{caseId}/choose": {
+      "post": {
+        "description": "**A escolha é definitiva.** Não há como trocar depois de resolvida.\n\nAceita Bearer OU o `token` do link do e-mail (no body ou em `?token=`).\n\n## As três opções\n\n**`card_refund`** — devolve no meio original. Exige `method`. Estorna no cartão a parcela elegível (`cardAmount`) e devolve o restante em crédito no mesmo ato. Chaves compradas numa mesma sessão de checkout são estornadas JUNTAS, num único estorno somado.\n\n**`credits`** — o valor inteiro vira saldo, sem validade.\n\n**`reallocate`** — troca por chaves de outra(s) campanha(s), via `items`. O preço vem do tier, calculado no servidor: **não existe campo de preço neste body**. Duas saídas:\n- cesto ≤ orçamento → emite as chaves e credita o troco. Resolve numa chamada.\n- cesto > orçamento → **nada é emitido**; a resposta vem com `checkoutRequired: true` e `shortfallAmount`. Siga para `POST /refunds/{caseId}/reallocation-checkout`.\n\n## PIX\nEnviar `method: \"pix\"` responde **422** com `error: \"PIX_UNAVAILABLE\"`. É deliberado que o validador ACEITE `pix` — assim a recusa é um erro documentado e tratável, em vez de um 400 genérico de validação. Consulte `options.immediateRefund[].enabled` antes de enviar.\n\n## Concorrência\nDois cliques simultâneos: o primeiro trava o caso, o segundo recebe **409** com `error: \"CASE_PROCESSING\"`. Ninguém é pago duas vezes.",
+        "operationId": "resolveRefundCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Corpo discriminado por `choice`. `method` só é lido em `card_refund`; `items` só em `reallocate`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ResolveRefundCaseDto"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "choice"
+                }
+              },
+              "examples": {
+                "cartao": {
+                  "summary": "1 — devolver no cartão",
+                  "value": {
+                    "choice": "card_refund",
+                    "method": "card"
+                  }
+                },
+                "pixDesabilitado": {
+                  "summary": "1 — PIX (sempre recusado com 422 PIX_UNAVAILABLE)",
+                  "value": {
+                    "choice": "card_refund",
+                    "method": "pix"
+                  }
+                },
+                "credito": {
+                  "summary": "2 — virar crédito",
+                  "value": {
+                    "choice": "credits"
+                  }
+                },
+                "trocaComTroco": {
+                  "summary": "3 — trocar por outra chave mais barata (troco vira crédito)",
+                  "value": {
+                    "choice": "reallocate",
+                    "items": [
+                      {
+                        "campaignId": "11111111-1111-1111-1111-111111111111",
+                        "accessId": "22222222-2222-2222-2222-222222222222",
+                        "quantity": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O que aconteceu com o dinheiro. `checkoutRequired: true` significa que NADA foi emitido ainda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResolutionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body inválido, ou prazo de escolha vencido (`error: CASE_EXPIRED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Caso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Já resolvido (`CASE_RESOLVED`) ou em processamento (`CASE_PROCESSING`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Método indisponível (`PIX_UNAVAILABLE`) ou nada elegível a cartão (`NOT_CARD_REFUNDABLE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Escolher como receber — cartão, crédito ou outras chaves",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/{caseId}/reallocation-checkout": {
+      "post": {
+        "description": "Gera o checkout do Stripe para a diferença. Só funciona com o caso em `awaiting_payment`, estado em que ele entra quando `choose` com `reallocate` devolve `checkoutRequired: true`.\n\n**A diferença é sempre recalculada no servidor** a partir dos tiers do cesto guardado — o valor que o cliente mandar é ignorado. Se os preços tiverem caído e o cesto passar a caber no orçamento, a resposta é 409 pedindo que a escolha seja refeita, em vez de cobrar à toa.\n\nO estoque é reservado AQUI, e não na escolha: a reserva vale 30 minutos e é agora que a janela do pagamento começa. Depois de pagar, confirme em `POST /refunds/{caseId}/confirm-reallocation`.\n\n**PIX não está disponível para pagar a diferença** — a cobrança sai no cartão.",
+        "operationId": "createRefundReallocationCheckout",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReallocationCheckoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "URL de checkout e a diferença a pagar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReallocationCheckoutSessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Caso sem cesto registrado, ou URLs inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Caso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Caso não está esperando pagamento, ou o cesto passou a caber no orçamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Pagar a diferença quando as chaves escolhidas custam mais",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/{caseId}/confirm-reallocation": {
+      "post": {
+        "description": "Chame no retorno do `successUrl`, com o `sessionId` guardado.\n\n**Idempotente por sessão**, inclusive sob chamadas simultâneas: duas abas no `successUrl` não emitem duas chaves. Quem perde a reivindicação recebe `confirmed: false` com uma mensagem de \"processando\" — repita em instantes.\n\nEnquanto o pagamento não estiver confirmado no Stripe, a resposta vem com `confirmed: false` e `checkoutRequired: true`.",
+        "operationId": "confirmRefundReallocation",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmReallocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chaves emitidas e caso resolvido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResolutionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Caso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Caso já resolvido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Confirmar o pagamento da diferença e emitir as chaves",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/sweep-expired": {
+      "post": {
+        "description": "Resolve como crédito os casos cujo prazo passou. Sem isto o dinheiro fica em limbo esperando uma decisão que talvez nunca venha.\n\nAcionável sob demanda — não há agendador no serviço; chame por ops ou CI, no mesmo espírito de `POST /transactions/reconcile-chain`.\n\n**Seguro sob concorrência.** Uma trava consultiva no banco impede duas passadas simultâneas; a segunda devolve `skipped: true`, que **não é erro**. E se o usuário escolher no exato instante da varredura, a mesma trava por caso garante que só um dos dois resolve.",
+        "operationId": "sweepExpiredRefundCases",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantos casos processar nesta passada (1–200, padrão 50)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O que a passada fez",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundSweepDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requer papel administrativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Converter em crédito os reembolsos que venceram sem escolha",
+        "tags": [
+          "refunds"
+        ]
+      }
+    },
+    "/refunds/{caseId}/retry": {
+      "post": {
+        "description": "Repete a MESMA escolha que o usuário já fez, apenas para os itens que ficaram em `failed` ou `pending`. Nunca reabre a pergunta: ele já decidiu, o que falhou foi a execução (o Stripe recusou, o crédito não passou).\n\nSó aceita caso em `partially_failed`.",
+        "operationId": "retryRefundCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado do reprocessamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResolutionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O caso não está em `partially_failed`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reprocessar um reembolso que falhou pela metade",
+        "tags": [
+          "refunds"
         ]
       }
     },
@@ -6984,7 +7988,11 @@
     },
     {
       "name": "credits",
-      "description": "Sistema de créditos: saldo, concessão, histórico e reembolsos."
+      "description": "Saldo de crédito e extrato. Crédito NÃO se compra: ele entra por reembolso de campanha cancelada ou por venda no marketplace P2P, e sai em ofertas P2P. Valores sempre em CENTAVOS."
+    },
+    {
+      "name": "refunds",
+      "description": "Campanha cancelada e o que acontece com o dinheiro: cancelamento sem perda de histórico, e a escolha do comprador entre estorno no cartão, crédito na plataforma ou troca por chaves de outra campanha."
     },
     {
       "name": "marketplace",
@@ -7377,7 +8385,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ],
             "example": "Inactive"
           },
@@ -7778,6 +8787,18 @@
             "example": "2026-09-15",
             "nullable": true
           },
+          "cancelled_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando a campanha foi cancelada. `null` em qualquer status que não seja `Cancelled`.",
+            "nullable": true
+          },
+          "cancel_reason": {
+            "type": "string",
+            "description": "Motivo registrado no cancelamento, para auditoria. Aparece na trilha dos casos de reembolso.",
+            "nullable": true,
+            "example": "Meta de financiamento não atingida até a data limite"
+          },
           "ended_at": {
             "format": "date-time",
             "type": "string",
@@ -7797,7 +8818,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ]
           },
           "raised": {
@@ -8053,6 +9075,18 @@
             "example": "2026-09-15",
             "nullable": true
           },
+          "cancelled_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando a campanha foi cancelada. `null` em qualquer status que não seja `Cancelled`.",
+            "nullable": true
+          },
+          "cancel_reason": {
+            "type": "string",
+            "description": "Motivo registrado no cancelamento, para auditoria. Aparece na trilha dos casos de reembolso.",
+            "nullable": true,
+            "example": "Meta de financiamento não atingida até a data limite"
+          },
           "ended_at": {
             "format": "date-time",
             "type": "string",
@@ -8072,7 +9106,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ]
           },
           "raised": {
@@ -8315,7 +9350,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ],
             "example": "Active"
           },
@@ -8341,6 +9377,12 @@
             "type": "string",
             "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
             "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modelo (main_star.profile_photo). Null quando a campanha não tem artista principal ou o cadastro está sem foto.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/main-stars/1785001484215.png",
             "nullable": true
           },
           "fundingPercentage": {
@@ -8406,6 +9448,7 @@
           "ariaLabel",
           "modelName",
           "modelProfession",
+          "modelProfilePhoto",
           "fundingPercentage",
           "currentKeys",
           "totalKeys",
@@ -8797,6 +9840,18 @@
             "example": "2026-09-15",
             "nullable": true
           },
+          "cancelled_at": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando a campanha foi cancelada. `null` em qualquer status que não seja `Cancelled`.",
+            "nullable": true
+          },
+          "cancel_reason": {
+            "type": "string",
+            "description": "Motivo registrado no cancelamento, para auditoria. Aparece na trilha dos casos de reembolso.",
+            "nullable": true,
+            "example": "Meta de financiamento não atingida até a data limite"
+          },
           "ended_at": {
             "format": "date-time",
             "type": "string",
@@ -8816,7 +9871,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ]
           },
           "raised": {
@@ -9012,7 +10068,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ],
             "example": "Active"
           },
@@ -9273,7 +10330,7 @@
             "nullable": true
           },
           "socialMedia": {
-            "description": "Redes sociais da modelo. Reservado: sempre vazio nesta fase — não existe entidade nem coluna de redes sociais no banco.",
+            "description": "Redes sociais da modelo, a partir do `socialLinks` salvo no botão PROFILE. Só entram redes com URL preenchida.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EssaySocialMediaDto"
@@ -9585,14 +10642,15 @@
           },
           "provider": {
             "type": "string",
-            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada).",
+            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição).",
             "enum": [
               "stripe",
               "internal",
               "admin_grant",
               "credit_refund",
               "stripe_refund",
-              "campaign_cancel_compensation"
+              "campaign_cancel_compensation",
+              "campaign_cancel_refund"
             ],
             "nullable": true
           },
@@ -9724,6 +10782,145 @@
         "required": [
           "userId",
           "amount"
+        ]
+      },
+      "CreditTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da transação"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo do lançamento:\n- `add` — crédito comprado ou concedido\n- `subtract` — débito direto\n- `refund` — estorno\n- `lock` — valor travado em operação em andamento (entra no `lockedBalance`)\n- `unlock` — destrava o valor sem gastá-lo (oferta recusada ou expirada)\n- `consume` — consome um valor travado (a operação se concretizou)\n- `compensation` — crédito de cortesia; veja `isNonRefundable` e `expiresAt`\n\n`amount` é sempre POSITIVO — é magnitude, não sinal: use o `type` para saber se soma ou subtrai do saldo.",
+            "enum": [
+              "add",
+              "subtract",
+              "refund",
+              "lock",
+              "unlock",
+              "consume",
+              "compensation"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor em centavos"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição).",
+            "enum": [
+              "stripe",
+              "internal",
+              "admin_grant",
+              "credit_refund",
+              "stripe_refund",
+              "campaign_cancel_compensation",
+              "campaign_cancel_refund"
+            ],
+            "nullable": true
+          },
+          "providerTransactionId": {
+            "type": "string",
+            "description": "ID da transação no provider",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da transação",
+            "enum": [
+              "pending",
+              "approved",
+              "failed",
+              "refunded"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`.",
+            "nullable": true
+          },
+          "balanceAfter": {
+            "type": "number",
+            "description": "Saldo do usuário (em centavos) imediatamente após esta transação. Snapshot gravado na criação; null em transações anteriores à existência do campo e em transações pending ainda não aprovadas.",
+            "nullable": true
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha associada",
+            "nullable": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de expiração (para créditos compensatórios)",
+            "nullable": true
+          },
+          "isNonRefundable": {
+            "type": "boolean",
+            "description": "Créditos não reembolsáveis (compensatórios)",
+            "default": false
+          },
+          "refundedTransactionId": {
+            "type": "string",
+            "description": "ID da transação original (em caso de reembolso)",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain na Xion",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer Xion",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "userId",
+          "type",
+          "amount",
+          "currency",
+          "provider",
+          "providerTransactionId",
+          "status",
+          "metadata",
+          "balanceAfter",
+          "campaignId",
+          "expiresAt",
+          "isNonRefundable",
+          "refundedTransactionId",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "RefundCreditsDto": {
@@ -10147,30 +11344,6 @@
           "amount",
           "successUrl",
           "cancelUrl"
-        ]
-      },
-      "CheckoutSessionDto": {
-        "type": "object",
-        "properties": {
-          "checkoutUrl": {
-            "type": "string",
-            "description": "URL do Stripe Checkout. O front deve redirecionar o navegador para cá — não embutir em iframe.",
-            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
-          },
-          "sessionId": {
-            "type": "string",
-            "description": "ID da sessão. Guarde-o: é o que vai no corpo do endpoint de confirmação depois do retorno.",
-            "example": "cs_test_a1B2c3d4E5f6"
-          },
-          "provider": {
-            "type": "string",
-            "description": "Provider que gerou a sessão",
-            "example": "stripe"
-          }
-        },
-        "required": [
-          "checkoutUrl",
-          "sessionId"
         ]
       },
       "ConfirmCheckoutDto": {
@@ -10914,7 +12087,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ],
             "example": "Active"
           },
@@ -10940,6 +12114,12 @@
             "type": "string",
             "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
             "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modelo (main_star.profile_photo). Null quando a campanha não tem artista principal ou o cadastro está sem foto.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/main-stars/1785001484215.png",
             "nullable": true
           },
           "fundingPercentage": {
@@ -10994,11 +12174,6 @@
             "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
             "nullable": true
           },
-          "modelProfilePhoto": {
-            "type": "string",
-            "description": "URL servível da foto de perfil da modela/artista (main_star.profile_photo)",
-            "nullable": true
-          },
           "keyImage": {
             "type": "string",
             "description": "URL servível da arte de preview da CHAVE (key_image)",
@@ -11020,6 +12195,7 @@
           "ariaLabel",
           "modelName",
           "modelProfession",
+          "modelProfilePhoto",
           "fundingPercentage",
           "currentKeys",
           "totalKeys",
@@ -11029,7 +12205,6 @@
           "endDate",
           "daysRemaining",
           "completionDate",
-          "modelProfilePhoto",
           "keyImage",
           "nftContractAddress"
         ]
@@ -11617,7 +12792,8 @@
               "Active",
               "Inactive",
               "Ended",
-              "Scheduled"
+              "Scheduled",
+              "Cancelled"
             ],
             "example": "Active"
           },
@@ -11643,6 +12819,12 @@
             "type": "string",
             "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
             "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modelo (main_star.profile_photo). Null quando a campanha não tem artista principal ou o cadastro está sem foto.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/main-stars/1785001484215.png",
             "nullable": true
           },
           "fundingPercentage": {
@@ -11697,11 +12879,6 @@
             "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
             "nullable": true
           },
-          "modelProfilePhoto": {
-            "type": "string",
-            "description": "URL servível da foto de perfil da modela/artista (main_star.profile_photo)",
-            "nullable": true
-          },
           "keyImage": {
             "type": "string",
             "description": "URL servível da arte de preview da CHAVE (key_image)",
@@ -11723,6 +12900,7 @@
           "ariaLabel",
           "modelName",
           "modelProfession",
+          "modelProfilePhoto",
           "fundingPercentage",
           "currentKeys",
           "totalKeys",
@@ -11732,7 +12910,6 @@
           "endDate",
           "daysRemaining",
           "completionDate",
-          "modelProfilePhoto",
           "keyImage",
           "nftContractAddress"
         ]
@@ -12105,6 +13282,868 @@
         },
         "required": [
           "counterPrice"
+        ]
+      },
+      "CancelCampaignDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Por que a campanha está sendo cancelada. Vai para `campaigns.cancel_reason` e fica na trilha de auditoria de cada caso de reembolso. Escreva pensando em quem vai ler daqui a seis meses.",
+            "example": "Meta de financiamento não atingida até a data limite",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "Simulação: calcula tudo e devolve o resumo **sem escrever nada** — nenhum caso é aberto, nenhum e-mail sai, a campanha continua no status atual.\n\nUse antes do cancelamento de verdade para conferir quanto dinheiro está em jogo e quantas pessoas serão avisadas. Cancelar é irreversível: a campanha não volta de `Cancelled`.",
+            "default": false,
+            "example": true
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "RefundCaseOpenedDto": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "description": "UUID do caso aberto"
+          },
+          "beneficiaryEmail": {
+            "type": "string",
+            "description": "E-mail que recebeu o aviso",
+            "example": "maria@exemplo.com"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Valor a devolver, **em CENTAVOS**",
+            "example": 50000
+          },
+          "cardAmount": {
+            "type": "number",
+            "description": "Parcela elegível a estorno no cartão, **em CENTAVOS**",
+            "example": 50000
+          },
+          "creditAmount": {
+            "type": "number",
+            "description": "Parcela que só pode virar crédito, **em CENTAVOS**",
+            "example": 0
+          },
+          "keyCount": {
+            "type": "number",
+            "description": "Quantas chaves este caso cobre",
+            "example": 2
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Prazo para o beneficiário escolher"
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "Se o e-mail de aviso saiu de fato",
+            "example": true
+          },
+          "debugLink": {
+            "type": "string",
+            "description": "Link direto para a página de escolha, **exposto apenas enquanto o envio real de e-mail estiver desligado** (sem `RESEND_API_KEY`). Existe para dar como testar o fluxo em dev/homolog antes de a infra configurar a Resend, e DESAPARECE sozinho assim que a chave existir — mesmo contrato do `debugCode` do serviço de auth. Contém credencial: não logar, não exibir em tela de produção.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "caseId",
+          "beneficiaryEmail",
+          "totalAmount",
+          "cardAmount",
+          "creditAmount",
+          "keyCount",
+          "expiresAt",
+          "emailSent"
+        ]
+      },
+      "SkippedKeyDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "A chave que não virou item de reembolso"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Por que ela foi pulada:\n- `credit_lock_released` — foi paga com crédito e o valor já foi devolvido pelo destravamento de créditos, que roda antes. Abrir um caso pagaria duas vezes.\n- `no_beneficiary` — a chave não tem `user_id` nem e-mail; não há a quem devolver. Exige ação manual.\n- `zero_amount` — valor zero.",
+            "example": "credit_lock_released"
+          }
+        },
+        "required": [
+          "transactionId",
+          "reason"
+        ]
+      },
+      "CampaignCancellationDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status resultante. `Cancelled` é terminal — a campanha não volta.",
+            "example": "Cancelled"
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "Se esta chamada foi uma simulação (nada foi escrito)",
+            "example": false
+          },
+          "casesCreated": {
+            "type": "number",
+            "description": "Casos de reembolso criados agora",
+            "example": 12
+          },
+          "casesExisting": {
+            "type": "number",
+            "description": "Casos que já existiam (cancelamento reexecutado). A abertura é idempotente: rerodar não duplica caso nem paga ninguém duas vezes.",
+            "example": 0
+          },
+          "keysAffected": {
+            "type": "number",
+            "description": "Quantas chaves entraram em algum caso",
+            "example": 18
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Soma de tudo que será devolvido, **em CENTAVOS**",
+            "example": 450000
+          },
+          "cardAmount": {
+            "type": "number",
+            "description": "Quanto disso pode voltar para cartão, **em CENTAVOS**",
+            "example": 400000
+          },
+          "creditAmount": {
+            "type": "number",
+            "description": "Quanto disso só pode virar crédito, **em CENTAVOS**",
+            "example": 50000
+          },
+          "listingsCancelled": {
+            "type": "number",
+            "description": "Anúncios do marketplace cancelados",
+            "example": 3
+          },
+          "offersReleased": {
+            "type": "number",
+            "description": "Ofertas P2P vivas liberadas. Cada uma devolve o crédito que estava em escrow — sem isso o saldo do ofertante ficaria travado para sempre numa campanha que não existe mais.",
+            "example": 5
+          },
+          "creditLocksUnlocked": {
+            "type": "number",
+            "description": "Travas de crédito desfeitas (compras de chave pagas com crédito que ainda não tinham sido consumidas). Essas chaves NÃO viram caso de reembolso — o valor já voltou aqui.",
+            "example": 2
+          },
+          "emailsSent": {
+            "type": "number",
+            "description": "E-mails de aviso enviados",
+            "example": 12
+          },
+          "emailsFailed": {
+            "type": "number",
+            "description": "E-mails que falharam. Os casos ficam com `notified_at` nulo e são reenviados ao rerodar o cancelamento.",
+            "example": 0
+          },
+          "mailConfigured": {
+            "type": "boolean",
+            "description": "Se o envio real de e-mail está ativo. Quando `false`, cada caso vem com `debugLink`.",
+            "example": true
+          },
+          "cases": {
+            "description": "Um item por caso aberto",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefundCaseOpenedDto"
+            }
+          },
+          "skippedKeys": {
+            "description": "Chaves deliberadamente não incluídas, com o motivo. Confira esta lista: `no_beneficiary` significa dinheiro que ninguém vai reclamar automaticamente.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkippedKeyDto"
+            }
+          }
+        },
+        "required": [
+          "campaignId",
+          "status",
+          "dryRun",
+          "casesCreated",
+          "casesExisting",
+          "keysAffected",
+          "totalAmount",
+          "cardAmount",
+          "creditAmount",
+          "listingsCancelled",
+          "offersReleased",
+          "creditLocksUnlocked",
+          "emailsSent",
+          "emailsFailed",
+          "mailConfigured",
+          "cases",
+          "skippedKeys"
+        ]
+      },
+      "RefundCaseCampaignDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha cancelada"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Ensaio de Verão"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "Imagem de capa da campanha, para a tela de reembolso",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "RefundCaseSummaryDto": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "description": "UUID do caso"
+          },
+          "campaign": {
+            "$ref": "#/components/schemas/RefundCaseCampaignDto"
+          },
+          "status": {
+            "type": "string",
+            "description": "Estado do caso. Só `pending` aceita escolha — os demais devolvem 409 em `POST /refunds/:caseId/choose`.",
+            "enum": [
+              "pending",
+              "processing",
+              "awaiting_payment",
+              "resolved",
+              "partially_failed"
+            ]
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Valor a devolver, **em CENTAVOS** (`50000` = R$ 500,00)",
+            "example": 50000
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Prazo para escolher. Passado sem escolha, o valor vira crédito automaticamente."
+          },
+          "choice": {
+            "type": "string",
+            "description": "Opção escolhida, quando já houve escolha",
+            "enum": [
+              "card_refund",
+              "credits",
+              "reallocate"
+            ],
+            "nullable": true
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando o caso foi resolvido",
+            "nullable": true
+          }
+        },
+        "required": [
+          "caseId",
+          "campaign",
+          "status",
+          "totalAmount",
+          "expiresAt"
+        ]
+      },
+      "RefundMethodOptionDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "Identificador do meio de devolução",
+            "enum": [
+              "card",
+              "pix"
+            ],
+            "example": "card"
+          },
+          "label": {
+            "type": "string",
+            "description": "Rótulo pronto para a tela",
+            "example": "Cartão de crédito"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Se este meio pode ser usado AGORA. Quando `false`, renderize o botão visível porém desabilitado (cinza) e mostre `unavailableReason` — não esconda a opção: ela existe no produto e só está desligada. Chamar a escolha com um método desabilitado devolve 422 com `error: \"PIX_UNAVAILABLE\"`.",
+            "example": true
+          },
+          "amount": {
+            "type": "number",
+            "description": "Quanto vai por este meio, **em CENTAVOS**. `0` quando o meio está desabilitado ou quando nenhuma parte do valor é elegível a ele.",
+            "example": 50000
+          },
+          "unavailableReason": {
+            "type": "string",
+            "description": "Por que o meio está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "method",
+          "label",
+          "enabled",
+          "amount"
+        ]
+      },
+      "RefundOptionsDto": {
+        "type": "object",
+        "properties": {
+          "immediateRefund": {
+            "description": "Opção 1 — devolução no meio de pagamento original. Um item por meio; hoje `card` habilitado e `pix` desabilitado. A soma dos `amount` habilitados é `cardAmount` do caso; o restante (`creditAmount`) é devolvido em crédito mesmo nesta opção, porque não há cartão para onde mandar.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefundMethodOptionDto"
+            }
+          },
+          "platformCreditAmount": {
+            "type": "number",
+            "description": "Opção 2 — todo o valor vira saldo de crédito na plataforma. Sempre disponível. O crédito gerado é NORMAL: não expira e não é marcado como cortesia.",
+            "example": 50000
+          },
+          "reallocationBudget": {
+            "type": "number",
+            "description": "Opção 3 — orçamento, **em CENTAVOS**, para comprar chaves de outras campanhas. Igual a `totalAmount`. Se o cesto custar menos, a diferença vira crédito; se custar mais, a diferença é cobrada no cartão.",
+            "example": 50000
+          }
+        },
+        "required": [
+          "immediateRefund",
+          "platformCreditAmount",
+          "reallocationBudget"
+        ]
+      },
+      "RefundCaseItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "UUID do item"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Natureza do item: `key_refund` é uma chave a devolver (soma no total); os outros registram o que a resolução produziu.",
+            "enum": [
+              "key_refund",
+              "credit_residual",
+              "topup",
+              "reallocated_key"
+            ]
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "A chave (linha de `transactions`) associada",
+            "nullable": true
+          },
+          "tierLevel": {
+            "type": "string",
+            "description": "Nome do tier da chave, quando conhecido",
+            "nullable": true,
+            "example": "Ouro"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor do item **em CENTAVOS**",
+            "example": 25000
+          },
+          "originMethod": {
+            "type": "string",
+            "description": "Como o beneficiário pagou por esta chave",
+            "enum": [
+              "card",
+              "credit"
+            ]
+          },
+          "eligibilityReason": {
+            "type": "string",
+            "description": "Por que este item não pode voltar ao cartão (`resold_p2p`, `paid_with_credits`, `no_payment_intent`). `null` quando pode.",
+            "nullable": true
+          },
+          "settlement": {
+            "type": "string",
+            "description": "Resultado da liquidação deste item",
+            "enum": [
+              "pending",
+              "refunded_card",
+              "credited",
+              "reallocated",
+              "failed"
+            ]
+          },
+          "settledAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando o item foi liquidado",
+            "nullable": true
+          }
+        },
+        "required": [
+          "itemId",
+          "kind",
+          "amount",
+          "originMethod",
+          "settlement"
+        ]
+      },
+      "RefundCaseDetailDto": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "description": "UUID do caso"
+          },
+          "campaign": {
+            "$ref": "#/components/schemas/RefundCaseCampaignDto"
+          },
+          "status": {
+            "type": "string",
+            "description": "Estado do caso. Só `pending` aceita escolha — os demais devolvem 409 em `POST /refunds/:caseId/choose`.",
+            "enum": [
+              "pending",
+              "processing",
+              "awaiting_payment",
+              "resolved",
+              "partially_failed"
+            ]
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Valor a devolver, **em CENTAVOS** (`50000` = R$ 500,00)",
+            "example": 50000
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Prazo para escolher. Passado sem escolha, o valor vira crédito automaticamente."
+          },
+          "choice": {
+            "type": "string",
+            "description": "Opção escolhida, quando já houve escolha",
+            "enum": [
+              "card_refund",
+              "credits",
+              "reallocate"
+            ],
+            "nullable": true
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando o caso foi resolvido",
+            "nullable": true
+          },
+          "cardAmount": {
+            "type": "number",
+            "description": "Parcela do total, **em CENTAVOS**, que pode voltar para o cartão. Pode ser menor que `totalAmount`: chave comprada na revenda P2P ou paga com crédito só pode ser devolvida em crédito.",
+            "example": 50000
+          },
+          "creditAmount": {
+            "type": "number",
+            "description": "Parcela do total, **em CENTAVOS**, que só pode virar crédito. `cardAmount + creditAmount === totalAmount`, sempre.",
+            "example": 0
+          },
+          "options": {
+            "description": "As três opções, já com os valores calculados",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefundOptionsDto"
+              }
+            ]
+          },
+          "items": {
+            "description": "Uma linha por chave atingida, mais o que a resolução produziu",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefundCaseItemDto"
+            }
+          },
+          "defaultOnExpiry": {
+            "type": "string",
+            "description": "O que acontece se o prazo vencer sem escolha. Hoje sempre `credits`; explicitado no contrato para a tela poder avisar o usuário sem hardcodar a regra.",
+            "enum": [
+              "card_refund",
+              "credits",
+              "reallocate"
+            ],
+            "example": "credits"
+          },
+          "resolvedBy": {
+            "type": "string",
+            "description": "Quem resolveu o caso, quando já resolvido",
+            "enum": [
+              "user",
+              "admin",
+              "auto_expiry"
+            ],
+            "nullable": true
+          },
+          "refundedAmount": {
+            "type": "number",
+            "description": "Quanto de fato voltou ao cartão, **em CENTAVOS**",
+            "example": 0
+          },
+          "creditedAmount": {
+            "type": "number",
+            "description": "Quanto de fato virou crédito, **em CENTAVOS**",
+            "example": 0
+          },
+          "reallocatedAmount": {
+            "type": "number",
+            "description": "Quanto virou chave nova, **em CENTAVOS**",
+            "example": 0
+          }
+        },
+        "required": [
+          "caseId",
+          "campaign",
+          "status",
+          "totalAmount",
+          "expiresAt",
+          "cardAmount",
+          "creditAmount",
+          "options",
+          "items",
+          "defaultOnExpiry",
+          "refundedAmount",
+          "creditedAmount",
+          "reallocatedAmount"
+        ]
+      },
+      "ReallocationBasketItemDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Campanha da qual comprar. Precisa estar ativa e aceitando compra.",
+            "format": "uuid"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "Tier (`accesses.id`) escolhido. O PREÇO É DERIVADO DELE no servidor (`price_card ?? price`) — não existe campo de preço neste body, de propósito.",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantas chaves deste tier",
+            "example": 1,
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "campaignId",
+          "accessId",
+          "quantity"
+        ]
+      },
+      "ResolveRefundCaseDto": {
+        "type": "object",
+        "properties": {
+          "choice": {
+            "type": "string",
+            "description": "A opção escolhida. **A escolha é definitiva** — não há como trocar depois de resolvida.\n\n- `card_refund` — devolve no meio de pagamento original. Exige `method`. A parcela que não for elegível a cartão (`creditAmount`) é devolvida em crédito no mesmo ato.\n- `credits` — o valor inteiro vira saldo de crédito, sem validade.\n- `reallocate` — troca por chaves de outra(s) campanha(s). Exige `items`. Sobra vira crédito; falta é cobrada no cartão via `POST /refunds/:caseId/reallocation-checkout`.",
+            "enum": [
+              "card_refund",
+              "credits",
+              "reallocate"
+            ],
+            "example": "card_refund"
+          },
+          "method": {
+            "type": "string",
+            "description": "Obrigatório quando `choice = card_refund`. **`pix` é aceito pelo validador de propósito** — assim a recusa vem como 422 `PIX_UNAVAILABLE`, um erro documentado e tratável, em vez de um 400 genérico de validação. Consulte `options.immediateRefund[].enabled` antes de enviar.",
+            "enum": [
+              "card",
+              "pix"
+            ],
+            "example": "card"
+          },
+          "items": {
+            "description": "Obrigatório quando `choice = reallocate`. As chaves que o usuário quer no lugar do dinheiro. O custo total é calculado no servidor a partir dos tiers; o valor enviado pelo cliente nunca é usado. Se o custo passar do orçamento, nada é emitido e a resposta vem com `checkoutRequired: true` e o `shortfallAmount` a pagar.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReallocationBasketItemDto"
+            }
+          },
+          "token": {
+            "type": "string",
+            "description": "Token do link do e-mail. Alternativa ao Bearer: quem chega pelo e-mail não está logado. Pode vir aqui no body ou na query `?token=`."
+          }
+        },
+        "required": [
+          "choice"
+        ]
+      },
+      "IssuedKeyDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "UUID da chave emitida (linha de `transactions`)"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "Campanha da chave nova"
+          },
+          "accessId": {
+            "type": "string",
+            "description": "Tier da chave nova"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Preço unitário pago, **em CENTAVOS**",
+            "example": 20000
+          }
+        },
+        "required": [
+          "transactionId",
+          "campaignId",
+          "accessId",
+          "amount"
+        ]
+      },
+      "RefundResolutionDto": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "description": "UUID do caso"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "description": "`true` quando a escolha foi executada (mesmo que parcialmente). `false` quando ainda falta algo do usuário — tipicamente pagar a diferença da realocação.",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Estado do caso depois da chamada. `partially_failed` significa que parte do dinheiro se moveu e parte falhou — um admin pode reprocessar com `POST /refunds/:caseId/retry`.",
+            "enum": [
+              "pending",
+              "processing",
+              "awaiting_payment",
+              "resolved",
+              "partially_failed"
+            ],
+            "example": "resolved"
+          },
+          "refundedToCardAmount": {
+            "type": "number",
+            "description": "Quanto voltou para o cartão nesta chamada, **em CENTAVOS**",
+            "example": 50000
+          },
+          "creditedAmount": {
+            "type": "number",
+            "description": "Quanto virou crédito nesta chamada, **em CENTAVOS**. Inclui tanto a opção `credits` inteira quanto a parcela não-estornável da opção `card_refund` e o troco da realocação.",
+            "example": 0
+          },
+          "reallocatedAmount": {
+            "type": "number",
+            "description": "Quanto virou chave nova, **em CENTAVOS**",
+            "example": 0
+          },
+          "keysIssued": {
+            "description": "As chaves emitidas pela realocação",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssuedKeyDto"
+            }
+          },
+          "shortfallAmount": {
+            "type": "number",
+            "description": "Quanto ainda falta pagar, **em CENTAVOS**, quando o cesto custou mais que o valor a devolver. `0` quando não há diferença.",
+            "example": 0
+          },
+          "checkoutRequired": {
+            "type": "boolean",
+            "description": "Quando `true`, NADA foi emitido ainda: chame `POST /refunds/:caseId/reallocation-checkout` para pagar `shortfallAmount` e depois confirme. O caso fica em `awaiting_payment`.",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Detalhe legível quando algo não saiu como esperado (item que falhou no Stripe, tier esgotado).",
+            "nullable": true
+          }
+        },
+        "required": [
+          "caseId",
+          "confirmed",
+          "status",
+          "refundedToCardAmount",
+          "creditedAmount",
+          "reallocatedAmount",
+          "keysIssued",
+          "shortfallAmount",
+          "checkoutRequired"
+        ]
+      },
+      "RefundErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "Código HTTP do erro",
+            "example": 422
+          },
+          "error": {
+            "type": "string",
+            "description": "Código estável de máquina — trate por ele, nunca pelo texto de `message`.",
+            "enum": [
+              "PIX_UNAVAILABLE",
+              "CASE_PROCESSING",
+              "CASE_RESOLVED",
+              "CASE_EXPIRED",
+              "TOPUP_REQUIRED",
+              "NOT_CARD_REFUNDABLE"
+            ],
+            "example": "PIX_UNAVAILABLE"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem legível, já em português e pronta para exibir",
+            "example": "PIX ainda não está disponível. Escolha cartão, crédito na plataforma ou a troca por outra chave."
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ]
+      },
+      "ReallocationCheckoutDto": {
+        "type": "object",
+        "properties": {
+          "successUrl": {
+            "type": "string",
+            "description": "Para onde o Stripe volta depois do pagamento. Confirme lá com `POST /refunds/:caseId/confirm-reallocation`, guardando o `sessionId`.",
+            "example": "https://app.mintvrs.com/reembolso/sucesso"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "description": "Para onde o Stripe volta se o usuário desistir",
+            "example": "https://app.mintvrs.com/reembolso"
+          },
+          "token": {
+            "type": "string",
+            "description": "Token do link do e-mail, quando não há Bearer"
+          }
+        },
+        "required": [
+          "successUrl",
+          "cancelUrl"
+        ]
+      },
+      "ReallocationCheckoutSessionDto": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "description": "UUID do caso"
+          },
+          "shortfallAmount": {
+            "type": "number",
+            "description": "Diferença a pagar, **em CENTAVOS**, sempre recalculada no servidor a partir dos tiers do cesto. O valor que o cliente mandar é ignorado.",
+            "example": 15000
+          },
+          "checkoutUrl": {
+            "type": "string",
+            "description": "URL do checkout do Stripe — redirecione o usuário para cá",
+            "example": "https://checkout.stripe.com/c/pay/cs_test_..."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão; guarde para confirmar depois",
+            "example": "cs_test_..."
+          }
+        },
+        "required": [
+          "caseId",
+          "shortfallAmount",
+          "checkoutUrl",
+          "sessionId"
+        ]
+      },
+      "ConfirmReallocationDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "O `sessionId` devolvido pelo checkout da diferença",
+            "example": "cs_test_..."
+          },
+          "token": {
+            "type": "string",
+            "description": "Token do link do e-mail, quando não há Bearer"
+          }
+        },
+        "required": [
+          "sessionId"
+        ]
+      },
+      "RefundSweepDto": {
+        "type": "object",
+        "properties": {
+          "scanned": {
+            "type": "number",
+            "description": "Quantos casos vencidos foram examinados nesta passada",
+            "example": 7
+          },
+          "resolved": {
+            "type": "number",
+            "description": "Quantos foram convertidos em crédito com sucesso",
+            "example": 7
+          },
+          "failed": {
+            "type": "number",
+            "description": "Quantos falharam e continuam pendentes para a próxima passada",
+            "example": 0
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "`true` quando outra execução da varredura já estava rodando e esta desistiu na hora. Não é erro: a trava é o que impede duas passadas de creditarem o mesmo caso.",
+            "example": false
+          },
+          "caseIds": {
+            "description": "IDs dos casos resolvidos nesta passada",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "scanned",
+          "resolved",
+          "failed",
+          "skipped",
+          "caseIds"
         ]
       },
       "Token": {
