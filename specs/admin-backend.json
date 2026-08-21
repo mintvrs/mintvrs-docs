@@ -3200,7 +3200,7 @@
     },
     "/gateways/checkout/key-purchase": {
       "post": {
-        "description": "O front escolhe **qual** tier comprar (`accessId` + `quantity`); o servidor decide **quanto** custa. O preço unitário é lido de `accesses.price_card` (fallback `accesses.price`), que vive em reais, acrescido da taxa de 20% do mercado primário e convertido para centavos — `fiatAmount` no corpo é ignorado. O valor efetivamente cobrado volta em `unitAmount`/`totalAmount`: use-os na tela de confirmação. O tier é validado aqui, **antes** de qualquer cobrança: precisa pertencer à campanha, ter preço configurado, estar dentro da validade e ter estoque. A sessão **reserva** as chaves por `expiresInSeconds` — duas sessões abertas para a última chave não passam as duas, e `accesses.sold` nunca ultrapassa `quantity`. Checkout abandonado devolve o estoque sozinho quando a reserva vence. Em seguida, redirecione o navegador para `checkoutUrl` e guarde `sessionId` para `POST /gateways/checkout/confirm-key-purchase`.",
+        "description": "O front escolhe **qual** tier comprar (`accessId` + `quantity`); o servidor decide **quanto** custa. O preço unitário é lido de `accesses.price_card` (fallback `accesses.price`), que vive em reais, acrescido da taxa de 20% do mercado primário e convertido para centavos — `fiatAmount` no corpo é ignorado. O valor efetivamente cobrado volta em `unitAmount`/`totalAmount`: use-os na tela de confirmação. O tier é validado aqui, **antes** de qualquer cobrança: precisa pertencer à campanha, ter preço configurado, estar dentro da validade e ter estoque. A sessão **reserva** as chaves por `expiresInSeconds` — duas sessões abertas para a última chave não passam as duas, e `accesses.sold` nunca ultrapassa `quantity`. Checkout abandonado devolve o estoque sozinho quando a reserva vence. Em seguida, redirecione o navegador para `checkoutUrl` e guarde `sessionId` para `POST /gateways/checkout/confirm-key-purchase`.\n\n### Pagar parte com o saldo da plataforma (`useCredits: true`)\nCom `useCredits`, o servidor abate o saldo do comprador e cobra **apenas a diferença**. A resposta sempre traz `creditAmount` (quanto saiu do saldo) e `shortfall` (o que falta), recalculados aqui — o cliente nunca decide o rateio. São três desfechos, e o `shortfall` diz qual foi:\n\n1. **`shortfall > 0` com `paymentMethod: card`** (default) — vem `checkoutUrl` + `sessionId` como sempre. O saldo fica RETIDO junto com a reserva de estoque e é debitado no confirm; abandonar o checkout devolve as duas coisas.\n2. **`shortfall === 0`** — o saldo cobriu tudo. Não existe cobrança externa: **não vem `checkoutUrl`**, a compra já foi liquidada neste request e a chave vem em `purchase`. Não chame o confirm.\n3. **`shortfall > 0` com `paymentMethod: pix_simulated`** — só em homologação. Também liquida no próprio request (sem gateway, sem cobrança real) e devolve `purchase`.\n\nNos desfechos 2 e 3, mande `idempotencyKey`: é o que faz um reenvio devolver a mesma compra em vez de comprar duas vezes. A parcela paga no cartão fica registrada na chave — um cancelamento de campanha devolve ao cartão no máximo o que ele recebeu, e o resto em crédito.",
         "operationId": "createKeyPurchaseCheckout",
         "parameters": [],
         "requestBody": {
@@ -3268,7 +3268,7 @@
     },
     "/gateways/checkout/confirm-key-purchase": {
       "post": {
-        "description": "Chame no retorno do `successUrl`, com o `sessionId` guardado. Idempotente por sessão, inclusive sob chamadas **simultâneas** (duas abas, double-submit, retry): a reivindicação é feita no banco, então uma sessão nunca vira duas chaves. Se outra requisição estiver processando a mesma sessão, a resposta vem com `reason: processing` — repita em instantes. Se o tier tiver esgotado entre o pagamento e a confirmação, a cobrança é **estornada automaticamente** e a resposta vem com `reason: sold_out`. O registro on-chain é **best-effort** e não bloqueia a compra — a chave já vale como posse (aparece no marketplace, no `hasKey` e no resumo de chaves) assim que o pagamento é confirmado. Consulte `chainStatus`: em `pending`, `transactionHash` e `explorerUrl` vêm `null` e são preenchidos depois pela reconciliação (`POST /transactions/reconcile-chain`). Não monte a URL do explorer no front — quando vier `null`, esconda o link.",
+        "description": "Chame no retorno do `successUrl`, com o `sessionId` guardado. Idempotente por sessão, inclusive sob chamadas **simultâneas** (duas abas, double-submit, retry): a reivindicação é feita no banco, então uma sessão nunca vira duas chaves. Se outra requisição estiver processando a mesma sessão, a resposta vem com `reason: processing` — repita em instantes. Se o tier tiver esgotado entre o pagamento e a confirmação, a cobrança é **estornada automaticamente** e a resposta vem com `reason: sold_out`. O registro on-chain é **best-effort** e não bloqueia a compra — a chave já vale como posse (aparece no marketplace, no `hasKey` e no resumo de chaves) assim que o pagamento é confirmado. Consulte `chainStatus`: em `pending`, `transactionHash` e `explorerUrl` vêm `null` e são preenchidos depois pela reconciliação (`POST /transactions/reconcile-chain`). Não monte a URL do explorer no front — quando vier `null`, esconda o link.\n\nCompra híbrida (`useCredits`): o cartão pagou só a diferença e o resto estava retido no saldo — é aqui que a retenção é debitada, na mesma transação do estoque. Se o tier esgotou, além do estorno no cartão a retenção é devolvida ao saldo.",
         "operationId": "confirmKeyPurchase",
         "parameters": [],
         "requestBody": {
@@ -3326,7 +3326,8 @@
     },
     "/gateways/checkout/offer-funding": {
       "post": {
-        "description": "O `shortfall` é sempre recalculado no servidor (saldo disponível = saldo − travado); o valor enviado pelo cliente não é usado. Se a oferta couber no saldo, a resposta vem só com `shortfall: 0` e o cliente cria a oferta direto em `POST /marketplace/offers`. O anúncio é validado antes de qualquer cobrança.",
+        "deprecated": true,
+        "description": "Desativado por decisão de produto: **cartão é do mercado primário, crédito é do P2P**. Na revenda o cartão só existia para pagar a diferença entre o valor da oferta e o saldo do comprador — e essa diferença passou a ser paga por PIX.\n\nEm homologação, use `POST /marketplace/offers/pix-simulated` (PIX simulado, sem gateway). Quando a integração real (Asaas) entrar, o trilho será de duas fases e este endpoint continuará desativado.\n\nEste endpoint responde **SEMPRE 400**. O que continua ativo: `POST /gateways/checkout/confirm-offer-funding` e o webhook ainda liquidam as sessões criadas ANTES desta mudança — quem pagou não fica sem a oferta nem sem o estorno.",
         "operationId": "createOfferFundingCheckout",
         "parameters": [],
         "requestBody": {
@@ -3340,18 +3341,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "shortfall e, quando > 0, URL de checkout + sessionId",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OfferFundingCheckoutSessionDto"
-                }
-              }
-            }
-          },
           "400": {
-            "description": "Body inválido (listingId UUID, price/expiresInDays inteiros positivos, URLs obrigatórias) ou anúncio não ofertável",
+            "description": "Sempre retornado: \"O financiamento de ofertas por cartão foi desativado. A diferença entre o valor da oferta e o seu saldo é paga por PIX.\"",
             "content": {
               "application/json": {
                 "schema": {
@@ -3376,7 +3367,7 @@
             "bearer": []
           }
         ],
-        "summary": "Gerar checkout Stripe para financiar a diferença de crédito de uma oferta P2P",
+        "summary": "[DESATIVADO] Financiar por cartão a diferença de crédito de uma oferta P2P",
         "tags": [
           "payment-gateways"
         ]
@@ -3384,7 +3375,8 @@
     },
     "/gateways/checkout/confirm-offer-funding": {
       "post": {
-        "description": "Idempotente por sessão. Se o anúncio saiu do ar entre o pagamento e a confirmação, a parcela cobrada no cartão é estornada automaticamente e a resposta volta com `reason: listing_unavailable`.",
+        "deprecated": true,
+        "description": "O financiamento por cartão foi desativado (`POST /gateways/checkout/offer-funding` responde 400), mas este endpoint continua ATIVO para liquidar as sessões criadas antes da mudança: quem já estava no Checkout quando o deploy subiu ainda paga e precisa receber a oferta — ou o estorno.\n\nIdempotente por sessão. Se o anúncio saiu do ar entre o pagamento e a confirmação, a parcela cobrada no cartão é estornada automaticamente e a resposta volta com `reason: listing_unavailable`.\n\nNão use em fluxo novo: para pagar a diferença, veja `POST /marketplace/offers/pix-simulated`.",
         "operationId": "confirmOfferFunding",
         "parameters": [],
         "requestBody": {
@@ -3434,7 +3426,7 @@
             "bearer": []
           }
         ],
-        "summary": "Confirmar pagamento Stripe e criar a oferta P2P financiada",
+        "summary": "[LEGADO] Confirmar pagamento Stripe e criar a oferta P2P financiada por cartão",
         "tags": [
           "payment-gateways"
         ]
@@ -4367,7 +4359,7 @@
     },
     "/marketplace/{listingId}/buyProposal": {
       "post": {
-        "description": "Alias amigável de POST /marketplace/offers. Cria uma oferta sobre o anúncio (:listingId) e trava o crédito do comprador em escrow.",
+        "description": "Alias amigável de POST /marketplace/offers. Cria uma oferta sobre o anúncio (:listingId) e trava o crédito do comprador em escrow. Validade: `expiresInDays` (1 a 30) ou, só em homologação, `expiresInMinutes`.",
         "operationId": "buyProposal",
         "parameters": [
           {
@@ -4439,7 +4431,7 @@
             }
           },
           "400": {
-            "description": "Body inválido (listingId UUID, price/expiresInDays válidos)",
+            "description": "Body inválido (listingId UUID, price positivo) ou validade inválida: envie `expiresInDays` (1 a 30) OU `expiresInMinutes` (só em homologação), nunca os dois.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4465,6 +4457,130 @@
           }
         ],
         "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/pix-simulated": {
+      "post": {
+        "description": "Cria a oferta pagando com PIX SIMULADO a diferença entre o valor ofertado e o saldo disponível. **Nenhuma cobrança real acontece**: não há gateway, redirect nem webhook — a requisição vai direto à fase final que o cartão alcançava depois do pagamento confirmado (credita a diferença e cria a oferta) e grava tudo numa transação só.\n\nA diferença é sempre recalculada no servidor, com a linha de saldo travada; o valor enviado pelo cliente não é usado. Se o saldo já cobre a oferta, `shortfall` volta `0`, nada é cunhado e a oferta é criada normalmente.\n\nToda linha de ledger criada aqui nasce marcada (`provider: pix_simulated`, `metadata.simulated: true`) e é REVERTIDA quando a oferta é cancelada, recusada ou expira. Disponível apenas onde `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`; será substituído pelo trilho real (Asaas), de duas fases. Use `idempotencyKey` para que um reenvio devolva a mesma oferta (`reused: true`) em vez de cunhar de novo.",
+        "operationId": "createPixSimulatedOffer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePixSimulatedOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PixSimulatedOfferResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Trilho desativado neste ambiente, validade inválida, anúncio não ofertável ou oferta viva duplicada neste anúncio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[HOMOLOG] Ofertar pagando a diferença com PIX simulado (sem gateway)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/capabilities": {
+      "get": {
+        "description": "Diz ao cliente quais trilhos de pagamento da diferença estão ligados e se a validade em minutos existe aqui, no mesmo formato dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre a opção desabilitada com o motivo, não a esconda.",
+        "operationId": "getOfferCapabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferCapabilitiesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "O que a tela de oferta pode oferecer neste ambiente",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/offers/expire-due": {
+      "post": {
+        "description": "Roda a varredura de expiração na hora, em vez de esperar a próxima passada automática: marca como `expired` as ofertas vencidas e destrava o crédito retido (revertendo também a diferença financiada, quando houver). Acionável sob demanda, sem agendador dedicado, e seguro sob concorrência — se outra passada já estiver rodando, esta desiste na hora e responde `skipped: true`, que **não é erro**: a trava é o que impede duas passadas de destravarem o mesmo crédito.",
+        "operationId": "expireDueOffers",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantas ofertas processar nesta passada (1 a 200, padrão 50)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferSweepDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Expirar agora as ofertas cuja validade venceu",
         "tags": [
           "marketplace-offers"
         ]
@@ -7964,7 +8080,7 @@
     },
     {
       "name": "payment-gateways",
-      "description": "Gateway de gateways: configurar e usar Stripe por tenant."
+      "description": "Gateway de gateways: configurar e usar Stripe por tenant. O financiamento de ofertas P2P por cartão foi DESATIVADO — a diferença é paga por PIX."
     },
     {
       "name": "campaigns",
@@ -8000,7 +8116,7 @@
     },
     {
       "name": "marketplace-offers",
-      "description": "Ofertas P2P (estilo OpenSea): criar, atualizar, cancelar, aceitar, recusar e contra-ofertar."
+      "description": "Ofertas P2P (estilo OpenSea): criar, atualizar, cancelar, aceitar, recusar e contra-ofertar. Validade em dias (produção) ou em minutos (homologação); expiração sob demanda em POST /marketplace/offers/expire-due; diferença paga por PIX simulado em homologação."
     },
     {
       "name": "splits",
@@ -10642,7 +10758,7 @@
           },
           "provider": {
             "type": "string",
-            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição).",
+            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição), `pix_simulated` (diferença de uma oferta P2P paga por PIX SIMULADO — **sem dinheiro real por trás, apenas homologação**), `pix_simulated_reversal` (reversão desse crédito quando a oferta é cancelada/recusada/expira).",
             "enum": [
               "stripe",
               "internal",
@@ -10650,7 +10766,9 @@
               "credit_refund",
               "stripe_refund",
               "campaign_cancel_compensation",
-              "campaign_cancel_refund"
+              "campaign_cancel_refund",
+              "pix_simulated",
+              "pix_simulated_reversal"
             ],
             "nullable": true
           },
@@ -10671,7 +10789,7 @@
           },
           "metadata": {
             "type": "object",
-            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`.",
+            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`. add via pix_simulated: `{ simulated: true, rail: \"pix\", kind: \"offer_funding\", listingId, price, shortfall, idempotencyKey }`. refund via pix_simulated_reversal: `{ simulated: true, rail: \"pix\", reason, originalTransactionId, offerId, note }`.",
             "nullable": true
           },
           "balanceAfter": {
@@ -10822,7 +10940,7 @@
           },
           "provider": {
             "type": "string",
-            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição).",
+            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição), `pix_simulated` (diferença de uma oferta P2P paga por PIX SIMULADO — **sem dinheiro real por trás, apenas homologação**), `pix_simulated_reversal` (reversão desse crédito quando a oferta é cancelada/recusada/expira).",
             "enum": [
               "stripe",
               "internal",
@@ -10830,7 +10948,9 @@
               "credit_refund",
               "stripe_refund",
               "campaign_cancel_compensation",
-              "campaign_cancel_refund"
+              "campaign_cancel_refund",
+              "pix_simulated",
+              "pix_simulated_reversal"
             ],
             "nullable": true
           },
@@ -10851,7 +10971,7 @@
           },
           "metadata": {
             "type": "object",
-            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`.",
+            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`. add via pix_simulated: `{ simulated: true, rail: \"pix\", kind: \"offer_funding\", listingId, price, shortfall, idempotencyKey }`. refund via pix_simulated_reversal: `{ simulated: true, rail: \"pix\", reason, originalTransactionId, offerId, note }`.",
             "nullable": true
           },
           "balanceAfter": {
@@ -11418,6 +11538,26 @@
             "type": "string",
             "description": "ID (UUID) do access/tier comprado. Obrigatório: define o **preço cobrado**, incrementa as chaves vendidas (`accesses.sold`) e move a % de financiamento. O tier precisa pertencer a `campaignId`, ter preço configurado, estar dentro da validade e ter estoque."
           },
+          "useCredits": {
+            "type": "boolean",
+            "description": "Usar o saldo de crédito da plataforma para abater esta compra. Com `true`, o servidor calcula `creditAmount` (quanto o saldo cobre) e `shortfall` (o que falta) e cobra **apenas a diferença** no método escolhido. O saldo fica RETIDO enquanto o checkout estiver aberto e é debitado na confirmação; checkout abandonado devolve a retenção junto com o estoque. Default `false` — o comportamento sem esta flag é o de sempre (preço cheio no cartão).",
+            "default": false
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Como pagar a diferença (`shortfall`). `card` (default) gera a sessão do Stripe. `pix_simulated` **não usa gateway**: liquida a compra no mesmo request, e só existe em homologação (`OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`) — em produção responde 400. Quando o saldo cobre tudo (`shortfall: 0`) este campo é irrelevante: não há cobrança externa.",
+            "enum": [
+              "card",
+              "pix_simulated"
+            ],
+            "default": "card"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Chave de idempotência do cliente, usada nas liquidações que acontecem no próprio request (saldo cobrindo tudo, ou `pix_simulated`). Reenviar a mesma chave devolve a compra já feita em vez de comprar de novo. No caminho do cartão a idempotência é a própria sessão do Stripe e este campo é ignorado.",
+            "minLength": 8,
+            "maxLength": 100
+          },
           "tenantId": {
             "type": "string",
             "description": "Tenant alvo (apenas SuperAdmin/Admin; demais roles usam o JWT)"
@@ -11428,62 +11568,6 @@
           "successUrl",
           "cancelUrl",
           "accessId"
-        ]
-      },
-      "KeyCheckoutSessionDto": {
-        "type": "object",
-        "properties": {
-          "checkoutUrl": {
-            "type": "string",
-            "description": "URL do Stripe Checkout para redirecionar o comprador",
-            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
-          },
-          "sessionId": {
-            "type": "string",
-            "description": "ID da sessão, usado depois em `/gateways/checkout/confirm-key-purchase`",
-            "example": "cs_test_a1B2c3d4E5f6"
-          },
-          "unitAmount": {
-            "type": "number",
-            "description": "Preço unitário **em centavos** que o servidor derivou do tier (`price_card`, ou `price` como fallback) **já com a taxa de 20% do mercado primário**. Exiba este valor — ele é a fonte da verdade, não o preço que o front calculou. Em reais, o mesmo número está em `accesses[].price_card_final` da campanha.",
-            "example": 9990
-          },
-          "totalAmount": {
-            "type": "number",
-            "description": "Total cobrado em centavos (`unitAmount` × `quantity`)",
-            "example": 19980
-          },
-          "quantity": {
-            "type": "number",
-            "description": "Quantidade de chaves na sessão",
-            "example": 2
-          },
-          "level": {
-            "type": "string",
-            "description": "Nível do tier comprado, como cadastrado na campanha",
-            "example": "VIP"
-          },
-          "available": {
-            "type": "number",
-            "description": "Chaves ainda disponíveis neste tier **depois** de descontar esta reserva. `null` = tier sem limite de estoque.",
-            "nullable": true,
-            "example": 37
-          },
-          "expiresInSeconds": {
-            "type": "number",
-            "description": "Por quanto tempo (em segundos) esta sessão segura o estoque. Passado o prazo sem pagamento, as chaves voltam para o tier e o link deixa de valer.",
-            "example": 1800
-          }
-        },
-        "required": [
-          "checkoutUrl",
-          "sessionId",
-          "unitAmount",
-          "totalAmount",
-          "quantity",
-          "level",
-          "available",
-          "expiresInSeconds"
         ]
       },
       "KeyPurchaseConfirmationDto": {
@@ -11544,6 +11628,80 @@
           "chainStatus"
         ]
       },
+      "KeyCheckoutSessionDto": {
+        "type": "object",
+        "properties": {
+          "checkoutUrl": {
+            "type": "string",
+            "description": "URL do Stripe Checkout para redirecionar o comprador. **Ausente** quando não houve cobrança externa a fazer — ou seja, quando `shortfall` é `0` (o saldo cobriu tudo) ou quando a diferença foi paga por `pix_simulated`: nesses casos a compra já foi liquidada neste request e vem em `purchase`.",
+            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "ID da sessão, usado depois em `/gateways/checkout/confirm-key-purchase`. Ausente nos mesmos casos que `checkoutUrl` — sem sessão, não há o que confirmar.",
+            "example": "cs_test_a1B2c3d4E5f6"
+          },
+          "unitAmount": {
+            "type": "number",
+            "description": "Preço unitário **em centavos** que o servidor derivou do tier (`price_card`, ou `price` como fallback) **já com a taxa de 20% do mercado primário**. Exiba este valor — ele é a fonte da verdade, não o preço que o front calculou. Em reais, o mesmo número está em `accesses[].price_card_final` da campanha.",
+            "example": 9990
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total cobrado em centavos (`unitAmount` × `quantity`)",
+            "example": 19980
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantidade de chaves na sessão",
+            "example": 2
+          },
+          "level": {
+            "type": "string",
+            "description": "Nível do tier comprado, como cadastrado na campanha",
+            "example": "VIP"
+          },
+          "available": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis neste tier **depois** de descontar esta reserva. `null` = tier sem limite de estoque.",
+            "nullable": true,
+            "example": 37
+          },
+          "expiresInSeconds": {
+            "type": "number",
+            "description": "Por quanto tempo (em segundos) esta sessão segura o estoque. Passado o prazo sem pagamento, as chaves voltam para o tier e o link deixa de valer.",
+            "example": 1800
+          },
+          "creditAmount": {
+            "type": "number",
+            "description": "Quanto do `totalAmount` sai do SALDO da plataforma, em centavos. `0` quando `useCredits` não foi pedido ou o saldo estava zerado. O valor fica retido enquanto o checkout está aberto e é debitado na confirmação.",
+            "example": 3000
+          },
+          "shortfall": {
+            "type": "number",
+            "description": "Quanto falta para fechar o `totalAmount` depois do saldo, em centavos — é exatamente o que será cobrado no método externo. Sempre recalculado no servidor. `0` significa que o saldo cobriu a compra inteira e não há cobrança nenhuma a fazer.",
+            "example": 6990
+          },
+          "purchase": {
+            "description": "Compra JÁ LIQUIDADA neste request — presente somente quando não houve cobrança externa (saldo cobriu tudo, ou diferença paga por `pix_simulated`). Quando vem preenchido, não chame o confirm: a chave já existe.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KeyPurchaseConfirmationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "unitAmount",
+          "totalAmount",
+          "quantity",
+          "level",
+          "available",
+          "expiresInSeconds",
+          "creditAmount",
+          "shortfall"
+        ]
+      },
       "OfferFundingCheckoutDto": {
         "type": "object",
         "properties": {
@@ -11558,8 +11716,10 @@
           },
           "expiresInDays": {
             "type": "number",
-            "description": "Validade da oferta em dias",
-            "example": 7
+            "description": "Validade da oferta em dias (1 a 30)",
+            "example": 7,
+            "minimum": 1,
+            "maximum": 30
           },
           "successUrl": {
             "type": "string",
@@ -11580,29 +11740,6 @@
           "expiresInDays",
           "successUrl",
           "cancelUrl"
-        ]
-      },
-      "OfferFundingCheckoutSessionDto": {
-        "type": "object",
-        "properties": {
-          "shortfall": {
-            "type": "number",
-            "description": "Diferença em centavos entre o preço da oferta e o saldo disponível. `0` = cabe no saldo: não há checkout, crie a oferta direto em `POST /marketplace/offers`.",
-            "example": 2500
-          },
-          "checkoutUrl": {
-            "type": "string",
-            "description": "URL do Stripe Checkout. Ausente quando `shortfall = 0`.",
-            "example": "https://checkout.stripe.com/c/pay/cs_test_a1B2c3..."
-          },
-          "sessionId": {
-            "type": "string",
-            "description": "ID da sessão. Ausente quando `shortfall = 0`.",
-            "example": "cs_test_a1B2c3d4E5f6"
-          }
-        },
-        "required": [
-          "shortfall"
         ]
       },
       "MarketplaceOffer": {
@@ -11658,7 +11795,7 @@
           },
           "status": {
             "type": "string",
-            "description": "Status da oferta",
+            "description": "Status da oferta. Nas listagens (`/marketplace/offers/sent|received`) uma oferta ainda `pending`/`countered` cujo `expiresAt` já passou é APRESENTADA como `expired` antes de a varredura persistir a transição — a transição real (com o destravamento do crédito) é feita pela varredura ou por `POST /marketplace/offers/expire-due`.",
             "enum": [
               "pending",
               "countered",
@@ -11671,7 +11808,7 @@
           "expiresAt": {
             "format": "date-time",
             "type": "string",
-            "description": "Data/hora de expiração da oferta"
+            "description": "Data/hora de expiração da oferta (instante absoluto). Vem de `expiresInDays` ou, em homologação, de `expiresInMinutes` — a coluna guarda o instante, não a duração."
           },
           "lockCreditTxId": {
             "type": "string",
@@ -11680,17 +11817,17 @@
           },
           "stripeFundedAmount": {
             "type": "number",
-            "description": "Parcela do price comprada via Stripe especificamente para financiar ESTA oferta (centavos). 0 quando coberta pelo saldo pré-existente. É o valor estornado no cartão quando a oferta é recusada/expira/cancelada.",
+            "description": "Parcela do `price` que foi FINANCIADA para esta oferta (centavos), por qualquer trilho — `0` quando o saldo pré-existente cobria tudo. **O nome da coluna é histórico**: hoje ela guarda tanto o valor pago no cartão (trilho legado) quanto o do PIX. Qual trilho foi está no `provider` da transação apontada por `fundingCreditTxId`. É o valor devolvido quando a oferta é recusada, expira ou é cancelada.",
             "default": 0
           },
           "fundingCreditTxId": {
             "type": "string",
-            "description": "ID da CreditTransaction (type=add, provider=stripe) que financiou a parcela Stripe. Alvo do refundStripe no release.",
+            "description": "ID da CreditTransaction (`type=add`) que financiou a diferença. O `provider` dela é a fonte de verdade do trilho e decide como o release devolve o valor: `stripe` → estorno real no cartão (`refundStripe`), `pix_simulated` → reversão interna do crédito cunhado.",
             "nullable": true
           },
           "fundingSessionId": {
             "type": "string",
-            "description": "sessionId do checkout Stripe que financiou a oferta (idempotência na confirmação/webhook).",
+            "description": "Chave de idempotência do financiamento: `sessionId` do checkout Stripe (trilho legado) ou `pixsim:`idempotencyKey`` no PIX simulado. Índice único parcial — é o que faz um reenvio devolver a mesma oferta em vez de financiar de novo.",
             "nullable": true
           },
           "acceptedAt": {
@@ -12422,6 +12559,18 @@
           "accessId": {
             "type": "string",
             "description": "ID do tier de acesso (chave) comprado"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Como a compra foi paga, gravado no memo: `stripe_direct`, `credits`, `stripe_credits` (híbrido) ou `pix_simulated`. Omitido, é derivado da presença de `stripeSessionId`."
+          },
+          "cardAmount": {
+            "type": "number",
+            "description": "Parcela cobrada FORA do saldo (cartão/PIX), em centavos. Só em compra híbrida — é o teto do que pode voltar ao cartão num cancelamento."
+          },
+          "creditAmount": {
+            "type": "number",
+            "description": "Parcela paga com saldo da plataforma, em centavos. Só em compra híbrida."
           }
         },
         "required": [
@@ -13198,14 +13347,19 @@
           },
           "expiresInDays": {
             "type": "number",
-            "description": "Validade da proposta em dias (1 a 30)",
+            "description": "Validade da proposta em dias (1 a 30). Obrigatório, exceto quando `expiresInMinutes` é enviado — exatamente um dos dois.",
             "minimum": 1,
             "maximum": 30
+          },
+          "expiresInMinutes": {
+            "type": "number",
+            "description": "Validade da proposta em MINUTOS (1 a 60). Só aceito em homologação (`OFFER_EXPIRY_MINUTES_ENABLED=true`) para testar a expiração; em produção responde 400. Mutuamente exclusivo com `expiresInDays`.",
+            "minimum": 1,
+            "maximum": 60
           }
         },
         "required": [
-          "price",
-          "expiresInDays"
+          "price"
         ]
       },
       "CreateOfferDto": {
@@ -13221,15 +13375,217 @@
           },
           "expiresInDays": {
             "type": "number",
-            "description": "Validade da oferta em dias (1 a 30)",
+            "description": "Validade da oferta em dias (1 a 30). Obrigatório, exceto quando `expiresInMinutes` é enviado — exatamente um dos dois.",
             "minimum": 1,
             "maximum": 30
+          },
+          "expiresInMinutes": {
+            "type": "number",
+            "description": "Validade da oferta em MINUTOS (1 a 60). Só aceito em homologação (`OFFER_EXPIRY_MINUTES_ENABLED=true`) para testar a expiração; em produção responde 400. Mutuamente exclusivo com `expiresInDays`.",
+            "minimum": 1,
+            "maximum": 60
           }
         },
         "required": [
           "listingId",
-          "price",
-          "expiresInDays"
+          "price"
+        ]
+      },
+      "CreatePixSimulatedOfferDto": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor TOTAL da oferta em centavos (BRL). A parte que não couber no saldo disponível é paga pelo PIX simulado."
+          },
+          "expiresInDays": {
+            "type": "number",
+            "description": "Validade da oferta em dias (1 a 30). Exatamente um: dias ou minutos.",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "expiresInMinutes": {
+            "type": "number",
+            "description": "Validade da oferta em MINUTOS (1 a 60). Só aceito em homologação; em produção responde 400.",
+            "minimum": 1,
+            "maximum": 60
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "Chave de idempotência do cliente. Reenviar a mesma chave devolve a oferta já criada (`reused: true`) em vez de criar outra e cunhar crédito de novo. Recomendado.",
+            "minLength": 8,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "listingId",
+          "price"
+        ]
+      },
+      "PixSimulatedOfferResultDto": {
+        "type": "object",
+        "properties": {
+          "offer": {
+            "description": "A oferta criada (ou a já existente, em replay)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceOffer"
+              }
+            ]
+          },
+          "shortfall": {
+            "type": "number",
+            "description": "Quanto o PIX simulado cobriu, em CENTAVOS — a diferença entre o valor da oferta e o saldo disponível, recalculada no servidor. `0` quando o saldo já cobria tudo (nesse caso nada foi cunhado e `fundingCreditTxId` é `null`).",
+            "example": 2500
+          },
+          "fundedFromBalance": {
+            "type": "number",
+            "description": "Quanto saiu do saldo que o comprador já tinha (`price - shortfall`)",
+            "example": 5500
+          },
+          "simulated": {
+            "type": "boolean",
+            "description": "Sempre `true`. Nenhuma cobrança real foi feita: o crédito foi cunhado pela plataforma em ambiente de teste.",
+            "example": true
+          },
+          "fundingCreditTxId": {
+            "type": "string",
+            "description": "ID da transação de crédito cunhada (`provider: pix_simulated`). `null` quando não houve diferença.",
+            "nullable": true
+          },
+          "reused": {
+            "type": "boolean",
+            "description": "`true` quando esta `idempotencyKey` já havia criado a oferta e nada novo foi cunhado.",
+            "example": false
+          }
+        },
+        "required": [
+          "offer",
+          "shortfall",
+          "fundedFromBalance",
+          "simulated",
+          "reused"
+        ]
+      },
+      "OfferCapabilityDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Se o recurso pode ser usado AGORA. Quando `false`, renderize a opção visível porém desabilitada e mostre `unavailableReason` — mesma regra dos meios de reembolso.",
+            "example": true
+          },
+          "unavailableReason": {
+            "type": "string",
+            "description": "Por que está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "ShortExpiryCapabilityDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Se o recurso pode ser usado AGORA. Quando `false`, renderize a opção visível porém desabilitada e mostre `unavailableReason` — mesma regra dos meios de reembolso.",
+            "example": true
+          },
+          "unavailableReason": {
+            "type": "string",
+            "description": "Por que está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
+            "nullable": true,
+            "example": null
+          },
+          "maxMinutes": {
+            "type": "number",
+            "description": "Teto de minutos aceito em `expiresInMinutes` (60).",
+            "example": 60
+          }
+        },
+        "required": [
+          "enabled",
+          "maxMinutes"
+        ]
+      },
+      "OfferCapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "pixSimulatedFunding": {
+            "description": "Pagamento da diferença por PIX SIMULADO (`POST /marketplace/offers/pix-simulated`). Sem gateway e sem cobrança real — só existe em homologação.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OfferCapabilityDto"
+              }
+            ]
+          },
+          "cardFunding": {
+            "description": "Pagamento da diferença por CARTÃO. Desativado por decisão de produto: cartão é do mercado primário, crédito é do P2P. Sempre `enabled: false`.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OfferCapabilityDto"
+              }
+            ]
+          },
+          "shortExpiry": {
+            "description": "Validade em minutos, para testar a expiração sem esperar 30 dias. Só existe em homologação.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShortExpiryCapabilityDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "pixSimulatedFunding",
+          "cardFunding",
+          "shortExpiry"
+        ]
+      },
+      "OfferSweepDto": {
+        "type": "object",
+        "properties": {
+          "scanned": {
+            "type": "number",
+            "description": "Quantas ofertas vencidas foram examinadas nesta passada",
+            "example": 3
+          },
+          "expired": {
+            "type": "number",
+            "description": "Quantas foram expiradas com sucesso (crédito destravado)",
+            "example": 3
+          },
+          "failed": {
+            "type": "number",
+            "description": "Quantas falharam e continuam vivas para a próxima passada",
+            "example": 0
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "`true` quando outra execução da varredura já estava rodando e esta desistiu na hora. Não é erro: a trava é o que impede duas passadas de destravarem o mesmo crédito.",
+            "example": false
+          },
+          "offerIds": {
+            "description": "IDs das ofertas expiradas nesta passada",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "scanned",
+          "expired",
+          "failed",
+          "skipped",
+          "offerIds"
         ]
       },
       "UpdateOfferDto": {
@@ -13244,6 +13600,12 @@
             "description": "Nova validade da oferta em dias (1 a 30)",
             "minimum": 1,
             "maximum": 30
+          },
+          "expiresInMinutes": {
+            "type": "number",
+            "description": "Nova validade da oferta em MINUTOS (1 a 60). Só aceito em homologação (`OFFER_EXPIRY_MINUTES_ENABLED=true`); em produção responde 400. Mutuamente exclusivo com `expiresInDays`.",
+            "minimum": 1,
+            "maximum": 60
           }
         }
       },
@@ -13684,7 +14046,7 @@
           },
           "eligibilityReason": {
             "type": "string",
-            "description": "Por que este item não pode voltar ao cartão (`resold_p2p`, `paid_with_credits`, `no_payment_intent`). `null` quando pode.",
+            "description": "Por que este item não pode voltar ao cartão (`resold_p2p`, `paid_with_credits`, `partially_paid_with_credits`, `no_payment_intent`). `null` quando pode.",
             "nullable": true
           },
           "settlement": {
