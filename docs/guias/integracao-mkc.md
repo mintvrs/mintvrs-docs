@@ -137,6 +137,9 @@ com `accessId: null` — não somem da conta.
 ## Ranking dos Usuários (USER_RANKING)
 **`GET /ranking/users?page=&limit=`** (Bearer) — **uma chamada alimenta a aba inteira e o card**.
 
+`limit` é **opcional**: omitido, a lista vem com **5 itens**. Para listar mais, mande o valor que a
+tela quiser — `?limit=10` (aceita de 1 a 100) — sem precisar de mudança no backend.
+
 ```json
 {
   "me":     { "position": 160, "keysCount": 72, "page": 32, "totalParticipants": 412 },
