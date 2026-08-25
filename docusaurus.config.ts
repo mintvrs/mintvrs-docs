@@ -3,6 +3,39 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 
+import path from 'path';
+
+/**
+ * Rota da página "Introduction" de um contrato de API.
+ *
+ * O id dessa página sai do `info.title` do spec (slugificado pelo
+ * docusaurus-plugin-openapi-docs), então é REGERADO a cada `gen-api-docs`:
+ * hardcodar a rota no rodapé é assinar um link quebrado no dia em que o título do
+ * spec mudar. Lemos do sidebar gerado — a MESMA fonte que o navbar consome via
+ * `sidebars.ts` —, então navbar e rodapé nunca divergem.
+ *
+ * `routeBasePath: '/'` faz a rota ser o próprio id com barra na frente.
+ */
+function apiIndexRoute(relPath: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const m = require(path.resolve(__dirname, relPath));
+  const data = m.default ?? m;
+  const items = (Array.isArray(data) ? data : (data.apisidebar ?? [])) as {
+    type?: string;
+    id?: string;
+  }[];
+  // O primeiro `doc` solto do sidebar é a Introduction (sidebar_position: 0);
+  // o resto vem agrupado em `category` por tag.
+  const intro = items.find((i) => i?.type === 'doc' && typeof i.id === 'string');
+  if (!intro?.id) {
+    throw new Error(
+      `Sidebar de API sem página de introdução: ${relPath}. ` +
+        'Rode `npm run gen-api-docs` antes do build.',
+    );
+  }
+  return `/${intro.id}`;
+}
+
 const config: Config = {
   title: 'MKClub Docs',
   tagline: 'Documentação da Plataforma de Crowdfunding com NFTs',
@@ -165,8 +198,14 @@ const config: Config = {
         {
           title: 'API Reference',
           items: [
-            { label: 'Admin Backend API', to: '/api/admin-backend' },
-            { label: 'Auth Service API', to: '/api/auth-service' },
+            {
+              label: 'Admin Backend API',
+              to: apiIndexRoute('./docs/api/admin-backend/sidebar'),
+            },
+            {
+              label: 'Auth Service API',
+              to: apiIndexRoute('./docs/api/auth-service/sidebar'),
+            },
           ],
         },
         {

@@ -47,4 +47,4 @@ flowchart TD
 | `POST` | `/auth/password/request-reset` | Solicitar reset de senha |
 | `POST` | `/auth/password/reset` | Confirmar reset com token |
 
-Veja a [referência completa da API Auth](/api/auth-service) para todos os detalhes e o playground interativo.
+Veja a [referência completa da API Auth](/api/auth-service/mintvrs-auth-service) para todos os detalhes e o playground interativo.
