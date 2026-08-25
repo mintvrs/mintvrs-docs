@@ -193,15 +193,15 @@
     },
     "/auth/users": {
       "get": {
-        "operationId": "listUsersByRole",
-        "summary": "Listar usuários por role ou por tenant",
-        "description": "Retorna id, email e name dos usuários com a role informada (SuperAdmin/Admin apenas). Usado no admin para dropdown \"Criar tenant para o Admin\". Alternativamente, filtra por tenantId (retorna só {id}) — liberado para SuperAdmin/Admin ou para o próprio dono do tenant (req.user.tenant_id === tenantId), usado internamente pelo admin-backend para notificações de nova campanha.",
+        "operationId": "listUsers",
+        "summary": "Listar/buscar usuários por role, tenant, e-mail ou ids",
+        "description": "Quatro modos, nesta ordem de precedência: `tenantId` (retorna só {id}, liberado para SuperAdmin/Admin ou para o próprio dono do tenant — usado pelo admin-backend no fan-out de nova campanha); `email` (busca exata, retorna {id, name, email, access_role} ou 404 — usado pelo painel para resolver o e-mail em id ao associar um membro a um tenant); `ids` (lista separada por vírgula, no máximo 100 UUIDs, mesma projeção do modo `email` — usado pelo admin-backend para enriquecer a lista de membros de um tenant); e `role` (retorna {id, email, name} de todos os usuários do papel). Os modos `email`, `ids` e `role` são restritos a SuperAdmin/Admin.",
         "parameters": [
           {
             "name": "role",
             "required": false,
             "in": "query",
-            "description": "Role para filtrar (ex: Admin, TenantAdmin)",
+            "description": "Role para filtrar (ex: Admin, Tenant)",
             "schema": {
               "type": "string"
             }
@@ -210,7 +210,25 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Tenant para filtrar (alternativo a role) — retorna só {id} de cada usuário",
+            "description": "Tenant para filtrar — retorna só {id} de cada usuário",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "required": false,
+            "in": "query",
+            "description": "E-mail exato — retorna um único {id, name, email, access_role} ou 404",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ids",
+            "required": false,
+            "in": "query",
+            "description": "UUIDs separados por vírgula (máx. 100) — retorna {id, name, email, access_role}",
             "schema": {
               "type": "string"
             }
@@ -218,7 +236,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de usuários (id, email, name — ou só id quando filtrado por tenantId)"
+            "description": "Lista de usuários, ou um único usuário no modo `email` (só {id} quando filtrado por tenantId)"
           },
           "401": {
             "description": "Token ausente ou inválido"
@@ -240,8 +258,8 @@
     "/auth/users/{id}/tenant": {
       "patch": {
         "operationId": "updateUserTenant",
-        "summary": "Vincular tenant a um usuário (SuperAdmin ou Admin)",
-        "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id. Para desvincular, envie `tenant_id: null` explicitamente — omitir o campo retorna 400. Cadastros novos já são vinculados automaticamente pela origem da requisição (TENANT_ORIGIN_MAP/DEFAULT_TENANT_ID); este endpoint é para correção manual.",
+        "summary": "Vincular tenant a um usuário (apenas SuperAdmin)",
+        "description": "Atualiza o tenant_id do usuário. Usado para vincular TenantAdmin ao tenant (ex.: tenant1@email.com ao tenant-1). No login o JWT incluirá esse tenant_id. Para desvincular, envie `tenant_id: null` explicitamente — omitir o campo retorna 400. Cadastros novos já são vinculados automaticamente pela origem da requisição (TENANT_ORIGIN_MAP/DEFAULT_TENANT_ID); este endpoint é para correção manual. Exclusivo do SuperAdmin: o auth não conhece a relação tenant → dono, então não tem como impedir que um Admin vincule um usuário a um tenant alheio. O caminho escopado para Admin vive no admin-backend, que conhece essa relação. Um usuário pode gerenciar mais de um tenant — `tenant_id` aqui é só o tenant \"casa\" (metadado informativo), não um vínculo exclusivo; a lista completa de tenants geridos vive na TenantMembership do admin-backend.",
         "parameters": [
           {
             "name": "id",
@@ -270,7 +288,7 @@
             "description": "Token ausente ou inválido"
           },
           "403": {
-            "description": "Apenas SuperAdmin ou Admin"
+            "description": "Apenas SuperAdmin"
           }
         },
         "tags": [
@@ -345,6 +363,47 @@
         ]
       }
     },
+    "/auth/password/change": {
+      "post": {
+        "operationId": "changePassword",
+        "summary": "Trocar a senha da própria conta",
+        "description": "Troca a senha do usuário autenticado conferindo a senha atual. Também é por aqui que a conta sai do estado de senha temporária (must_change_password). Reemite os tokens: o accessToken em uso ainda carrega a claim antiga, gravada no login.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha atualizada com sucesso — novo par de tokens já refletindo must_change_password=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente/inválido ou senha atual incorreta"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/auth/password/reset": {
       "post": {
         "operationId": "resetPassword",
@@ -377,7 +436,8 @@
     "/auth/users/tenant-admin": {
       "post": {
         "operationId": "createOrUpdateTenantAdmin",
-        "summary": "Criar ou atualizar usuário para TenantAdmin (apenas SuperAdmin)",
+        "summary": "Provisionar o TenantAdmin dono de um tenant (SuperAdmin ou Admin)",
+        "description": "Chamado pelo admin-backend ao criar um tenant, ou para associar um gestor a um tenant já existente. Conta nova: gera senha temporária e envia por e-mail. Conta existente: apenas promove a TenantAdmin, sem tocar na senha e sem enviar e-mail. Uma conta já gestora de outro tenant é aceita normalmente — um usuário pode gerenciar mais de um tenant; `tenant_id` aqui não é mais um vínculo exclusivo, é só o \"tenant casa\" da pessoa (preenchido se vazio, preservado se já houver um). A senha em claro nunca vem na resposta.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -391,13 +451,107 @@
         },
         "responses": {
           "200": {
-            "description": "Usuário atualizado com sucesso"
+            "description": "TenantAdmin provisionado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantAdminProvisionedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou Admin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/users/admin": {
+      "post": {
+        "operationId": "createOrPromoteAdmin",
+        "summary": "Provisionar um Admin B2B (apenas SuperAdmin)",
+        "description": "Cria a conta de um Admin (papel B2B, sem tenant — o escopo dele é `Tenant.ownerId`). Conta nova: gera senha temporária e envia por e-mail. Conta existente sem tenant: apenas promove a Admin, sem tocar na senha e sem enviar e-mail. Recusa e-mails de SuperAdmin e de contas já vinculadas a um tenant. A senha em claro nunca vem na resposta.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Admin provisionado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProvisionedDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Token ausente ou inválido"
           },
           "403": {
             "description": "Apenas SuperAdmin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/auth/users/{id}/reset-temporary-password": {
+      "post": {
+        "operationId": "resetTemporaryPassword",
+        "summary": "Regerar a senha temporária de um usuário (SuperAdmin ou Admin)",
+        "description": "Sustenta a ação \"Reenviar acesso\" do painel. Invalida a senha atual, gera uma nova senha temporária, volta a exigir a troca no próximo login e reenvia o e-mail. A senha em claro nunca vem na resposta.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Senha temporária regerada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantAdminProvisionedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou Admin"
           }
         },
         "tags": [
@@ -811,7 +965,7 @@
             "description": "Role de acesso",
             "enum": [
               "SuperAdmin",
-              "TenantAdmin",
+              "Tenant",
               "Admin",
               "User"
             ]
@@ -820,13 +974,19 @@
             "type": "string",
             "description": "ID do tenant (null para SuperAdmin)",
             "nullable": true
+          },
+          "must_change_password": {
+            "type": "boolean",
+            "description": "true quando a conta usa senha temporária e precisa definir uma nova antes de usar a plataforma.",
+            "example": false
           }
         },
         "required": [
           "userId",
           "email",
           "role",
-          "tenant_id"
+          "tenant_id",
+          "must_change_password"
         ]
       },
       "UpdateUserTenantDto": {
@@ -897,7 +1057,7 @@
             "description": "Role de acesso",
             "enum": [
               "SuperAdmin",
-              "TenantAdmin",
+              "Tenant",
               "Admin",
               "User"
             ]
@@ -928,6 +1088,25 @@
         },
         "required": [
           "email"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Senha atual (a senha temporária recebida por e-mail, no primeiro acesso)"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Nova senha (mín. 8 caracteres)",
+            "example": "NewStrongPassw0rd!",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
         ]
       },
       "ResetPasswordDto": {
@@ -972,6 +1151,99 @@
           "email",
           "name",
           "tenant_id"
+        ]
+      },
+      "TenantAdminProvisionedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do usuário (UUID)"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do TenantAdmin"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do TenantAdmin"
+          },
+          "tenant_id": {
+            "type": "string",
+            "description": "ID do tenant vinculado",
+            "nullable": true
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "true quando o e-mail com a senha temporária foi entregue. `false` quando a conta já existia (nenhuma senha é enviada) ou quando o envio falhou — a senha NUNCA vem na resposta.",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "tenant_id",
+          "emailSent"
+        ]
+      },
+      "CreateAdminDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email do Admin",
+            "example": "admin@empresa.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do Admin",
+            "example": "Admin B2B"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ]
+      },
+      "AdminProvisionedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do usuário (UUID)"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do Admin"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do Admin"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Papel atribuído",
+            "example": "Admin"
+          },
+          "tenant_id": {
+            "type": "string",
+            "description": "Sempre null — o Admin é B2B e tem escopo por `Tenant.ownerId`, não por tenant.",
+            "nullable": true
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "true quando o e-mail com a senha temporária foi entregue. `false` quando a conta já existia (nenhuma senha é enviada) ou quando o envio falhou — a senha NUNCA vem na resposta.",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "access_role",
+          "tenant_id",
+          "emailSent"
         ]
       },
       "VerifyIdentityDto": {

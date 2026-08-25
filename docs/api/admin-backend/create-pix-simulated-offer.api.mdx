@@ -1,0 +1,73 @@
+---
+id: create-pix-simulated-offer
+title: "[HOMOLOG] Ofertar pagando a diferença com PIX simulado (sem gateway)"
+description: "Cria a oferta pagando com PIX SIMULADO a diferença entre o valor ofertado e o saldo disponível. **Nenhuma cobrança real acontece**: não há gateway, redirect nem webhook — a requisição vai direto à fase final que o cartão alcançava depois do pagamento confirmado (credita a diferença e cria a oferta) e grava tudo numa transação só."
+sidebar_label: "[HOMOLOG] Ofertar pagando a diferença com PIX simulado (sem gateway)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[HOMOLOG] Ofertar pagando a diferença com PIX simulado (sem gateway)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/marketplace/offers/pix-simulated"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Cria a oferta pagando com PIX SIMULADO a diferença entre o valor ofertado e o saldo disponível. **Nenhuma cobrança real acontece**: não há gateway, redirect nem webhook — a requisição vai direto à fase final que o cartão alcançava depois do pagamento confirmado (credita a diferença e cria a oferta) e grava tudo numa transação só.
+
+A diferença é sempre recalculada no servidor, com a linha de saldo travada; o valor enviado pelo cliente não é usado. Se o saldo já cobre a oferta, `shortfall` volta `0`, nada é cunhado e a oferta é criada normalmente.
+
+Toda linha de ledger criada aqui nasce marcada (`provider: pix_simulated`, `metadata.simulated: true`) e é REVERTIDA quando a oferta é cancelada, recusada ou expira. Disponível apenas onde `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`; será substituído pelo trilho real (Asaas), de duas fases. Use `idempotencyKey` para que um reenvio devolva a mesma oferta (`reused: true`) em vez de cunhar de novo.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-pix-simulated-offer.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-pix-simulated-offer.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-pix-simulated-offer.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

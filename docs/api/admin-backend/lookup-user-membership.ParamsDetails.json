@@ -1,0 +1,1 @@
+{"parameters":[{"name":"userId","required":true,"in":"query","description":"ID do usuário no auth-service","schema":{"type":"string"}},{"name":"tenantId","required":true,"in":"query","description":"Tenant a que se quer associar","schema":{"type":"string"}}]}

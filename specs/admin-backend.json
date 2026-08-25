@@ -337,6 +337,155 @@
         ]
       }
     },
+    "/admins": {
+      "post": {
+        "description": "Cria a conta de um Admin no auth-service e envia a senha temporária por e-mail (troca obrigatória no primeiro login). Uma conta existente sem tenant é apenas promovida a Admin, sem tocar na senha e sem e-mail. O Admin não tem tenant: o escopo dele é `Tenant.ownerId`.",
+        "operationId": "createAdmin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Admin cadastrado com sucesso"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail pertence a um SuperAdmin ou a uma conta já vinculada a um tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cadastrar um Admin B2B (apenas SuperAdmin)",
+        "tags": [
+          "admins"
+        ]
+      },
+      "get": {
+        "operationId": "listAdmins",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de Admins (id, email, name)"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar os Admins B2B (apenas SuperAdmin)",
+        "tags": [
+          "admins"
+        ]
+      }
+    },
+    "/admins/{id}/resend-access": {
+      "post": {
+        "description": "Gera uma nova senha temporária para o Admin e reenvia o e-mail de acesso. A senha anterior deixa de funcionar e a troca volta a ser obrigatória no próximo login.",
+        "operationId": "resendAdminAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Novo acesso enviado"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reenviar acesso de um Admin (apenas SuperAdmin)",
+        "tags": [
+          "admins"
+        ]
+      }
+    },
     "/campaigns": {
       "post": {
         "operationId": "createCampaign",
@@ -869,7 +1018,7 @@
     },
     "/campaigns/{campaignId}/featured": {
       "patch": {
-        "description": "Define o destaque da campanha no carrossel hero (consumido por GET /campaigns/featured). Permissões: SuperAdmin, dono da campanha, Admin dono do tenant ou TenantAdmin do tenant. Regras: `featured: true` exige campanha com status Active (400 caso contrário); `featured: false` é sempre permitido e zera a ordem. `order` define a posição no carrossel (crescente; sem ordem vai para o fim). Campanha destacada que sair de Active some do carrossel automaticamente, mas mantém a marcação para quando for reativada.",
+        "description": "Define o destaque da campanha no carrossel hero (consumido por GET /campaigns/featured). Permissões: SuperAdmin, dono da campanha, Admin dono do tenant ou Tenant do tenant. Regras: `featured: true` exige campanha com status Active (400 caso contrário); `featured: false` é sempre permitido e zera a ordem. `order` define a posição no carrossel (crescente; sem ordem vai para o fim). Campanha destacada que sair de Active some do carrossel automaticamente, mas mantém a marcação para quando for reativada.",
         "operationId": "setFeatured",
         "parameters": [
           {
@@ -1010,7 +1159,7 @@
         ]
       },
       "put": {
-        "description": "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin). Botões `type: PROFILE` não têm arquivo: seus dados vão em `fields` (pares `{ id, label, value }`), e a ordem do array é a ordem exibida. Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`, `type`, `fileUrl`, `fileName`, `fields`) faz a requisição falhar com 400.",
+        "description": "Substitui TODA a lista de botões da campanha (semântica de replace, ideal para o editor visual): envie o array completo — botões omitidos são removidos, e um array vazio limpa o layout. Cada botão exige `id` (nome do ícone), `x` e `y` (0-100). Retorna o layout salvo. Apenas o dono da campanha (ou Admin/Tenant/SuperAdmin). Botões `type: PROFILE` não têm arquivo: seus dados vão em `fields` (pares `{ id, label, value }`), e a ordem do array é a ordem exibida. Atenção: o ValidationPipe usa `forbidNonWhitelisted` — qualquer campo fora do contrato (`id`, `x`, `y`, `enabled`, `width`, `height`, `order`, `type`, `fileUrl`, `fileName`, `fields`) faz a requisição falhar com 400.",
         "operationId": "replaceButtons",
         "parameters": [
           {
@@ -1099,7 +1248,7 @@
     },
     "/campaigns/{campaignId}/button-layout-image": {
       "post": {
-        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Apenas o dono da campanha (ou Admin/TenantAdmin/SuperAdmin).\n\n**Resolução exigida: exatamente 2700x1080 (5:2), em webp, png ou jpg** — é o slot \"Fotos 05\" do guia de mídia (ilustração de fundo de ensaio). Ver GET /media/specs.",
+        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Apenas o dono da campanha (ou Admin/Tenant/SuperAdmin).\n\n**Resolução exigida: exatamente 2700x1080 (5:2), em webp, png ou jpg** — é o slot \"Fotos 05\" do guia de mídia (ilustração de fundo de ensaio). Ver GET /media/specs.",
         "operationId": "setButtonLayoutImage",
         "parameters": [
           {
@@ -1864,7 +2013,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -1979,7 +2128,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2037,7 +2186,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2095,7 +2244,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2154,7 +2303,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2240,7 +2389,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2326,7 +2475,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2412,7 +2561,7 @@
             "name": "tenantId",
             "required": false,
             "in": "query",
-            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. TenantAdmin e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
             "schema": {}
           }
         ],
@@ -2610,7 +2759,7 @@
             "description": "Não autorizado"
           },
           "403": {
-            "description": "Apenas SuperAdmin ou TenantAdmin"
+            "description": "Apenas SuperAdmin ou Tenant"
           }
         },
         "security": [
@@ -2825,7 +2974,7 @@
             "description": "Não autorizado"
           },
           "403": {
-            "description": "Apenas SuperAdmin ou TenantAdmin"
+            "description": "Apenas SuperAdmin ou Tenant"
           }
         },
         "security": [
@@ -2861,7 +3010,7 @@
             "description": "Não autorizado"
           },
           "403": {
-            "description": "Apenas SuperAdmin ou TenantAdmin"
+            "description": "Apenas SuperAdmin ou Tenant"
           }
         },
         "security": [
@@ -3662,6 +3811,69 @@
           }
         ],
         "summary": "Resumo das chaves que eu possuo (total + por campanha)",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/transactions/me/supported-essays": {
+      "get": {
+        "description": "Aba \"Ensaios Apoiados\". Mesma posse de `GET /transactions/me/summary`, com o eixo virado: lá cada CHAVE é uma linha, aqui cada ENSAIO é uma linha e as chaves viram `keysOwned`. Cada item traz `campaign` (capa, nome/profissão/foto da modelo, tema, `fundingPercentage`, `currentKeys`/`totalKeys` e `daysRemaining`) e `keyTypeLabel` pronto para o campo \"Tipo de chave\" — o card renderiza sem nenhum fan-out. Escopo do próprio usuário: o dono vem do token, não há como consultar outro. Ordenado da compra mais recente para a mais antiga.",
+        "operationId": "mySupportedEssays",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por estado da campanha. `ongoing` = Active/Scheduled, `ended` = Ended/Inactive/Cancelled, `all` (padrão) = tudo que o usuário apoiou. Ensaio sem campanha resolvível (mock/legado) só aparece em `all`.",
+            "schema": {
+              "enum": [
+                "ongoing",
+                "ended",
+                "all"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MySupportedEssaysDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`status` fora do enum",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ensaios que eu apoiei (um item por campanha)",
         "tags": [
           "transactions"
         ]
@@ -6886,6 +7098,84 @@
         ]
       }
     },
+    "/tenants/mine": {
+      "get": {
+        "description": "Serve as três roles. `scope: \"all\"` = SuperAdmin (visão global, nenhum tenant selecionado significa \"todos\"); `scope: \"membership\"` = o conjunto vem das memberships, e lista vazia significa nenhum acesso.",
+        "operationId": "listMyTenants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tenants do caller e o escopo dele"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tenants em que o caller pode agir",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/user-membership": {
+      "get": {
+        "description": "Um usuário pertence a no máximo um tenant, com o perfil `Admin` de fora (é B2B e acumula tenants). As telas de associação consultam aqui para barrar antes de confirmar, em vez de deixar o 409 estourar depois — `blocked` é a resposta, o resto é para a mensagem.",
+        "operationId": "lookupUserMembership",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "query",
+            "description": "ID do usuário no auth-service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "query",
+            "description": "Tenant a que se quer associar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Situação da associação pretendida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMembershipLookupDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A associação deste usuário a este tenant seria aceita?",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
     "/tenants/slug/{slug}": {
       "get": {
         "operationId": "findBySlug",
@@ -6989,6 +7279,16 @@
           "200": {
             "description": "Tenant atualizado"
           },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Tenant nao encontrado",
             "content": {
@@ -7005,7 +7305,7 @@
             "bearer": []
           }
         ],
-        "summary": "Atualizar tenant (SuperAdmin, dono Admin, ou TenantAdmin do proprio tenant — apenas campaignConfig)",
+        "summary": "Atualizar tenant (SuperAdmin, dono Admin, ou Tenant do proprio tenant — apenas campaignConfig)",
         "tags": [
           "tenants"
         ]
@@ -7025,6 +7325,16 @@
         "responses": {
           "200": {
             "description": "Tenant removido"
+          },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "Tenant nao encontrado",
@@ -7116,6 +7426,355 @@
         ]
       }
     },
+    "/tenants/{id}/manager": {
+      "post": {
+        "description": "Passo 2 do wizard de criação de tenant, e caminho para completar um tenant que nasceu sem gestor. Busca a conta pelo e-mail no auth-service: se existir, promove para Tenant e vincula; senão, cria com o `name` informado e envia a senha temporária por e-mail.",
+        "operationId": "attachTenantManager",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gestor associado ao tenant"
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/members": {
+      "get": {
+        "operationId": "listTenantMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de memberships com nome e e-mail resolvidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantMemberDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membros de um tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "post": {
+        "description": "Conceder `owner` (propriedade B2B) é exclusivo do SuperAdmin. O Admin associa gestores (`manager`), e o primeiro manager do tenant vira o gestor automaticamente.",
+        "operationId": "addTenantMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Membership criada"
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant, ou Admin tentando conceder propriedade",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar usuário ao tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/members/{userId}": {
+      "delete": {
+        "description": "Se quem sai era o gestor, o membro mais antigo restante assume na mesma transação; não sobrando nenhum, o tenant fica sem gestor.",
+        "operationId": "removeTenantMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Membership removida"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Desassociar usuário do tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/gestor": {
+      "put": {
+        "description": "Transfere a condição de gestor para outro membro, na mesma transação que a remove do atual. Só um membro com papel `manager` pode ser gestor — `owner` é propriedade, não gestão.",
+        "operationId": "setTenantGestor",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetGestorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Membership do novo gestor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantMemberDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant inexistente, ou usuário que não é membro dele",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Definir o gestor do tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/admin": {
+      "put": {
+        "description": "Substitui o Admin atual do tenant, se houver — um tenant tem no máximo um Admin. A conta precisa ter perfil `Admin` no auth-service (400 caso contrário).",
+        "operationId": "setTenantAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTenantAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Membership do novo Admin (dono)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantMemberDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/resend-access": {
+      "post": {
+        "description": "Gera uma nova senha temporária para o Tenant do tenant e reenvia o e-mail de acesso. A senha anterior deixa de funcionar e a troca volta a ser obrigatória no próximo login.",
+        "operationId": "resendTenantAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Novo acesso enviado"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reenviar acesso do tenant (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
     "/tenants/{id}/regenerate-keys": {
       "post": {
         "operationId": "regenerateKeys",
@@ -7132,6 +7791,16 @@
         "responses": {
           "200": {
             "description": "Novas credenciais geradas"
+          },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "Tenant nao encontrado",
@@ -7320,7 +7989,7 @@
             }
           },
           "403": {
-            "description": "Apenas TenantAdmin, Admin ou SuperAdmin",
+            "description": "Apenas Tenant, Admin ou SuperAdmin",
             "content": {
               "application/json": {
                 "schema": {
@@ -7379,7 +8048,7 @@
             }
           },
           "403": {
-            "description": "Apenas TenantAdmin, Admin ou SuperAdmin",
+            "description": "Apenas Tenant, Admin ou SuperAdmin",
             "content": {
               "application/json": {
                 "schema": {
@@ -7752,7 +8421,7 @@
             }
           },
           "403": {
-            "description": "Apenas TenantAdmin ou SuperAdmin",
+            "description": "Apenas Tenant ou SuperAdmin",
             "content": {
               "application/json": {
                 "schema": {
@@ -7929,7 +8598,7 @@
     },
     "/ranking/users": {
       "get": {
-        "description": "Uma chamada alimenta os três pedaços da tela: `me` (card \"Posição no Ranking\"), `podium` (1º/2º/3º) e `items` (lista paginada).\n\n**`me.position` é exata**, mesmo que o usuário esteja fora da página pedida — não depende do `limit`. Use `me.page` para abrir a lista já na posição dele.\n\nEscopado ao tenant do token. Conta chaves com transação `completed`, então estorno sai do ranking e a revenda P2P transfere a posição para o novo dono — é o mesmo número de `totalKeys` em `GET /transactions/me/summary`.\n\nNomes são mascarados (primeiro nome, primeira letra + asteriscos). Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
+        "description": "Uma chamada alimenta os três pedaços da tela: `me` (card \"Posição no Ranking\"), `podium` (1º/2º/3º) e `items` (lista paginada).\n\n**`me.position` é exata**, mesmo que o usuário esteja fora da página pedida — não depende do `limit`. Use `me.page` para abrir a lista já na posição dele.\n\nSem `limit`, a lista vem com **5 itens**. O parâmetro continua aberto até 100: `?limit=10` já funciona, não precisa de mudança no backend para listar mais.\n\nEscopado ao tenant do token. Conta chaves com transação `completed`, então estorno sai do ranking e a revenda P2P transfere a posição para o novo dono — é o mesmo número de `totalKeys` em `GET /transactions/me/summary`.\n\nNomes são mascarados (primeiro nome, primeira letra + asteriscos). Só os parâmetros documentados são aceitos: qualquer outro resulta em 400.",
         "operationId": "listUserRanking",
         "parameters": [
           {
@@ -7947,11 +8616,11 @@
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Itens por página (1–100)",
+            "description": "Itens por página. **Opcional**: omitido, a lista vem com 5 — mande `?limit=10` (ou qualquer valor de 1 a 100) para listar mais sem precisar de mudança no backend. Enviar `?limit=` vazio vira NaN e resulta em 400.\n\nO `limit` desta chamada é o mesmo que define `me.page`: para abrir a lista já na posição do usuário, chame com o `limit` que a tela vai usar.",
             "schema": {
               "minimum": 1,
               "maximum": 100,
-              "default": 10,
+              "default": 5,
               "type": "number"
             }
           }
@@ -8074,6 +8743,10 @@
     "contact": {}
   },
   "tags": [
+    {
+      "name": "admins",
+      "description": "Cadastro dos Admins B2B (SuperAdmin). Criar, listar e reenviar acesso."
+    },
     {
       "name": "tenants",
       "description": "Gestão de tenants (Super Admin). Criar, listar, dashboard, regenerar chaves."
@@ -8207,7 +8880,7 @@
             "description": "Papel de acesso",
             "enum": [
               "SuperAdmin",
-              "TenantAdmin",
+              "Tenant",
               "Admin",
               "User",
               "Star"
@@ -8259,7 +8932,7 @@
             "description": "Role de acesso",
             "enum": [
               "SuperAdmin",
-              "TenantAdmin",
+              "Tenant",
               "Admin",
               "User",
               "Star"
@@ -8327,7 +9000,7 @@
             "description": "Papel de acesso",
             "enum": [
               "SuperAdmin",
-              "TenantAdmin",
+              "Tenant",
               "Admin",
               "User",
               "Star"
@@ -8346,6 +9019,25 @@
             "nullable": true
           }
         }
+      },
+      "CreateAdminDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do Admin",
+            "example": "Admin B2B"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email do Admin",
+            "example": "admin@empresa.com"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
       },
       "CreateAccessItemDto": {
         "type": "object",
@@ -12500,6 +13192,247 @@
           "byCampaign"
         ]
       },
+      "SupportedEssayCampaignDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "example": "Campanha de Lançamento"
+          },
+          "essayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico (tema exibido no card)",
+            "example": "A Intimidade como Arte",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Categoria da campanha",
+            "example": "Boudoir",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da campanha",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled",
+              "Cancelled"
+            ],
+            "example": "Active"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "URL servível da imagem de capa isolada do card (cover_image). Pode ser null quando a campanha ainda não tem capa.",
+            "example": "https://s3.us-east-1.amazonaws.com/bucket/campaigns/`id`/cover-123.jpg",
+            "nullable": true
+          },
+          "ariaLabel": {
+            "type": "string",
+            "description": "Texto alternativo de acessibilidade (hero_image_alt da campanha)",
+            "example": "Retrato da modelo em estúdio com fundo escuro",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
+            "example": "Lupita Abayomi",
+            "nullable": true
+          },
+          "modelProfession": {
+            "type": "string",
+            "description": "Profissão da modelo (custom_fields.modelProfession do main_star)",
+            "example": "Atriz e modelo",
+            "nullable": true
+          },
+          "modelProfilePhoto": {
+            "type": "string",
+            "description": "URL servível da foto de perfil da modelo (main_star.profile_photo). Null quando a campanha não tem artista principal ou o cadastro está sem foto.",
+            "example": "https://s3.us-east-1.amazonaws.com/public.homolog.mintvrs.com/main-stars/1785001484215.png",
+            "nullable": true
+          },
+          "fundingPercentage": {
+            "type": "number",
+            "description": "% de financiamento com base em chaves (currentKeys/totalKeys × 100, arredondado)",
+            "example": 70
+          },
+          "currentKeys": {
+            "type": "number",
+            "description": "Chaves vendidas — soma de accesses.sold",
+            "example": 630
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves — soma de accesses.quantity",
+            "example": 900
+          },
+          "keysRemaining": {
+            "type": "number",
+            "description": "Chaves ainda disponíveis (totalKeys − currentKeys). Não desconta as chaves seguradas por checkouts em aberto, então é o número \"de vitrine\": o checkout pode recusar uma compra que este contador ainda mostrava como disponível.",
+            "example": 270
+          },
+          "isSoldOut": {
+            "type": "boolean",
+            "description": "Campanha esgotada: todas as chaves já foram vendidas. Derivado do estoque das tiers em tempo de leitura — `status` continua sendo o estado editorial gravado pelo admin e NÃO vira \"SoldOut\". Campanha de estoque ilimitado (tier com `quantity` null) nunca fica esgotada.",
+            "example": false
+          },
+          "saleStatus": {
+            "type": "string",
+            "description": "A mesma informação de `isSoldOut` como enum, para o front chavear a renderização. `sold_out` = chaves esgotadas com o prazo AINDA correndo; encerramento por prazo continua sendo `status: Ended`.",
+            "enum": [
+              "available",
+              "sold_out"
+            ],
+            "example": "available"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Data de término (YYYY-MM-DD)",
+            "example": "2026-08-15",
+            "nullable": true
+          },
+          "daysRemaining": {
+            "type": "number",
+            "description": "Dias restantes até end_date (mínimo 0; null quando a campanha não tem end_date)",
+            "example": 15,
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de encerramento (ended_at) — preenchida nas campanhas de GET /campaigns/ended",
+            "nullable": true
+          },
+          "keyImage": {
+            "type": "string",
+            "description": "URL servível da arte de preview da CHAVE (key_image)",
+            "nullable": true
+          },
+          "nftContractAddress": {
+            "type": "string",
+            "description": "Endereço do contrato NFT da campanha. `null` enquanto a chave não foi publicada on-chain.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "essayTitle",
+          "category",
+          "status",
+          "coverImage",
+          "ariaLabel",
+          "modelName",
+          "modelProfession",
+          "modelProfilePhoto",
+          "fundingPercentage",
+          "currentKeys",
+          "totalKeys",
+          "keysRemaining",
+          "isSoldOut",
+          "saleStatus",
+          "endDate",
+          "daysRemaining",
+          "completionDate",
+          "keyImage",
+          "nftContractAddress"
+        ]
+      },
+      "SupportedEssayDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha apoiada"
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "nullable": true
+          },
+          "keysOwned": {
+            "type": "number",
+            "description": "Quantas chaves deste ensaio o usuário possui",
+            "example": 2
+          },
+          "keyTypeLabel": {
+            "type": "string",
+            "description": "Rótulo pronto para o campo \"Tipo de chave\" do card: título do tipo de acesso (`access_types.title`) ou, na falta dele, o nome do tier (`accesses.level`). Quando o usuário tem chaves de tiers diferentes no mesmo ensaio, é o tier em que ele tem MAIS chaves (empate: a compra mais recente) — a lista completa fica em `tiers`. `null` em chaves legadas sem tier resolvido.",
+            "example": "Super Token",
+            "nullable": true
+          },
+          "tiers": {
+            "description": "Quebra por tipo de chave possuída neste ensaio, do tier com mais chaves para o com menos. A soma dos `count` é igual a `keysOwned`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KeyTierBreakdownDto"
+            }
+          },
+          "lastPurchasedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da compra MAIS RECENTE neste ensaio — é por ela que a lista está ordenada."
+          },
+          "firstPurchasedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da PRIMEIRA compra neste ensaio (\"apoia desde\"). Em revenda P2P a posse muda mas `purchased_at` não é reescrito: continua a data da cunhagem original."
+          },
+          "campaign": {
+            "description": "Campanha e modelo já embutidas — dispensa o fan-out `GET /campaigns/:id`. `null` quando `campaignId` não é UUID (registros mock/legados) ou a campanha não existe mais; nesse caso o card não tem o que renderizar além de `keysOwned`. ATENÇÃO: `campaign.totalKeys` é o total de chaves DA CAMPANHA, não do usuário — as do usuário são `keysOwned`.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SupportedEssayCampaignDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "campaignId",
+          "campaignName",
+          "keysOwned",
+          "keyTypeLabel",
+          "tiers",
+          "lastPurchasedAt",
+          "firstPurchasedAt",
+          "campaign"
+        ]
+      },
+      "MySupportedEssaysDto": {
+        "type": "object",
+        "properties": {
+          "totalEssaysSupported": {
+            "type": "number",
+            "description": "Número de ensaios (campanhas distintas) retornados, já considerando o filtro `status`",
+            "example": 3
+          },
+          "totalKeys": {
+            "type": "number",
+            "description": "Total de chaves do usuário nos ensaios retornados. Sem filtro, é o mesmo `totalKeys` de `GET /transactions/me/summary`.",
+            "example": 5
+          },
+          "essays": {
+            "description": "Um item por ensaio apoiado, do apoio mais recente para o mais antigo",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SupportedEssayDto"
+            }
+          }
+        },
+        "required": [
+          "totalEssaysSupported",
+          "totalKeys",
+          "essays"
+        ]
+      },
       "RegisterTransactionDto": {
         "type": "object",
         "properties": {
@@ -14881,6 +15814,11 @@
             "description": "Nome do tenant",
             "example": "Artista X"
           },
+          "email": {
+            "type": "string",
+            "description": "E-mail do gestor do tenant. OPCIONAL: informado, a criação provisiona a conta do gestor e envia a senha temporária; omitido, o tenant nasce sem gestor e ninguém além do Admin dono tem acesso até que um membro seja associado. Imutável depois (não existe no UpdateTenantDto).",
+            "example": "dono@artistax.com"
+          },
           "slug": {
             "type": "string",
             "description": "Slug unico do tenant (gerado automaticamente se omitido)",
@@ -14893,6 +15831,50 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "UserMembershipLookupDto": {
+        "type": "object",
+        "properties": {
+          "blocked": {
+            "type": "boolean",
+            "description": "A associação seria recusada (409)? É o único campo que o front precisa consultar para habilitar ou não a confirmação."
+          },
+          "exempt": {
+            "type": "boolean",
+            "description": "Conta com perfil Admin, fora da regra de tenant único (pode acumular tenants)"
+          },
+          "alreadyMember": {
+            "type": "boolean",
+            "description": "Já é membro do tenant consultado"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Outro tenant a que a conta já pertence, ou `null` se não houver. Vem preenchido mesmo para um perfil isento — nesse caso `blocked` é `false`.",
+            "nullable": true
+          },
+          "tenantName": {
+            "type": "string",
+            "description": "Nome desse outro tenant, para exibir na mensagem de conflito",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "description": "Papel do vínculo existente nesse outro tenant",
+            "enum": [
+              "owner",
+              "manager"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "blocked",
+          "exempt",
+          "alreadyMember",
+          "tenantId",
+          "tenantName",
+          "role"
         ]
       },
       "UpdateTenantDto": {
@@ -14915,6 +15897,129 @@
             "description": "Configuração padrão de campanhas (template JSONB)"
           }
         }
+      },
+      "AttachManagerDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "E-mail do gestor a associar ao tenant. Se já existir uma conta com este e-mail, ela é promovida a Tenant e vinculada; senão, uma conta nova é criada com `name` e uma senha temporária é enviada por e-mail.",
+            "example": "gestor@artistax.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do gestor. Obrigatório apenas quando a conta ainda não existe (usado para criá-la); ignorado ao promover uma conta já existente.",
+            "example": "Maria Souza"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "TenantMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da membership"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário no auth-service"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "role": {
+            "type": "string",
+            "description": "`owner` = propriedade B2B; `manager` = gestão do tenant",
+            "enum": [
+              "owner",
+              "manager"
+            ]
+          },
+          "isGestor": {
+            "type": "boolean",
+            "description": "Gestor do tenant. No máximo um por tenant (índice parcial `UQ_tenant_gestor`), e zero é estado válido."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando a associação foi criada"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome no auth-service",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail no auth-service",
+            "nullable": true
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "Papel global da conta no auth-service (não o papel no tenant)",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "tenantId",
+          "role",
+          "isGestor",
+          "createdAt",
+          "name",
+          "email",
+          "accessRole"
+        ]
+      },
+      "AddMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário no auth-service. Use `GET /auth/users?email=` para resolver o e-mail em id."
+          },
+          "role": {
+            "type": "string",
+            "description": "Papel no tenant. `owner` é propriedade B2B e só SuperAdmin concede; `manager` é gestão, e o primeiro manager do tenant vira o gestor automaticamente.",
+            "enum": [
+              "owner",
+              "manager"
+            ],
+            "default": "manager"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SetGestorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário que passa a ser o gestor. Precisa já ser membro do tenant com papel `manager`."
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SetTenantAdminDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID da conta (perfil Admin, no auth-service) que passa a ser dona do tenant. Substitui o Admin atual, se houver."
+          }
+        },
+        "required": [
+          "userId"
+        ]
       },
       "StarSplitDto": {
         "type": "object",
@@ -15618,7 +16723,7 @@
           },
           "limit": {
             "type": "number",
-            "description": "Itens por página efetivamente aplicados. Ecoa o `limit` da requisição, ou o default (10) quando ele foi omitido.",
+            "description": "Itens por página efetivamente aplicados. Ecoa o `limit` da requisição, ou o default (5) quando ele foi omitido.",
             "example": 5
           },
           "totalItems": {

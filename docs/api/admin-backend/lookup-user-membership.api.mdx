@@ -1,0 +1,69 @@
+---
+id: lookup-user-membership
+title: "A associação deste usuário a este tenant seria aceita?"
+description: "Um usuário pertence a no máximo um tenant, com o perfil `Admin` de fora (é B2B e acumula tenants). As telas de associação consultam aqui para barrar antes de confirmar, em vez de deixar o 409 estourar depois — `blocked` é a resposta, o resto é para a mensagem."
+sidebar_label: "A associação deste usuário a este tenant seria aceita?"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"A associação deste usuário a este tenant seria aceita?"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/tenants/user-membership"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Um usuário pertence a no máximo um tenant, com o perfil `Admin` de fora (é B2B e acumula tenants). As telas de associação consultam aqui para barrar antes de confirmar, em vez de deixar o 409 estourar depois — `blocked` é a resposta, o resto é para a mensagem.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./lookup-user-membership.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./lookup-user-membership.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./lookup-user-membership.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

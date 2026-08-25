@@ -1,0 +1,1 @@
+{"parameters":[{"name":"status","required":false,"in":"query","description":"Filtra por estado da campanha. `ongoing` = Active/Scheduled, `ended` = Ended/Inactive/Cancelled, `all` (padrão) = tudo que o usuário apoiou. Ensaio sem campanha resolvível (mock/legado) só aparece em `all`.","schema":{"enum":["ongoing","ended","all"],"type":"string"}}]}

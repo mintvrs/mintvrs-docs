@@ -1,0 +1,69 @@
+---
+id: create-or-promote-admin
+title: "Provisionar um Admin B2B (apenas SuperAdmin)"
+description: "Cria a conta de um Admin (papel B2B, sem tenant — o escopo dele é `Tenant.ownerId`). Conta nova: gera senha temporária e envia por e-mail. Conta existente sem tenant: apenas promove a Admin, sem tocar na senha e sem enviar e-mail. Recusa e-mails de SuperAdmin e de contas já vinculadas a um tenant. A senha em claro nunca vem na resposta."
+sidebar_label: "Provisionar um Admin B2B (apenas SuperAdmin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mintvrs-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Provisionar um Admin B2B (apenas SuperAdmin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/users/admin"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Cria a conta de um Admin (papel B2B, sem tenant — o escopo dele é `Tenant.ownerId`). Conta nova: gera senha temporária e envia por e-mail. Conta existente sem tenant: apenas promove a Admin, sem tocar na senha e sem enviar e-mail. Recusa e-mails de SuperAdmin e de contas já vinculadas a um tenant. A senha em claro nunca vem na resposta.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-or-promote-admin.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-or-promote-admin.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-or-promote-admin.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

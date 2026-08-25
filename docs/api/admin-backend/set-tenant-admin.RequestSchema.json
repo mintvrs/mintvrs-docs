@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"userId":{"type":"string","description":"ID da conta (perfil Admin, no auth-service) que passa a ser dona do tenant. Substitui o Admin atual, se houver."}},"required":["userId"],"title":"SetTenantAdminDto"}}}}}

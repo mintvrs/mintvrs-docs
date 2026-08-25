@@ -1,0 +1,73 @@
+---
+id: get-credit-balance
+title: "Obter saldo de créditos do usuário para o tenant"
+description: "Cria o saldo zerado na primeira consulta, então nunca dá 404 por usuário sem saldo."
+sidebar_label: "Obter saldo de créditos do usuário para o tenant"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Obter saldo de créditos do usuário para o tenant"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/credits/balance"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Cria o saldo zerado na primeira consulta, então nunca dá 404 por usuário sem saldo.
+
+**Disponível para gastar = `balance - lockedBalance`.** Não existe campo com esse valor: `balance` é o TOTAL e já inclui o que está travado em ofertas P2P em aberto. Ambos em CENTAVOS.
+
+Crédito não se compra — ele entra por reembolso de campanha cancelada (`POST /refunds/{caseId}/choose`) ou por vender uma chave no marketplace.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-credit-balance.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-credit-balance.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-credit-balance.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

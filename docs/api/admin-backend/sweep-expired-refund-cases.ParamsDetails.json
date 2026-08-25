@@ -1,0 +1,1 @@
+{"parameters":[{"name":"limit","required":false,"in":"query","description":"Quantos casos processar nesta passada (1–200, padrão 50)","schema":{"type":"string"}}]}

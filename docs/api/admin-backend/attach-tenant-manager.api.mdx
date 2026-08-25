@@ -1,0 +1,69 @@
+---
+id: attach-tenant-manager
+title: "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)"
+description: "Passo 2 do wizard de criação de tenant, e caminho para completar um tenant que nasceu sem gestor. Busca a conta pelo e-mail no auth-service: se existir, promove para Tenant e vincula; senão, cria com o `name` informado e envia a senha temporária por e-mail."
+sidebar_label: "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/tenants/{id}/manager"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Passo 2 do wizard de criação de tenant, e caminho para completar um tenant que nasceu sem gestor. Busca a conta pelo e-mail no auth-service: se existir, promove para Tenant e vincula; senão, cria com o `name` informado e envia a senha temporária por e-mail.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./attach-tenant-manager.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./attach-tenant-manager.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./attach-tenant-manager.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

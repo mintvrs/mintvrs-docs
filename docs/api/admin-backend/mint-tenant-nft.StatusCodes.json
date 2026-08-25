@@ -1,1 +1,1 @@
-{"responses":{"201":{"description":"NFT mintado para o tenant"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin ou TenantAdmin"}}}
+{"responses":{"201":{"description":"NFT mintado para o tenant"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin ou Tenant"}}}

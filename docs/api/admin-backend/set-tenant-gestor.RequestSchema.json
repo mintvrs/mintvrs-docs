@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"userId":{"type":"string","description":"ID do usuário que passa a ser o gestor. Precisa já ser membro do tenant com papel `manager`."}},"required":["userId"],"title":"SetGestorDto"}}}}}

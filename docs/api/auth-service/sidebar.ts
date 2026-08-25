@@ -46,14 +46,14 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "api/auth-service/list-users-by-role",
-          label: "Listar usuários por role ou por tenant",
+          id: "api/auth-service/list-users",
+          label: "Listar/buscar usuários por role, tenant, e-mail ou ids",
           className: "api-method get",
         },
         {
           type: "doc",
           id: "api/auth-service/update-user-tenant",
-          label: "Vincular tenant a um usuário (SuperAdmin ou Admin)",
+          label: "Vincular tenant a um usuário (apenas SuperAdmin)",
           className: "api-method patch",
         },
         {
@@ -70,6 +70,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/auth-service/change-password",
+          label: "Trocar a senha da própria conta",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
           id: "api/auth-service/reset-password",
           label: "Redefinir senha com token",
           className: "api-method post",
@@ -77,7 +83,19 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/auth-service/create-or-update-tenant-admin",
-          label: "Criar ou atualizar usuário para TenantAdmin (apenas SuperAdmin)",
+          label: "Provisionar o TenantAdmin dono de um tenant (SuperAdmin ou Admin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/create-or-promote-admin",
+          label: "Provisionar um Admin B2B (apenas SuperAdmin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/auth-service/reset-temporary-password",
+          label: "Regerar a senha temporária de um usuário (SuperAdmin ou Admin)",
           className: "api-method post",
         },
       ],

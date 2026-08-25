@@ -1,0 +1,69 @@
+---
+id: set-tenant-admin
+title: "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin"
+description: "Substitui o Admin atual do tenant, se houver — um tenant tem no máximo um Admin. A conta precisa ter perfil `Admin` no auth-service (400 caso contrário)."
+sidebar_label: "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "put api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/tenants/{id}/admin"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Substitui o Admin atual do tenant, se houver — um tenant tem no máximo um Admin. A conta precisa ter perfil `Admin` no auth-service (400 caso contrário).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./set-tenant-admin.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./set-tenant-admin.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./set-tenant-admin.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

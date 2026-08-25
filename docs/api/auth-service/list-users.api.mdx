@@ -1,0 +1,69 @@
+---
+id: list-users
+title: "Listar/buscar usuários por role, tenant, e-mail ou ids"
+description: "Quatro modos, nesta ordem de precedência: `tenantId` (retorna só {id}, liberado para SuperAdmin/Admin ou para o próprio dono do tenant — usado pelo admin-backend no fan-out de nova campanha); `email` (busca exata, retorna {id, name, email, access_role} ou 404 — usado pelo painel para resolver o e-mail em id ao associar um membro a um tenant); `ids` (lista separada por vírgula, no máximo 100 UUIDs, mesma projeção do modo `email` — usado pelo admin-backend para enriquecer a lista de membros de um tenant); e `role` (retorna {id, email, name} de todos os usuários do papel). Os modos `email`, `ids` e `role` são restritos a SuperAdmin/Admin."
+sidebar_label: "Listar/buscar usuários por role, tenant, e-mail ou ids"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/auth-service/mintvrs-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Listar/buscar usuários por role, tenant, e-mail ou ids"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/auth/users"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Quatro modos, nesta ordem de precedência: `tenantId` (retorna só \{id\}, liberado para SuperAdmin/Admin ou para o próprio dono do tenant — usado pelo admin-backend no fan-out de nova campanha); `email` (busca exata, retorna \{id, name, email, access_role\} ou 404 — usado pelo painel para resolver o e-mail em id ao associar um membro a um tenant); `ids` (lista separada por vírgula, no máximo 100 UUIDs, mesma projeção do modo `email` — usado pelo admin-backend para enriquecer a lista de membros de um tenant); e `role` (retorna \{id, email, name\} de todos os usuários do papel). Os modos `email`, `ids` e `role` são restritos a SuperAdmin/Admin.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./list-users.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./list-users.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./list-users.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

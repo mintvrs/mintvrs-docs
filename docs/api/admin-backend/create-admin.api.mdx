@@ -1,0 +1,69 @@
+---
+id: create-admin
+title: "Cadastrar um Admin B2B (apenas SuperAdmin)"
+description: "Cria a conta de um Admin no auth-service e envia a senha temporária por e-mail (troca obrigatória no primeiro login). Uma conta existente sem tenant é apenas promovida a Admin, sem tocar na senha e sem e-mail. O Admin não tem tenant: o escopo dele é `Tenant.ownerId`."
+sidebar_label: "Cadastrar um Admin B2B (apenas SuperAdmin)"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1vG0cS/SuNyUUU+KE4xgJLX1ailMTJ2hFECQngGGFzpkS2NTM96e6hxaX1Y4w9LHI29rJX/rF91d0zQ1LCZhfYSwDbgD3s6a6PV9VVr2aTZGRToyqndJmMk4lRUkiR6tJJkZGoC3GaFaoUpRaydsuBJbNSKQn8LVd+r6VyKYWjotJm+5HP40HQoJAqF0fO6FQKPTdqId32E7+GqMqogpTRItcLVfaG4qZolNK9so5KRxBcQGwpSye2vwlZ4dHipC70SmWs2VvWD/ugxYiysSYcDjYMxQ+ND9u/azY0Sh0LLeC8rjQ8zYmVzK79m6F+X5J5mc2GST/RFRnJ8LzMAFBqSDry8vCukkYW5MjYZPzmbT8x9GtN1p3pbJ2MN/6nMoRzztTUT9hDuMavZFXlKvVyR+8sY79JbLqkQvKTW1cEZXr+jlLHegxb4RRZfltC584u64wqF9i1H8rXuiCRadHYSveyqHI+ENA4e3aWPGCZMfp9aRc+nE+Kk7zyF8TfkJXDVBfJw0N/x/c3weBGFWByyvmTkw7Mc6dxLBy0lS5tcPXZyZf8374twf5UZhLGStgEncLWKVmr2aXnTx16LX0Ga6P+hiPJ/y0Y1klX24nOdkNS1sWczCMQJ9tPmVpo8e319SVjScboXSifn5xwRLBqfj8ir6i0coFsxjU9FJScyUxchWRkRApAg71PebMv9JyczJdkBS5YERXsCn4TgiiK2joxJyFLEaLKd8Ha99pkwi51nWe45n4H8sKtk7eHKbEDW+NxZ+ZOilzwq6uYEl2SPD/56om8CCViWiM8TZp+jvIfOsp/fhzli9BZODhUohNJblJdzIWu/VLTT95tP4qVKtM6l75p1E35/5wcf+TkgCxLaW0UJI/fbJI5SQO40YUf+KhccEcOrcmyMHTppeYGXmnrIyjdEr9GcQdLM6vQxzdJbdARk6VzlR2PwpaBrNRwCe4BxjLEb7cy1ve6Q/i+DXvk9h9gGwB+VxqE5SAq+RI2jL86OfnTo9Only8FUJFgTuBXAj9/OTudXvxyc/VXTuz2dC9hNxsEppyoIRcbHGL2Mn5xqR8fvtamkMj55Lsfr7EYk4HNw69ALZJTUD3fKb1Zh0Ze6zsqBY6D1zmFJAaj4xNiGsnh0eUP02sxYsI4ahjexf1YnHkDBK2/W86/SYdDpleKJS5JZjARQf1pAJ8H39N6J1EBPS/s721t7U48BSbW+ZpFHnlUW1y5QiB+tDAco3+S7XV6pwR+5/5H1fHQofaw/F8oh3auOFcdd7xo7tqmDUhL2VrG9hTvYjtvtbc/Xp5X30/yeh4J8JlMEbmM0+qRucfHDFdR504NosEwvZKqpFx4VYrZllMrLYLQ4fHxz+XP5RdfcPBRRlE+fdLz4kAcH3OCHIWQ98bHx+LGEhi388kDZLQpmbtVlB9mz+wwfWY9TrGAvpjtJWebVDMveDYD3e+GDXbAcNUHZJpnj0xbDC5ZpREEyxGpeWTBIl9ZfslzDjvbGwYnwkAgmlQ62g8eu3XpNXjy6SefJtp0PxwLy8NMAVJC95gSSm17fT84kZi1eTsT7a+QMzNYYaO7dihOrUiXcoWKbHmAWWAcAfMV4LMIH6aeLsF8Fwyx7kFohdIKYowlQwsq4zksRYDDMTsaq2zU7HA0uKO1nQ1jaK90TraJaNdl2fHT4LPT6BcvvLJg0CiH07IBwvYF6iqaiV3OtURvWOR6LvM+t+dbtagNdiJa9F6uLfexX1H8cBGa4zEMrVJcgRdeDfwDEmAAioe+mifD7afKx7JVrKzOOccgVteYRG3Axu7F9tAf3CZ0W6cZ4EZmFBm9bPQazCBFJTFwQlfrA3niQdt/sWLNtu27gmtgwnUIuSduVcl4+FHU34guiQBGiRXJ3GT7cUV5lDEFvt5kcBBgPWKTKZct0dE8wze2vWiyE0BBkPMwG0pJOdmGmTuJ1YwiRChcex/0D80L8UGc+3Lhb7j4gFeD+Kd94Gc+0gBrYeAHMbm6OWeFMSj7SToUE2Zl0VsezUPBHVl/EfjGIXRViosu88J/FWBwkaYwdfLjs5PR66+veez/CTuGIqq/lGveK76JIQl2dOk2RXwr2sG5j/99ykI43cNBZOeS0jskDT9Js+APHoZu6zJrtUwYX7Uoo/gG7R2xIVE9YiPKInT8OtOl7uQEEtpaGVIH9xshQ5L5xy6Y7THfhMOh8Og/1ziVqwx1QxxJEC27o7OR0GslMGZiJM5AKu7gpCq9sHOqcr1mYbcyRZFee5z7nSs+mL6I7wKI+sH9wb9FK6oM3wnmSbyAIHV2GwlOmXLtDtZfNSdJ+MIR+azz+0Kd7bACdVQRqmkorV6h2f6GdW1RcGWeIXxLvOQGkGpfaDj/2XQOIhVzndsO/1fS3JGrclwSL3fnt7h8dhk6yApNQ4rGNa8zlGREzgD3po+0Uqf+pgVE2T01r1ULX7x88bAMl5grB7Q6ecsEzQtCk2ZOGhr0l8OT4UkcWoAfmjwzB6azhSx3qMIkfhcx3cc7FE0kxOF03DvkAJtuIPr8IfDxh8BICR1a+QiBAiME/p7cb+I4sTtwMEvnlc1mLi3dmPzhgZe5ta3Dx8KVBAhzP1K9haRILnn+uGP6m8TCMLhmvbw9rwMlPZhUecYIJ07TlCr3H/fujkLMAngsiF8rCz/AJka+xyL/O078509/Vf3nTF7bJLksF7UfJZMgk/OQc2KHNx/MHN6rhlKX6x0LAY/f4WsYIOpHV3yFgbkQ/m9VRO9w
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Cadastrar um Admin B2B (apenas SuperAdmin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/admins"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Cria a conta de um Admin no auth-service e envia a senha temporária por e-mail (troca obrigatória no primeiro login). Uma conta existente sem tenant é apenas promovida a Admin, sem tocar na senha e sem e-mail. O Admin não tem tenant: o escopo dele é `Tenant.ownerId`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-admin.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-admin.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-admin.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

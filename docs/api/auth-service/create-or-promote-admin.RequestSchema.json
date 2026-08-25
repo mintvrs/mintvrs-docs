@@ -1,0 +1,1 @@
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"email":{"type":"string","description":"Email do Admin","example":"admin@empresa.com"},"name":{"type":"string","description":"Nome do Admin","example":"Admin B2B"}},"required":["email","name"],"title":"CreateAdminDto"}}}}}

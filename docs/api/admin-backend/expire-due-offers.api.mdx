@@ -1,0 +1,69 @@
+---
+id: expire-due-offers
+title: "Expirar agora as ofertas cuja validade venceu"
+description: "Roda a varredura de expiração na hora, em vez de esperar a próxima passada automática: marca como `expired` as ofertas vencidas e destrava o crédito retido (revertendo também a diferença financiada, quando houver). Acionável sob demanda, sem agendador dedicado, e seguro sob concorrência — se outra passada já estiver rodando, esta desiste na hora e responde `skipped: true`, que **não é erro**: a trava é o que impede duas passadas de destravarem o mesmo crédito."
+sidebar_label: "Expirar agora as ofertas cuja validade venceu"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Expirar agora as ofertas cuja validade venceu"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/marketplace/offers/expire-due"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Roda a varredura de expiração na hora, em vez de esperar a próxima passada automática: marca como `expired` as ofertas vencidas e destrava o crédito retido (revertendo também a diferença financiada, quando houver). Acionável sob demanda, sem agendador dedicado, e seguro sob concorrência — se outra passada já estiver rodando, esta desiste na hora e responde `skipped: true`, que **não é erro**: a trava é o que impede duas passadas de destravarem o mesmo crédito.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./expire-due-offers.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./expire-due-offers.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./expire-due-offers.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

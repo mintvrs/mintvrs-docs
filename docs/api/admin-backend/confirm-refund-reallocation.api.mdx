@@ -1,0 +1,73 @@
+---
+id: confirm-refund-reallocation
+title: "Confirmar o pagamento da diferença e emitir as chaves"
+description: "Chame no retorno do `successUrl`, com o `sessionId` guardado."
+sidebar_label: "Confirmar o pagamento da diferença e emitir as chaves"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Confirmar o pagamento da diferença e emitir as chaves"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/refunds/{caseId}/confirm-reallocation"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Chame no retorno do `successUrl`, com o `sessionId` guardado.
+
+**Idempotente por sessão**, inclusive sob chamadas simultâneas: duas abas no `successUrl` não emitem duas chaves. Quem perde a reivindicação recebe `confirmed: false` com uma mensagem de "processando" — repita em instantes.
+
+Enquanto o pagamento não estiver confirmado no Stripe, a resposta vem com `confirmed: false` e `checkoutRequired: true`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./confirm-refund-reallocation.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./confirm-refund-reallocation.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./confirm-refund-reallocation.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

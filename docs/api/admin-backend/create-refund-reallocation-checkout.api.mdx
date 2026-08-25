@@ -1,0 +1,75 @@
+---
+id: create-refund-reallocation-checkout
+title: "Pagar a diferença quando as chaves escolhidas custam mais"
+description: "Gera o checkout do Stripe para a diferença. Só funciona com o caso em `awaiting_payment`, estado em que ele entra quando `choose` com `reallocate` devolve `checkoutRequired: true`."
+sidebar_label: "Pagar a diferença quando as chaves escolhidas custam mais"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Pagar a diferença quando as chaves escolhidas custam mais"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/refunds/{caseId}/reallocation-checkout"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Gera o checkout do Stripe para a diferença. Só funciona com o caso em `awaiting_payment`, estado em que ele entra quando `choose` com `reallocate` devolve `checkoutRequired: true`.
+
+**A diferença é sempre recalculada no servidor** a partir dos tiers do cesto guardado — o valor que o cliente mandar é ignorado. Se os preços tiverem caído e o cesto passar a caber no orçamento, a resposta é 409 pedindo que a escolha seja refeita, em vez de cobrar à toa.
+
+O estoque é reservado AQUI, e não na escolha: a reserva vale 30 minutos e é agora que a janela do pagamento começa. Depois de pagar, confirme em `POST /refunds/{caseId}/confirm-reallocation`.
+
+**PIX não está disponível para pagar a diferença** — a cobrança sai no cartão.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-refund-reallocation-checkout.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-refund-reallocation-checkout.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-refund-reallocation-checkout.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

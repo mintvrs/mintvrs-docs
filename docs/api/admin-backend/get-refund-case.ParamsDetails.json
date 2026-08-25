@@ -1,0 +1,1 @@
+{"parameters":[{"name":"caseId","required":true,"in":"path","schema":{"format":"uuid","type":"string"}},{"name":"token","required":false,"in":"query","description":"Token do link do e-mail. Alternativa ao Bearer para quem chega pelo e-mail sem estar logado.","schema":{"type":"string"}}]}

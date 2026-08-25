@@ -1,0 +1,71 @@
+---
+id: retry-refund-case
+title: "Reprocessar um reembolso que falhou pela metade"
+description: "Repete a MESMA escolha que o usuário já fez, apenas para os itens que ficaram em `failed` ou `pending`. Nunca reabre a pergunta: ele já decidiu, o que falhou foi a execução (o Stripe recusou, o crédito não passou)."
+sidebar_label: "Reprocessar um reembolso que falhou pela metade"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Reprocessar um reembolso que falhou pela metade"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/refunds/{caseId}/retry"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Repete a MESMA escolha que o usuário já fez, apenas para os itens que ficaram em `failed` ou `pending`. Nunca reabre a pergunta: ele já decidiu, o que falhou foi a execução (o Stripe recusou, o crédito não passou).
+
+Só aceita caso em `partially_failed`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./retry-refund-case.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./retry-refund-case.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./retry-refund-case.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

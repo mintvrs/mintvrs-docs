@@ -1,0 +1,1 @@
+{"parameters":[{"name":"caseId","required":true,"in":"path","schema":{"format":"uuid","type":"string"}},{"name":"token","required":true,"in":"query","schema":{"type":"string"}}]}

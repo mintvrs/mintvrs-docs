@@ -1,0 +1,69 @@
+---
+id: get-offer-capabilities
+title: "O que a tela de oferta pode oferecer neste ambiente"
+description: "Diz ao cliente quais trilhos de pagamento da diferença estão ligados e se a validade em minutos existe aqui, no mesmo formato dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre a opção desabilitada com o motivo, não a esconda."
+sidebar_label: "O que a tela de oferta pode oferecer neste ambiente"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"O que a tela de oferta pode oferecer neste ambiente"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/marketplace/offers/capabilities"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Diz ao cliente quais trilhos de pagamento da diferença estão ligados e se a validade em minutos existe aqui, no mesmo formato dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre a opção desabilitada com o motivo, não a esconda.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-offer-capabilities.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-offer-capabilities.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-offer-capabilities.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

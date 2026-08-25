@@ -8,6 +8,34 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "admins",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/admins",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/create-admin",
+          label: "Cadastrar um Admin B2B (apenas SuperAdmin)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-admins",
+          label: "Listar os Admins B2B (apenas SuperAdmin)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/resend-admin-access",
+          label: "Reenviar acesso de um Admin (apenas SuperAdmin)",
+          className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "tenants",
       link: {
         type: "doc",
@@ -34,6 +62,18 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/list-my-tenants",
+          label: "Tenants em que o caller pode agir",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/lookup-user-membership",
+          label: "A associação deste usuário a este tenant seria aceita?",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/find-by-slug",
           label: "Buscar tenant por slug (SuperAdmin only)",
           className: "api-method get",
@@ -47,7 +87,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/update-tenant",
-          label: "Atualizar tenant (SuperAdmin, dono Admin, ou TenantAdmin do proprio tenant — apenas campaignConfig)",
+          label: "Atualizar tenant (SuperAdmin, dono Admin, ou Tenant do proprio tenant — apenas campaignConfig)",
           className: "api-method patch",
         },
         {
@@ -67,6 +107,48 @@ const sidebar: SidebarsConfig = {
           id: "api/admin-backend/tenant-dashboard",
           label: "Dashboard de um tenant especifico",
           className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/attach-tenant-manager",
+          label: "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-tenant-members",
+          label: "Membros de um tenant (SuperAdmin ou Admin dono)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/add-tenant-member",
+          label: "Associar usuário ao tenant (SuperAdmin ou Admin dono)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/remove-tenant-member",
+          label: "Desassociar usuário do tenant (SuperAdmin ou Admin dono)",
+          className: "api-method delete",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/set-tenant-gestor",
+          label: "Definir o gestor do tenant (SuperAdmin ou Admin dono)",
+          className: "api-method put",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/set-tenant-admin",
+          label: "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin",
+          className: "api-method put",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/resend-tenant-access",
+          label: "Reenviar acesso do tenant (SuperAdmin ou dono Admin)",
+          className: "api-method post",
         },
         {
           type: "doc",
@@ -123,8 +205,8 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/create-credits-checkout",
-          label: "Gerar link de checkout para compra de créditos",
-          className: "api-method post",
+          label: "[DESATIVADO] Compra avulsa de créditos — crédito só se ganha por reembolso",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
@@ -147,14 +229,14 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/create-offer-funding-checkout",
-          label: "Gerar checkout Stripe para financiar a diferença de crédito de uma oferta P2P",
-          className: "api-method post",
+          label: "[DESATIVADO] Financiar por cartão a diferença de crédito de uma oferta P2P",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/confirm-offer-funding",
-          label: "Confirmar pagamento Stripe e criar a oferta P2P financiada",
-          className: "api-method post",
+          label: "[LEGADO] Confirmar pagamento Stripe e criar a oferta P2P financiada por cartão",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
@@ -520,6 +602,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "api/admin-backend/my-supported-essays",
+          label: "Ensaios que eu apoiei (um item por campanha)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
           id: "api/admin-backend/list-by-buyer",
           label: "Listar transações por email do comprador",
           className: "api-method get",
@@ -560,7 +648,7 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "api/admin-backend/get-balance",
+          id: "api/admin-backend/get-credit-balance",
           label: "Obter saldo de créditos do usuário para o tenant",
           className: "api-method get",
         },
@@ -585,25 +673,89 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/grant-credits",
-          label: "Conceder créditos manualmente a um usuário",
+          label: "[ADMIN] Conceder créditos manualmente a um usuário",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/refund-my-credits",
-          label: "Usuário solicita reembolso próprio (prazo de 7 dias)",
+          label: "Usuário devolve créditos que recebeu (prazo de 7 dias)",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/refund-credits",
-          label: "Reembolsar créditos (interno ou Stripe)",
+          label: "[ADMIN] Reembolsar um lançamento de crédito (interno ou Stripe)",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/refund-key-purchase",
-          label: "Reembolsar compra de chave",
+          label: "[ADMIN] Reembolsar uma chave avulsa",
+          className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "refunds",
+      link: {
+        type: "doc",
+        id: "api/admin-backend/refunds",
+      },
+      items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/cancel-campaign",
+          label: "Cancelar campanha e abrir os reembolsos dos compradores",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-my-refund-cases",
+          label: "Meus reembolsos de campanhas canceladas",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/list-refund-cases",
+          label: "Listar casos de reembolso (admin)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-refund-case",
+          label: "Detalhe do reembolso — é a página que o e-mail abre",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/resolve-refund-case",
+          label: "Escolher como receber — cartão, crédito ou outras chaves",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/create-refund-reallocation-checkout",
+          label: "Pagar a diferença quando as chaves escolhidas custam mais",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/confirm-refund-reallocation",
+          label: "Confirmar o pagamento da diferença e emitir as chaves",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/sweep-expired-refund-cases",
+          label: "Converter em crédito os reembolsos que venceram sem escolha",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/retry-refund-case",
+          label: "Reprocessar um reembolso que falhou pela metade",
           className: "api-method post",
         },
       ],
@@ -672,6 +824,24 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "api/admin-backend/create-offer",
           label: "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/create-pix-simulated-offer",
+          label: "[HOMOLOG] Ofertar pagando a diferença com PIX simulado (sem gateway)",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-offer-capabilities",
+          label: "O que a tela de oferta pode oferecer neste ambiente",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/expire-due-offers",
+          label: "Expirar agora as ofertas cuja validade venceu",
           className: "api-method post",
         },
         {
