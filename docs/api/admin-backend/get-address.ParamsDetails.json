@@ -1,1 +1,1 @@
-{"parameters":[]}
+{"parameters":[{"name":"tenantId","required":true,"in":"query","schema":{"type":"string"}}]}

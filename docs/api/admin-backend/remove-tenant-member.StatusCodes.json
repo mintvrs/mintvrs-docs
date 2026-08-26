@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"Membership removida"}}}
+{"responses":{"200":{"description":"Membership removida. `roleRevoked: false` significa que o papel no auth-service não foi (ou não precisava ser) revertido — a conta ainda tem outro vínculo, não era `Tenant`, ou o auth-service falhou."}}}

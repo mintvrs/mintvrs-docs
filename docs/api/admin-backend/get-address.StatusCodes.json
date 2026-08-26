@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"Endereço da wallet admin"}}}
+{"responses":{"200":{"description":"Conta mestre que detém as chaves"}}}

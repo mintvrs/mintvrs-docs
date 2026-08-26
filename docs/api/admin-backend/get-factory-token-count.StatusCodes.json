@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"Contagem de tokens deployados"},"401":{"description":"Não autorizado"}}}
+{"responses":{"200":{"description":"Sempre 0"},"401":{"description":"Não autorizado"}}}

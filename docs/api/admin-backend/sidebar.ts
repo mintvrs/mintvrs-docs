@@ -494,10 +494,10 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "xion",
+      label: "stellar",
       link: {
         type: "doc",
-        id: "api/admin-backend/xion",
+        id: "api/admin-backend/stellar",
       },
       items: [
         {

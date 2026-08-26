@@ -1,1 +1,1 @@
-{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"cw20CodeId":{"type":"number","description":"Code ID of the CW20 base contract on XION","example":42}},"required":["cw20CodeId"],"title":"DeployFactoryDto"}}}}}
+{"title":"Body","body":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"cw20CodeId":{"type":"number","description":"[Ignorado] Resquício da factory CW20 da XION.","example":42}},"required":["cw20CodeId"],"title":"DeployFactoryDto"}}}}}

@@ -48,12 +48,12 @@ import Export from "@theme/ApiExplorer/Export";
 
 | Recurso | Descrição |
 |--------|-----------|
-| **Tenants** | CRUD de tenants (Super Admin). Cada tenant tem apiKey/secretKey e opcionalmente contratos CW20/NFT na Xion. |
+| **Tenants** | CRUD de tenants (Super Admin). Cada tenant tem apiKey/secretKey e uma conta mestre na Stellar. |
 | **Payment Gateways** | Configurar Stripe por tenant, testar conexão, checkout, charge e refund. |
 | **Campaigns** | Campanhas por tenant; criação/edição por dono. |
 | **Contents** | Conteúdos associados a campanhas. |
 | **Tokens** | Tokens de utilidade (aquisição por campanha). |
-| **Xion / Blockchain** | Deploy de factory CW20, criação de token por tenant, registro de compras, mint de NFT. |
+| **Stellar / Blockchain** | Registro de compras no ledger Soroban, âncora de eventos de negócio e mint de chaves. |
 | **Transactions** | Registro e listagem de transações. |
 | **Credits** | Sistema de créditos: saldo, histórico, concessão e reembolso. |
 | **Marketplace** | Marketplace P2P para venda e compra de chaves entre usuários. |

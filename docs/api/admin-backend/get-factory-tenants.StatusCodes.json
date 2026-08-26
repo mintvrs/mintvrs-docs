@@ -1,1 +1,1 @@
-{"responses":{"200":{"description":"Lista de tenants registrados na factory"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin"}}}
+{"responses":{"200":{"description":"Lista vazia"},"401":{"description":"Não autorizado"},"403":{"description":"Apenas SuperAdmin"}}}
