@@ -14774,7 +14774,7 @@
         "properties": {
           "reason": {
             "type": "string",
-            "description": "Por que a campanha está sendo cancelada. Vai para `campaigns.cancel_reason` e fica na trilha de auditoria de cada caso de reembolso. Escreva pensando em quem vai ler daqui a seis meses.",
+            "description": "Por que a campanha está sendo cancelada. Vai para `campaigns.cancel_reason` e fica na trilha de auditoria de cada caso de reembolso.\n\n**Opcional.** Omitir grava um motivo padrão. O painel não pede o texto: exigir justificativa de quem já confirmou uma ação irreversível só produzia texto de preenchimento (\"teste\", \"cancelar\"), que polui a auditoria em vez de informá-la. Quem tem um motivo de verdade para registrar continua podendo mandá-lo.",
             "example": "Meta de financiamento não atingida até a data limite",
             "minLength": 10,
             "maxLength": 500
@@ -14785,10 +14785,7 @@
             "default": false,
             "example": true
           }
-        },
-        "required": [
-          "reason"
-        ]
+        }
       },
       "RefundCaseOpenedDto": {
         "type": "object",
