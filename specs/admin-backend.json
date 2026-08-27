@@ -802,6 +802,7 @@
     },
     "/campaigns/{campaignId}": {
       "get": {
+        "description": "Autenticação opcional. `button_layout_image` e `interactive_buttons[].fileUrl` só vêm preenchidos para SuperAdmin, ou para Admin/gestor com vínculo no tenant da campanha; nos demais casos vêm zerados (a resposta continua 200). A mídia do bucket público (hero/cover/key image, foto da estrela) não é afetada.",
         "operationId": "findCampaign",
         "parameters": [
           {
@@ -845,6 +846,11 @@
             }
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Obter campanha por ID (com custom_fields_resolved)",
         "tags": [
           "campaigns"
@@ -946,6 +952,7 @@
         ]
       },
       "delete": {
+        "description": "Apaga a campanha e o que depende dela — tiers, galeria, vínculos. Tudo numa transação: uma falha no meio não deixa a campanha pela metade.\n\n**Só serve para campanha que nunca vendeu.** Havendo chave paga (`completed`) ou já estornada (`refunded`), responde **400**: apagar destruiria o `payment_intent`, que vive dentro do JSON de `transactions.memo` e é a única trilha capaz de embasar um estorno. Nesse caso use `POST /campaigns/{campaignId}/cancel`, que preserva tudo e abre um caso de reembolso por comprador.\n\nChave em `pending`/`failed` (checkout abandonado, cobrança recusada) NÃO conta como venda e não bloqueia a remoção.",
         "operationId": "removeCampaign",
         "parameters": [
           {
@@ -974,6 +981,16 @@
               }
             }
           },
+          "400": {
+            "description": "A campanha tem chave vendida. A mensagem diz quantas e aponta `POST /campaigns/{campaignId}/cancel` como o caminho correto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Não autorizado",
             "content": {
@@ -996,6 +1013,16 @@
           },
           "404": {
             "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A campanha ainda tem vínculos que impedem a remoção. Registro dependente que o domínio não previu — o log do servidor nomeia a constraint.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1107,7 +1134,7 @@
     },
     "/campaigns/{campaignId}/buttons": {
       "get": {
-        "description": "Leitura pública da tela de ensaio finalizado: `backgroundImageUrl` (imagem de fundo, ou null) e `interactiveTags[]`, cada tag com `posX`/`posY` em percentual (0-100) e um objeto `media` com o que ela abre. `media.type` é IMAGE | VIDEO | AUDIO | TEXT | PROFILE — o app consumidor escolhe o ícone do círculo a partir dele. `media.mediaUrl` traz o arquivo (null em PROFILE e enquanto não há arquivo), `media.profile` traz a ficha da modelo em PROFILE, e `media.article` é sempre null nesta versão (não há entidade de artigo). Só entram tags habilitadas: botões com `enabled: false` são omitidos e, com a etapa desligada na campanha (`interactive_buttons_enabled: false`), `interactiveTags` vem vazio. Sem filtro de status — a tela é a do ensaio finalizado. Endpoint público (sem autenticação). ATENÇÃO: o PUT nesta mesma rota devolve outro shape (o do editor). Quem precisa do layout CRU — `id` do ícone, `enabled`, `order`, `fields` — deve ler `GET /campaigns/:campaignId`, que traz `interactive_buttons`, `button_layout_image` e a flag.",
+        "description": "Leitura da tela de ensaio finalizado: `backgroundImageUrl` (imagem de fundo, ou null) e `interactiveTags[]`, cada tag com `posX`/`posY` em percentual (0-100) e um objeto `media` com o que ela abre. `media.type` é IMAGE | VIDEO | AUDIO | TEXT | PROFILE — o app consumidor escolhe o ícone do círculo a partir dele. `media.mediaUrl` traz o arquivo (null em PROFILE e enquanto não há arquivo), `media.profile` traz a ficha da modelo em PROFILE, e `media.article` é sempre null nesta versão (não há entidade de artigo). Só entram tags habilitadas: botões com `enabled: false` são omitidos e, com a etapa desligada na campanha (`interactive_buttons_enabled: false`), `interactiveTags` vem vazio. Sem filtro de status — a tela é a do ensaio finalizado. AUTENTICAÇÃO OPCIONAL: a rota responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401), mas `backgroundImageUrl` e `media.mediaUrl` só vêm preenchidos para quem tem direito à mídia — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, esses campos vêm `null`; o restante da resposta é idêntico. Quando preenchidas, essas URLs são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. ATENÇÃO: o PUT nesta mesma rota devolve outro shape (o do editor). Quem precisa do layout CRU — `id` do ícone, `enabled`, `order`, `fields` — deve ler `GET /campaigns/:campaignId`, que traz `interactive_buttons`, `button_layout_image` e a flag.",
         "operationId": "getButtons",
         "parameters": [
           {
@@ -1153,7 +1180,12 @@
             }
           }
         },
-        "summary": "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Público.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Autenticação opcional.",
         "tags": [
           "campaigns"
         ]
@@ -1248,7 +1280,7 @@
     },
     "/campaigns/{campaignId}/button-layout-image": {
       "post": {
-        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 **público** e salva a URL em `button_layout_image` da campanha. A URL retornada é pública e permanente (sem assinatura). Apenas o dono da campanha (ou Admin/Tenant/SuperAdmin).\n\n**Resolução exigida: exatamente 2700x1080 (5:2), em webp, png ou jpg** — é o slot \"Fotos 05\" do guia de mídia (ilustração de fundo de ensaio). Ver GET /media/specs.",
+        "description": "Recebe a imagem de fundo via `multipart/form-data` (campo `file`), envia para o bucket S3 público e salva a referência em `button_layout_image` da campanha. O valor retornado é a URL pública, utilizável direto. Apenas o dono da campanha (ou Admin/Tenant/SuperAdmin).\n\n**Resolução exigida: exatamente 2700x1080 (5:2), em webp, png ou jpg** — é o slot \"Fotos 05\" do guia de mídia (ilustração de fundo de ensaio). Ver GET /media/specs.",
         "operationId": "setButtonLayoutImage",
         "parameters": [
           {
@@ -1292,7 +1324,7 @@
                   "properties": {
                     "button_layout_image": {
                       "type": "string",
-                      "example": "https://bucket.s3.amazonaws.com/campaigns/`id`/button-layout-123.png"
+                      "example": "https://public.mintvrs.com/campaigns/`id`/button-layout-123.png"
                     }
                   }
                 }
@@ -1345,7 +1377,7 @@
             "bearer": []
           }
         ],
-        "summary": "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)",
+        "summary": "Upload da imagem de fundo do editor de botões (apenas dono/admin)",
         "tags": [
           "campaigns"
         ]
@@ -1353,7 +1385,7 @@
     },
     "/campaigns/{campaignId}/buttons/{buttonId}/file": {
       "post": {
-        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Botões `type: PROFILE` são recusados aqui com 400 — seus dados vão em `fields`, pelo PUT /campaigns/:campaignId/buttons. Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: qualquer tipo de arquivo (≤50MB); PROFILE — não aceita arquivo (dados em `fields`). Retorna o botão atualizado com a URL servível.",
+        "description": "Recebe o arquivo via `multipart/form-data` (campo `file`) e o tipo (`type`: IMAGE, VIDEO, AUDIO, FILE). Botões `type: PROFILE` são recusados aqui com 400 — seus dados vão em `fields`, pelo PUT /campaigns/:campaignId/buttons. Valida extensão, mimetype e peso, sobe pro bucket S3 público e grava `fileUrl`/`fileName`/`type` no botão de id `:buttonId`. **IMAGE e VIDEO valem a mesma regra da mídia de ensaio, com resolução conferida nos bytes** — o que um botão abre é conteúdo do ensaio. Formatos por tipo — IMAGE — Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06); VIDEO — Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos); AUDIO: mp3, wav, ogg, m4a, aac, flac (≤50MB); FILE: qualquer tipo de arquivo (≤50MB); PROFILE — não aceita arquivo (dados em `fields`). Retorna o botão atualizado com `fileUrl` já como URL pública, utilizável direto.",
         "operationId": "uploadButtonFile",
         "parameters": [
           {
@@ -1463,7 +1495,7 @@
             "bearer": []
           }
         ],
-        "summary": "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) para o bucket público (apenas dono/admin)",
+        "summary": "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) (apenas dono/admin)",
         "tags": [
           "campaigns"
         ]
@@ -1656,7 +1688,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
+                    "description": "Foto da galeria de preview: webp ou jpg, webp ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -1761,7 +1793,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia. Foto do ensaio: exatamente 1920 × 1080 px ou 1080 × 1920 px, webp ou jpg, máx 15MB (guia: Fotos 06). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
+                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia. Foto da galeria de preview: webp ou jpg, webp ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -4511,7 +4543,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketplaceListing"
+                  "$ref": "#/components/schemas/CancelListingResultDto"
                 }
               }
             }
@@ -5862,6 +5894,830 @@
         ]
       }
     },
+    "/tenants": {
+      "post": {
+        "operationId": "createTenant",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tenant criado com sucesso"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou Admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar novo tenant (SuperAdmin ou Admin)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "get": {
+        "operationId": "listTenants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lista de tenants"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar tenants (SuperAdmin: todos ou filtro ownerId; Admin: só seus)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/dashboard": {
+      "get": {
+        "operationId": "globalDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Super Admin: stats global (por Admin). Admin: stats dos seus tenants (por tenant).",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/mine": {
+      "get": {
+        "description": "Serve as três roles. `scope: \"all\"` = SuperAdmin (visão global, nenhum tenant selecionado significa \"todos\"); `scope: \"membership\"` = o conjunto vem das memberships, e lista vazia significa nenhum acesso.",
+        "operationId": "listMyTenants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tenants do caller e o escopo dele"
+          },
+          "401": {
+            "description": "Nao autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tenants em que o caller pode agir",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/user-membership": {
+      "get": {
+        "description": "Um usuário pertence a no máximo um tenant, com o perfil `Admin` de fora (é B2B e acumula tenants). As telas de associação consultam aqui para barrar antes de confirmar, em vez de deixar o 409 estourar depois — `blocked` é a resposta, o resto é para a mensagem.",
+        "operationId": "lookupUserMembership",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "query",
+            "description": "ID do usuário no auth-service",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "query",
+            "description": "Tenant a que se quer associar",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Situação da associação pretendida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMembershipLookupDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A associação deste usuário a este tenant seria aceita?",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/slug/{slug}": {
+      "get": {
+        "operationId": "findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant encontrado"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buscar tenant por slug (SuperAdmin only)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}": {
+      "get": {
+        "operationId": "findTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do tenant"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalhes de um tenant",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "patch": {
+        "operationId": "updateTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant atualizado"
+          },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar tenant (SuperAdmin, dono Admin, ou Tenant do proprio tenant — apenas campaignConfig)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "delete": {
+        "operationId": "removeTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant removido"
+          },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Apagar tenant (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/campaign-config": {
+      "get": {
+        "operationId": "getCampaignConfig",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign config do tenant"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retorna configuração de campanha do tenant",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/dashboard": {
+      "get": {
+        "operationId": "tenantDashboard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats do tenant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard de um tenant especifico",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/manager": {
+      "post": {
+        "description": "Passo 2 do wizard de criação de tenant, e caminho para completar um tenant que nasceu sem gestor. Busca a conta pelo e-mail no auth-service: se existir, promove para Tenant e vincula; senão, cria com o `name` informado e envia a senha temporária por e-mail.",
+        "operationId": "attachTenantManager",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachManagerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gestor associado ao tenant"
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/members": {
+      "get": {
+        "operationId": "listTenantMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de memberships com nome e e-mail resolvidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantMemberDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membros de um tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      },
+      "post": {
+        "description": "Conceder `owner` (propriedade B2B) é exclusivo do SuperAdmin. O Admin associa gestores (`manager`), e o primeiro manager do tenant vira o gestor automaticamente.",
+        "operationId": "addTenantMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Membership criada"
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant, ou Admin tentando conceder propriedade",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar usuário ao tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/members/{userId}": {
+      "delete": {
+        "description": "Se quem sai era o gestor, o membro mais antigo restante assume na mesma transação; não sobrando nenhum, o tenant fica sem gestor. Quando o usuário não sobra vinculado a nenhum tenant, o papel `Tenant` que a associação concedeu é revertido para `User` no auth-service — `roleRevoked` diz se isso aconteceu.",
+        "operationId": "removeTenantMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Membership removida. `roleRevoked: false` significa que o papel no auth-service não foi (ou não precisava ser) revertido — a conta ainda tem outro vínculo, não era `Tenant`, ou o auth-service falhou."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Desassociar usuário do tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/gestor": {
+      "put": {
+        "description": "Transfere a condição de gestor para outro membro, na mesma transação que a remove do atual. Só um membro com papel `manager` pode ser gestor — `owner` é propriedade, não gestão.",
+        "operationId": "setTenantGestor",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetGestorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Membership do novo gestor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantMemberDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão sobre este tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant inexistente, ou usuário que não é membro dele",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Definir o gestor do tenant (SuperAdmin ou Admin dono)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/admin": {
+      "put": {
+        "description": "Substitui o Admin atual do tenant, se houver — um tenant tem no máximo um Admin. A conta precisa ter perfil `Admin` no auth-service (400 caso contrário).",
+        "operationId": "setTenantAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTenantAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Membership do novo Admin (dono)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantMemberDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/resend-access": {
+      "post": {
+        "description": "Gera uma nova senha temporária para o Tenant do tenant e reenvia o e-mail de acesso. A senha anterior deixa de funcionar e a troca volta a ser obrigatória no próximo login.",
+        "operationId": "resendTenantAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Novo acesso enviado"
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reenviar acesso do tenant (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/{id}/regenerate-keys": {
+      "post": {
+        "operationId": "regenerateKeys",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Novas credenciais geradas"
+          },
+          "403": {
+            "description": "Admin só age nos tenants que possui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant nao encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Regenerar API Key + Secret (SuperAdmin ou dono Admin)",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
     "/tokens/mine": {
       "get": {
         "operationId": "findMyTokens",
@@ -7016,830 +7872,6 @@
         ]
       }
     },
-    "/tenants": {
-      "post": {
-        "operationId": "createTenant",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTenantDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Tenant criado com sucesso"
-          },
-          "401": {
-            "description": "Nao autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Apenas SuperAdmin ou Admin",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Criar novo tenant (SuperAdmin ou Admin)",
-        "tags": [
-          "tenants"
-        ]
-      },
-      "get": {
-        "operationId": "listTenants",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Lista de tenants"
-          },
-          "401": {
-            "description": "Nao autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Listar tenants (SuperAdmin: todos ou filtro ownerId; Admin: só seus)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/dashboard": {
-      "get": {
-        "operationId": "globalDashboard",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Dashboard stats"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Super Admin: stats global (por Admin). Admin: stats dos seus tenants (por tenant).",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/mine": {
-      "get": {
-        "description": "Serve as três roles. `scope: \"all\"` = SuperAdmin (visão global, nenhum tenant selecionado significa \"todos\"); `scope: \"membership\"` = o conjunto vem das memberships, e lista vazia significa nenhum acesso.",
-        "operationId": "listMyTenants",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Tenants do caller e o escopo dele"
-          },
-          "401": {
-            "description": "Nao autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Tenants em que o caller pode agir",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/user-membership": {
-      "get": {
-        "description": "Um usuário pertence a no máximo um tenant, com o perfil `Admin` de fora (é B2B e acumula tenants). As telas de associação consultam aqui para barrar antes de confirmar, em vez de deixar o 409 estourar depois — `blocked` é a resposta, o resto é para a mensagem.",
-        "operationId": "lookupUserMembership",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "query",
-            "description": "ID do usuário no auth-service",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "query",
-            "description": "Tenant a que se quer associar",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Situação da associação pretendida",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserMembershipLookupDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "A associação deste usuário a este tenant seria aceita?",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/slug/{slug}": {
-      "get": {
-        "operationId": "findBySlug",
-        "parameters": [
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Tenant encontrado"
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Buscar tenant por slug (SuperAdmin only)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}": {
-      "get": {
-        "operationId": "findTenant",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Detalhes do tenant"
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Detalhes de um tenant",
-        "tags": [
-          "tenants"
-        ]
-      },
-      "patch": {
-        "operationId": "updateTenant",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTenantDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Tenant atualizado"
-          },
-          "403": {
-            "description": "Admin só age nos tenants que possui",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Atualizar tenant (SuperAdmin, dono Admin, ou Tenant do proprio tenant — apenas campaignConfig)",
-        "tags": [
-          "tenants"
-        ]
-      },
-      "delete": {
-        "operationId": "removeTenant",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Tenant removido"
-          },
-          "403": {
-            "description": "Admin só age nos tenants que possui",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Apagar tenant (SuperAdmin ou dono Admin)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/campaign-config": {
-      "get": {
-        "operationId": "getCampaignConfig",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Campaign config do tenant"
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Retorna configuração de campanha do tenant",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/dashboard": {
-      "get": {
-        "operationId": "tenantDashboard",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Dashboard stats do tenant"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Dashboard de um tenant especifico",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/manager": {
-      "post": {
-        "description": "Passo 2 do wizard de criação de tenant, e caminho para completar um tenant que nasceu sem gestor. Busca a conta pelo e-mail no auth-service: se existir, promove para Tenant e vincula; senão, cria com o `name` informado e envia a senha temporária por e-mail.",
-        "operationId": "attachTenantManager",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AttachManagerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Gestor associado ao tenant"
-          },
-          "403": {
-            "description": "Sem permissão sobre este tenant",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Associar gestor a um tenant já criado (SuperAdmin ou Admin dono)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/members": {
-      "get": {
-        "operationId": "listTenantMembers",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de memberships com nome e e-mail resolvidos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TenantMemberDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Membros de um tenant (SuperAdmin ou Admin dono)",
-        "tags": [
-          "tenants"
-        ]
-      },
-      "post": {
-        "description": "Conceder `owner` (propriedade B2B) é exclusivo do SuperAdmin. O Admin associa gestores (`manager`), e o primeiro manager do tenant vira o gestor automaticamente.",
-        "operationId": "addTenantMember",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddMemberDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Membership criada"
-          },
-          "403": {
-            "description": "Sem permissão sobre este tenant, ou Admin tentando conceder propriedade",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Associar usuário ao tenant (SuperAdmin ou Admin dono)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/members/{userId}": {
-      "delete": {
-        "description": "Se quem sai era o gestor, o membro mais antigo restante assume na mesma transação; não sobrando nenhum, o tenant fica sem gestor. Quando o usuário não sobra vinculado a nenhum tenant, o papel `Tenant` que a associação concedeu é revertido para `User` no auth-service — `roleRevoked` diz se isso aconteceu.",
-        "operationId": "removeTenantMember",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Membership removida. `roleRevoked: false` significa que o papel no auth-service não foi (ou não precisava ser) revertido — a conta ainda tem outro vínculo, não era `Tenant`, ou o auth-service falhou."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Desassociar usuário do tenant (SuperAdmin ou Admin dono)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/gestor": {
-      "put": {
-        "description": "Transfere a condição de gestor para outro membro, na mesma transação que a remove do atual. Só um membro com papel `manager` pode ser gestor — `owner` é propriedade, não gestão.",
-        "operationId": "setTenantGestor",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetGestorDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Membership do novo gestor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TenantMemberDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Sem permissão sobre este tenant",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant inexistente, ou usuário que não é membro dele",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Definir o gestor do tenant (SuperAdmin ou Admin dono)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/admin": {
-      "put": {
-        "description": "Substitui o Admin atual do tenant, se houver — um tenant tem no máximo um Admin. A conta precisa ter perfil `Admin` no auth-service (400 caso contrário).",
-        "operationId": "setTenantAdmin",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetTenantAdminDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Membership do novo Admin (dono)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TenantMemberDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant inexistente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Associar/trocar o Admin (dono) do tenant — exclusivo do SuperAdmin",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/resend-access": {
-      "post": {
-        "description": "Gera uma nova senha temporária para o Tenant do tenant e reenvia o e-mail de acesso. A senha anterior deixa de funcionar e a troca volta a ser obrigatória no próximo login.",
-        "operationId": "resendTenantAccess",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Novo acesso enviado"
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Reenviar acesso do tenant (SuperAdmin ou dono Admin)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
-    "/tenants/{id}/regenerate-keys": {
-      "post": {
-        "operationId": "regenerateKeys",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Novas credenciais geradas"
-          },
-          "403": {
-            "description": "Admin só age nos tenants que possui",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Tenant nao encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Regenerar API Key + Secret (SuperAdmin ou dono Admin)",
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
     "/splits/my": {
       "get": {
         "operationId": "getMySplits",
@@ -8730,7 +8762,7 @@
     },
     "/media/specs": {
       "get": {
-        "description": "Devolve a tabela que o backend aplica em TODO upload — transcrição do guia de medidas do cliente.\n\nServe para o cliente montar o `accept` do input, exibir a medida esperada e recusar o arquivo antes de subir, sem reimplementar a tabela e sem depender desta documentação ficar atualizada.\n\nComo usar: pegue o spec pelo `slot` (ou pelo `kindParam`, quando for subir por `POST /campaigns/:campaignId/image`). Se `mode` = `exact`, a imagem precisa bater exatamente com uma das medidas de `sizes`. Se `mode` = `boundedRatio`, precisa ter uma das proporções de `ratios` (compare em inteiro: `w * r.h === h * r.w`) e caber em um dos tetos de `maxSizes`.\n\nATENÇÃO: o banner desktop (`campaign_hero`, 1820x780) e o mobile (`campaign_hero_mobile`, 600x750) são artes DIFERENTES, cada uma com seu upload — não são variações geradas da mesma imagem. A escolha entre elas é do cliente, por breakpoint; quando a mobile for nula, use a desktop.\n\nPúblico e sem autenticação: são regras de formulário, não dado sensível.",
+        "description": "Devolve a tabela que o backend aplica em TODO upload — transcrição do guia de medidas do cliente.\n\nServe para o cliente montar o `accept` do input, exibir a medida esperada e recusar o arquivo antes de subir, sem reimplementar a tabela e sem depender desta documentação ficar atualizada.\n\nComo usar: pegue o spec pelo `slot` (ou pelo `kindParam`, quando for subir por `POST /campaigns/:campaignId/image`). Se `mode` = `exact`, a imagem precisa bater exatamente com uma das medidas de `sizes`. Se `mode` = `boundedRatio`, precisa ter uma das proporções de `ratios` (compare em inteiro: `w * r.h === h * r.w`) e caber em um dos tetos de `maxSizes`. Se `mode` = `none`, qualquer dimensão vale.\n\nATENÇÃO: o banner desktop (`campaign_hero`, 1820x780) e o mobile (`campaign_hero_mobile`, 600x750) são artes DIFERENTES, cada uma com seu upload — não são variações geradas da mesma imagem. A escolha entre elas é do cliente, por breakpoint; quando a mobile for nula, use a desktop.\n\nPúblico e sem autenticação: são regras de formulário, não dado sensível.",
         "operationId": "getSpecs",
         "parameters": [],
         "responses": {
@@ -10781,7 +10813,7 @@
           },
           "button_layout_image": {
             "type": "string",
-            "description": "URL pública da imagem de fundo usada para posicionar os botões interativos",
+            "description": "Imagem de fundo do layout de botões. Vem ausente quando aponta para o bucket privado e o requisitante não é SuperAdmin nem Admin/gestor com vínculo no tenant da campanha — mesmo que a campanha tenha imagem.",
             "nullable": true
           },
           "interactive_buttons": {
@@ -10847,7 +10879,6 @@
           "main_star",
           "main_star_id",
           "interactive_buttons_enabled",
-          "button_layout_image",
           "interactive_buttons",
           "platform_fee",
           "created_at",
@@ -14289,6 +14320,120 @@
           "listing"
         ]
       },
+      "CancelListingResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (NFT à venda)"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "Email do vendedor"
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço em centavos (BRL)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador",
+            "nullable": true
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "soldAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data da venda",
+            "nullable": true
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação on-chain",
+            "nullable": true
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "URL do explorer on-chain",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          },
+          "tierLevel": {
+            "type": "string",
+            "description": "Nome do tier da chave vendida (`accesses.level`), ex.: \"VIP\", \"Ouro\"",
+            "example": "VIP",
+            "nullable": true
+          },
+          "tierTypeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso vinculado ao tier (`access_types.title`), quando houver",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "buyerId",
+          "buyerEmail",
+          "soldAt",
+          "xionTransactionHash",
+          "xionExplorerUrl",
+          "createdAt",
+          "updatedAt",
+          "tierLevel",
+          "tierTypeTitle"
+        ]
+      },
       "HasKeyDto": {
         "type": "object",
         "properties": {
@@ -14799,6 +14944,11 @@
             "description": "Se o envio real de e-mail está ativo. Quando `false`, cada caso vem com `debugLink`.",
             "example": true
           },
+          "cardRefundEnabled": {
+            "type": "boolean",
+            "description": "Se a devolução no cartão está operando (`REFUND_CARD_ENABLED`). Quando `false`, `cardAmount` deixa de significar \"volta para o cartão\" e passa a ser apenas a parcela que SERIA elegível: na prática o beneficiário só pode escolher crédito ou a troca por chaves, e tentar cartão devolve 422 `CARD_REFUND_UNAVAILABLE`. A tela precisa ler este campo antes de prometer estorno ao comprador.",
+            "example": false
+          },
           "cases": {
             "description": "Um item por caso aberto",
             "type": "array",
@@ -14830,6 +14980,7 @@
           "emailsSent",
           "emailsFailed",
           "mailConfigured",
+          "cardRefundEnabled",
           "cases",
           "skippedKeys"
         ]
@@ -15357,6 +15508,7 @@
             "description": "Código estável de máquina — trate por ele, nunca pelo texto de `message`.",
             "enum": [
               "PIX_UNAVAILABLE",
+              "CARD_REFUND_UNAVAILABLE",
               "CASE_PROCESSING",
               "CASE_RESOLVED",
               "CASE_EXPIRED",
@@ -15484,6 +15636,221 @@
           "failed",
           "skipped",
           "caseIds"
+        ]
+      },
+      "CreateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do tenant",
+            "example": "Artista X"
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail do gestor do tenant. OPCIONAL: informado, a criação provisiona a conta do gestor e envia a senha temporária; omitido, o tenant nasce sem gestor e ninguém além do Admin dono tem acesso até que um membro seja associado. Imutável depois (não existe no UpdateTenantDto).",
+            "example": "dono@artistax.com"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug unico do tenant (gerado automaticamente se omitido)",
+            "example": "tenant-1"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "ID do Admin (user) dono do tenant; só Super Admin pode enviar; Admin usa o próprio id"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UserMembershipLookupDto": {
+        "type": "object",
+        "properties": {
+          "blocked": {
+            "type": "boolean",
+            "description": "A associação seria recusada (409)? É o único campo que o front precisa consultar para habilitar ou não a confirmação."
+          },
+          "exempt": {
+            "type": "boolean",
+            "description": "Conta com perfil Admin, fora da regra de tenant único (pode acumular tenants)"
+          },
+          "alreadyMember": {
+            "type": "boolean",
+            "description": "Já é membro do tenant consultado"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "Outro tenant a que a conta já pertence, ou `null` se não houver. Vem preenchido mesmo para um perfil isento — nesse caso `blocked` é `false`.",
+            "nullable": true
+          },
+          "tenantName": {
+            "type": "string",
+            "description": "Nome desse outro tenant, para exibir na mensagem de conflito",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "description": "Papel do vínculo existente nesse outro tenant",
+            "enum": [
+              "owner",
+              "manager"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "blocked",
+          "exempt",
+          "alreadyMember",
+          "tenantId",
+          "tenantName",
+          "role"
+        ]
+      },
+      "UpdateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Nome do tenant"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Ativar/desativar tenant"
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "ID do Admin dono do tenant"
+          },
+          "campaignConfig": {
+            "type": "object",
+            "description": "Configuração padrão de campanhas (template JSONB)"
+          }
+        }
+      },
+      "AttachManagerDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "E-mail do gestor a associar ao tenant. Se já existir uma conta com este e-mail, ela é promovida a Tenant e vinculada; senão, uma conta nova é criada com `name` e uma senha temporária é enviada por e-mail.",
+            "example": "gestor@artistax.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do gestor. Obrigatório apenas quando a conta ainda não existe (usado para criá-la); ignorado ao promover uma conta já existente.",
+            "example": "Maria Souza"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "TenantMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da membership"
+          },
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário no auth-service"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant"
+          },
+          "role": {
+            "type": "string",
+            "description": "`owner` = propriedade B2B; `manager` = gestão do tenant",
+            "enum": [
+              "owner",
+              "manager"
+            ]
+          },
+          "isGestor": {
+            "type": "boolean",
+            "description": "Gestor do tenant. No máximo um por tenant (índice parcial `UQ_tenant_gestor`), e zero é estado válido."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando a associação foi criada"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome no auth-service",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail no auth-service",
+            "nullable": true
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "Papel global da conta no auth-service (não o papel no tenant)",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "tenantId",
+          "role",
+          "isGestor",
+          "createdAt",
+          "name",
+          "email",
+          "accessRole"
+        ]
+      },
+      "AddMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário no auth-service. Use `GET /auth/users?email=` para resolver o e-mail em id."
+          },
+          "role": {
+            "type": "string",
+            "description": "Papel no tenant. `owner` é propriedade B2B e só SuperAdmin concede; `manager` é gestão, e o primeiro manager do tenant vira o gestor automaticamente.",
+            "enum": [
+              "owner",
+              "manager"
+            ],
+            "default": "manager"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SetGestorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário que passa a ser o gestor. Precisa já ser membro do tenant com papel `manager`."
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SetTenantAdminDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID da conta (perfil Admin, no auth-service) que passa a ser dona do tenant. Substitui o Admin atual, se houver."
+          }
+        },
+        "required": [
+          "userId"
         ]
       },
       "Token": {
@@ -15850,221 +16217,6 @@
             "example": false
           }
         }
-      },
-      "CreateTenantDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Nome do tenant",
-            "example": "Artista X"
-          },
-          "email": {
-            "type": "string",
-            "description": "E-mail do gestor do tenant. OPCIONAL: informado, a criação provisiona a conta do gestor e envia a senha temporária; omitido, o tenant nasce sem gestor e ninguém além do Admin dono tem acesso até que um membro seja associado. Imutável depois (não existe no UpdateTenantDto).",
-            "example": "dono@artistax.com"
-          },
-          "slug": {
-            "type": "string",
-            "description": "Slug unico do tenant (gerado automaticamente se omitido)",
-            "example": "tenant-1"
-          },
-          "ownerId": {
-            "type": "string",
-            "description": "ID do Admin (user) dono do tenant; só Super Admin pode enviar; Admin usa o próprio id"
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "UserMembershipLookupDto": {
-        "type": "object",
-        "properties": {
-          "blocked": {
-            "type": "boolean",
-            "description": "A associação seria recusada (409)? É o único campo que o front precisa consultar para habilitar ou não a confirmação."
-          },
-          "exempt": {
-            "type": "boolean",
-            "description": "Conta com perfil Admin, fora da regra de tenant único (pode acumular tenants)"
-          },
-          "alreadyMember": {
-            "type": "boolean",
-            "description": "Já é membro do tenant consultado"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "Outro tenant a que a conta já pertence, ou `null` se não houver. Vem preenchido mesmo para um perfil isento — nesse caso `blocked` é `false`.",
-            "nullable": true
-          },
-          "tenantName": {
-            "type": "string",
-            "description": "Nome desse outro tenant, para exibir na mensagem de conflito",
-            "nullable": true
-          },
-          "role": {
-            "type": "string",
-            "description": "Papel do vínculo existente nesse outro tenant",
-            "enum": [
-              "owner",
-              "manager"
-            ],
-            "nullable": true
-          }
-        },
-        "required": [
-          "blocked",
-          "exempt",
-          "alreadyMember",
-          "tenantId",
-          "tenantName",
-          "role"
-        ]
-      },
-      "UpdateTenantDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Nome do tenant"
-          },
-          "active": {
-            "type": "boolean",
-            "description": "Ativar/desativar tenant"
-          },
-          "ownerId": {
-            "type": "string",
-            "description": "ID do Admin dono do tenant"
-          },
-          "campaignConfig": {
-            "type": "object",
-            "description": "Configuração padrão de campanhas (template JSONB)"
-          }
-        }
-      },
-      "AttachManagerDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "description": "E-mail do gestor a associar ao tenant. Se já existir uma conta com este e-mail, ela é promovida a Tenant e vinculada; senão, uma conta nova é criada com `name` e uma senha temporária é enviada por e-mail.",
-            "example": "gestor@artistax.com"
-          },
-          "name": {
-            "type": "string",
-            "description": "Nome do gestor. Obrigatório apenas quando a conta ainda não existe (usado para criá-la); ignorado ao promover uma conta já existente.",
-            "example": "Maria Souza"
-          }
-        },
-        "required": [
-          "email"
-        ]
-      },
-      "TenantMemberDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "ID da membership"
-          },
-          "userId": {
-            "type": "string",
-            "description": "ID do usuário no auth-service"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "ID do tenant"
-          },
-          "role": {
-            "type": "string",
-            "description": "`owner` = propriedade B2B; `manager` = gestão do tenant",
-            "enum": [
-              "owner",
-              "manager"
-            ]
-          },
-          "isGestor": {
-            "type": "boolean",
-            "description": "Gestor do tenant. No máximo um por tenant (índice parcial `UQ_tenant_gestor`), e zero é estado válido."
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Quando a associação foi criada"
-          },
-          "name": {
-            "type": "string",
-            "description": "Nome no auth-service",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "description": "E-mail no auth-service",
-            "nullable": true
-          },
-          "accessRole": {
-            "type": "string",
-            "description": "Papel global da conta no auth-service (não o papel no tenant)",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "tenantId",
-          "role",
-          "isGestor",
-          "createdAt",
-          "name",
-          "email",
-          "accessRole"
-        ]
-      },
-      "AddMemberDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "description": "ID do usuário no auth-service. Use `GET /auth/users?email=` para resolver o e-mail em id."
-          },
-          "role": {
-            "type": "string",
-            "description": "Papel no tenant. `owner` é propriedade B2B e só SuperAdmin concede; `manager` é gestão, e o primeiro manager do tenant vira o gestor automaticamente.",
-            "enum": [
-              "owner",
-              "manager"
-            ],
-            "default": "manager"
-          }
-        },
-        "required": [
-          "userId"
-        ]
-      },
-      "SetGestorDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "description": "ID do usuário que passa a ser o gestor. Precisa já ser membro do tenant com papel `manager`."
-          }
-        },
-        "required": [
-          "userId"
-        ]
-      },
-      "SetTenantAdminDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "description": "ID da conta (perfil Admin, no auth-service) que passa a ser dona do tenant. Substitui o Admin atual, se houver."
-          }
-        },
-        "required": [
-          "userId"
-        ]
       },
       "StarSplitDto": {
         "type": "object",
@@ -16880,10 +17032,11 @@
           },
           "mode": {
             "type": "string",
-            "description": "`exact` = precisa bater com uma das medidas de `sizes`. `boundedRatio` = precisa ter uma das proporções de `ratios` e caber em um dos tetos de `maxSizes`.",
+            "description": "`exact` = precisa bater com uma das medidas de `sizes`. `boundedRatio` = precisa ter uma das proporções de `ratios` e caber em um dos tetos de `maxSizes`. `none` = sem exigência de dimensão.",
             "enum": [
               "exact",
-              "boundedRatio"
+              "boundedRatio",
+              "none"
             ]
           },
           "sizes": {
