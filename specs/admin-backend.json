@@ -952,7 +952,7 @@
         ]
       },
       "delete": {
-        "description": "Apaga a campanha e o que depende dela — tiers, galeria, vínculos. Tudo numa transação: uma falha no meio não deixa a campanha pela metade.\n\n**Só serve para campanha que nunca vendeu.** Havendo chave paga (`completed`) ou já estornada (`refunded`), responde **400**: apagar destruiria o `payment_intent`, que vive dentro do JSON de `transactions.memo` e é a única trilha capaz de embasar um estorno. Nesse caso use `POST /campaigns/{campaignId}/cancel`, que preserva tudo e abre um caso de reembolso por comprador.\n\nChave em `pending`/`failed` (checkout abandonado, cobrança recusada) NÃO conta como venda e não bloqueia a remoção.",
+        "description": "Apaga a campanha e o que depende dela — tiers, galeria, vínculos. Tudo numa transação: uma falha no meio não deixa a campanha pela metade.\n\n**Só serve para campanha que nunca vendeu.** Havendo chave paga (`completed`) ou já estornada (`refunded`), responde **400** com `error: \"CAMPAIGN_HAS_SOLD_KEYS\"` e o total em `soldKeys`: apagar destruiria o `payment_intent`, que vive dentro do JSON de `transactions.memo` e é a única trilha capaz de embasar um estorno. Trate esse código oferecendo o `POST /campaigns/{campaignId}/cancel`, que preserva tudo e abre um caso de reembolso por comprador — é o que o painel faz.\n\nChave em `pending`/`failed` (checkout abandonado, cobrança recusada) NÃO conta como venda e não bloqueia a remoção.",
         "operationId": "removeCampaign",
         "parameters": [
           {
@@ -982,7 +982,7 @@
             }
           },
           "400": {
-            "description": "A campanha tem chave vendida. A mensagem diz quantas e aponta `POST /campaigns/{campaignId}/cancel` como o caminho correto.",
+            "description": "A campanha tem chave vendida. Vem com `error: \"CAMPAIGN_HAS_SOLD_KEYS\"` e `soldKeys`, para o cliente oferecer o cancelamento em vez de só exibir texto.",
             "content": {
               "application/json": {
                 "schema": {
