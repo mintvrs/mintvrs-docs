@@ -14946,7 +14946,7 @@
           },
           "cardRefundEnabled": {
             "type": "boolean",
-            "description": "Se a devolução no cartão está operando (`REFUND_CARD_ENABLED`). Quando `false`, `cardAmount` deixa de significar \"volta para o cartão\" e passa a ser apenas a parcela que SERIA elegível: na prática o beneficiário só pode escolher crédito ou a troca por chaves, e tentar cartão devolve 422 `CARD_REFUND_UNAVAILABLE`. A tela precisa ler este campo antes de prometer estorno ao comprador.",
+            "description": "Se a devolução no cartão está operando. Hoje é sempre `false`: o reembolso sai em crédito na plataforma. Quando `false`, `cardAmount` deixa de significar \"volta para o cartão\" e passa a ser apenas a parcela que SERIA elegível: na prática o beneficiário só pode escolher crédito ou a troca por chaves, e tentar cartão devolve 422 `CARD_REFUND_UNAVAILABLE`. A tela precisa ler este campo antes de prometer estorno ao comprador.",
             "example": false
           },
           "cases": {
