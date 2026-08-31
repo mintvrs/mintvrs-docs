@@ -554,17 +554,67 @@
       },
       "get": {
         "operationId": "listCampaigns",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Número da página (inicia em 1)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantidade de itens por página",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Termo de busca (nome da campanha ou artista)",
+            "schema": {
+              "example": "Lupita",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtro por status da campanha",
+            "schema": {
+              "example": "Active",
+              "type": "string",
+              "enum": [
+                "Active",
+                "Inactive",
+                "Ended",
+                "Scheduled",
+                "Cancelled"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Campaign"
-                  }
+                  "$ref": "#/components/schemas/PaginatedCampaignsResponseDto"
                 }
               }
             }
@@ -575,7 +625,7 @@
             "bearer": []
           }
         ],
-        "summary": "Listar campanhas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
+        "summary": "Listar campanhas paginadas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
         "tags": [
           "campaigns"
         ]
@@ -1688,7 +1738,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Foto da galeria de preview: webp ou jpg, webp ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
+                    "description": "Foto da galeria de preview: webp, png ou jpg, webp, png ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -1793,7 +1843,7 @@
                   "file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia. Foto da galeria de preview: webp ou jpg, webp ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
+                    "description": "Novo arquivo. Omitir para editar só a descrição/título sem trocar a mídia. Foto da galeria de preview: webp, png ou jpg, webp, png ou jpg, máx 15MB (guia: Galeria). Vídeo do ensaio: 16:9 ou 9:16, no máximo 1920 × 1080 px (ou 1080 × 1920 px em pé), webm ou mp4, máx 100MB (guia: Vídeos). A tabela completa está em GET /media/specs."
                   },
                   "aria_label": {
                     "type": "string",
@@ -2157,6 +2207,27 @@
             }
           },
           {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Limite de itens retornados (máximo 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página da listagem (iniciando em 1)",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
             "name": "tenantId",
             "required": false,
             "in": "query",
@@ -2166,14 +2237,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de transações do usuário",
+            "description": "Lista paginada de transações do usuário",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
-                  }
+                  "$ref": "#/components/schemas/PaginatedCreditTransactionsResponseDto"
                 }
               }
             }
@@ -2215,6 +2283,76 @@
         "operationId": "getTenantTransactions",
         "parameters": [
           {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por tipo de transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "subtract",
+                "refund",
+                "lock",
+                "unlock",
+                "consume",
+                "compensation"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por status da transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "failed",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Ordenação",
+            "schema": {
+              "default": "date_desc",
+              "type": "string",
+              "enum": [
+                "date_desc",
+                "date_asc",
+                "amount_desc",
+                "amount_asc"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Limite de itens retornados (máximo 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página da listagem (iniciando em 1)",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
             "name": "tenantId",
             "required": false,
             "in": "query",
@@ -2224,14 +2362,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de transações do tenant",
+            "description": "Lista paginada de transações do tenant",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
-                  }
+                  "$ref": "#/components/schemas/PaginatedCreditTransactionsResponseDto"
                 }
               }
             }
@@ -2273,6 +2408,76 @@
         "operationId": "getAllTransactions",
         "parameters": [
           {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por tipo de transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "add",
+                "subtract",
+                "refund",
+                "lock",
+                "unlock",
+                "consume",
+                "compensation"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por status da transação",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "failed",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Ordenação",
+            "schema": {
+              "default": "date_desc",
+              "type": "string",
+              "enum": [
+                "date_desc",
+                "date_asc",
+                "amount_desc",
+                "amount_asc"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Limite de itens retornados (máximo 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Página da listagem (iniciando em 1)",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
             "name": "tenantId",
             "required": false,
             "in": "query",
@@ -2282,14 +2487,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de todas as transações",
+            "description": "Lista paginada de todas as transações",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
-                  }
+                  "$ref": "#/components/schemas/PaginatedCreditTransactionsResponseDto"
                 }
               }
             }
@@ -4326,6 +4528,191 @@
         ]
       }
     },
+    "/marketplace/offers": {
+      "get": {
+        "description": "Todas as ofertas de compra (bids) VIVAS de uma campanha, independente de quem as fez e de quem é dono do anúncio — é a tabela \"Proposta de compra\" da página da campanha.\n\nPreenche o buraco entre `/marketplace/offers/sent` e `/marketplace/offers/received`, que são recortes de POSSE: quem só está olhando a campanha não aparece em nenhum dos dois e via a tabela vazia, e o vendedor só enxergava as ofertas de um anúncio seu.\n\n**Autenticação opcional.** Com Bearer válido, cada linha vem com `isMine`, `viewerIsSeller`, `viewerHasKey`, `canAccept` e `canCancel` resolvidos — a tabela decide a AÇÃO sem cruzar nada no cliente. Sem token, as flags vêm `false` e `buyerName`/`buyerEmail` vêm `null` (só saem para quem é parte na oferta).\n\nVivo = `pending`/`countered` **e** ainda não vencida: uma oferta cuja validade expirou continua `pending` no banco até a varredura passar, e ela não é lance vivo. Use `includeClosed=true` para ver também o histórico (aceitas, recusadas, canceladas, expiradas).",
+        "operationId": "listCampaignOffers",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "query",
+            "description": "UUID da campanha cujo livro de ofertas se quer ler. Obrigatório.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "listingId",
+            "required": false,
+            "in": "query",
+            "description": "Restringir a um anúncio específico da campanha",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeClosed",
+            "required": false,
+            "in": "query",
+            "description": "Incluir também as ofertas já encerradas (aceitas, recusadas, canceladas, expiradas). Por padrão a rota devolve só o que está VIVO — é o livro de ofertas, não o histórico.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignOfferViewDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId ausente ou malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Livro de ofertas de compra de uma campanha (todas as vivas)",
+        "tags": [
+          "marketplace"
+        ]
+      },
+      "post": {
+        "operationId": "createOffer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceOffer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body inválido (listingId UUID, price positivo) ou validade inválida: envie `expiresInDays` (1 a 30) OU `expiresInMinutes` (só em homologação), nunca os dois.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
+        "tags": [
+          "marketplace-offers"
+        ]
+      }
+    },
+    "/marketplace/{campaignId}/summary": {
+      "get": {
+        "description": "Tudo o que a página de oferta precisa para montar o cabeçalho e o formulário SEM passar por `GET /campaigns/:campaignId/public`.\n\n**Responde em QUALQUER status de campanha.** O `/public` exige `status = Active` e devolve 404 no resto — só que anúncio de revenda sobrevive à campanha, então uma campanha `Ended` ou `Cancelled` (justamente quando só o mercado secundário resta) derrubava a página no gate do `/public`. Aqui `campaignStatus` vem como DADO, para o front badgear \"Encerrada\", nunca como filtro.\n\n`tiers` é a fonte do dropdown \"Tipo de chave\" do formulário de proposta. `viewerHasKey`/`viewerKeyCount`/`viewerListingCount` descrevem o requisitante (`false`/`0` para anônimo).\n\nSó devolve 404 quando não existe campanha **nem** rastro de mercado. Se a campanha sumiu mas restaram anúncios (não há FK em `campaign_id`), `campaign` vem `null` e os agregados vêm preenchidos.",
+        "operationId": "getMarketplaceCampaignSummary",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da CAMPANHA",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceCampaignSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha inexistente e sem anúncios/ofertas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cabeçalho, tiers e agregados de mercado de uma campanha",
+        "tags": [
+          "marketplace"
+        ]
+      }
+    },
     "/marketplace/listings": {
       "get": {
         "operationId": "listActive",
@@ -4364,6 +4751,16 @@
             "description": "Filtrar por campanha",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "includeMine",
+            "required": false,
+            "in": "query",
+            "description": "Incluir também os anúncios do próprio requisitante (que por padrão são omitidos — ninguém compra a própria chave). Use na página de UMA campanha, onde a tabela é o livro de asks e precisa mostrar todos: as linhas do requisitante vêm com `isMine: true` para o front trocar COMPRAR por \"meu anúncio\".",
+            "schema": {
+              "default": false,
+              "type": "boolean"
             }
           },
           {
@@ -4665,63 +5062,6 @@
         ]
       }
     },
-    "/marketplace/offers": {
-      "post": {
-        "operationId": "createOffer",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOfferDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MarketplaceOffer"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Body inválido (listingId UUID, price positivo) ou validade inválida: envie `expiresInDays` (1 a 30) OU `expiresInMinutes` (só em homologação), nunca os dois.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Não autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Fazer uma oferta sobre um anúncio (trava crédito em escrow)",
-        "tags": [
-          "marketplace-offers"
-        ]
-      }
-    },
     "/marketplace/offers/pix-simulated": {
       "post": {
         "description": "Cria a oferta pagando com PIX SIMULADO a diferença entre o valor ofertado e o saldo disponível. **Nenhuma cobrança real acontece**: não há gateway, redirect nem webhook — a requisição vai direto à fase final que o cartão alcançava depois do pagamento confirmado (credita a diferença e cria a oferta) e grava tudo numa transação só.\n\nA diferença é sempre recalculada no servidor, com a linha de saldo travada; o valor enviado pelo cliente não é usado. Se o saldo já cobre a oferta, `shortfall` volta `0`, nada é cunhado e a oferta é criada normalmente.\n\nToda linha de ledger criada aqui nasce marcada (`provider: pix_simulated`, `metadata.simulated: true`) e é REVERTIDA quando a oferta é cancelada, recusada ou expira. Disponível apenas onde `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`; será substituído pelo trilho real (Asaas), de duas fases. Use `idempotencyKey` para que um reenvio devolva a mesma oferta (`reused: true`) em vez de cunhar de novo.",
@@ -4848,6 +5188,7 @@
     },
     "/marketplace/offers/sent": {
       "get": {
+        "description": "Recorte de POSSE: só as ofertas do requisitante. Para o livro de ofertas de uma campanha inteira (todas as vivas, de qualquer comprador), use `GET /marketplace/offers?campaignId=…`.",
         "operationId": "listSent",
         "parameters": [],
         "responses": {
@@ -4858,7 +5199,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MarketplaceOffer"
+                    "$ref": "#/components/schemas/OfferViewDto"
                   }
                 }
               }
@@ -4878,6 +5219,7 @@
     },
     "/marketplace/offers/received": {
       "get": {
+        "description": "Recorte de POSSE: só as ofertas que chegaram em anúncios do requisitante. Para o livro de ofertas de uma campanha inteira (inclusive as de anúncios de terceiros), use `GET /marketplace/offers?campaignId=…`.",
         "operationId": "listReceived",
         "parameters": [
           {
@@ -4913,7 +5255,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MarketplaceOffer"
+                    "$ref": "#/components/schemas/OfferViewDto"
                   }
                 }
               }
@@ -7344,6 +7686,52 @@
         "summary": "Remover tipo de acesso",
         "tags": [
           "access-types"
+        ]
+      }
+    },
+    "/main-stars/photo-upload": {
+      "post": {
+        "operationId": "uploadMainStarPhoto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo da foto da modelo/artista (JPG, PNG, WEBP)"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Foto enviada com sucesso"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "403": {
+            "description": "Sem permissão"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload de foto de modelo/artista",
+        "tags": [
+          "main-stars"
         ]
       }
     },
@@ -10437,6 +10825,73 @@
           "featuredOrder"
         ]
       },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "description": "Página atual",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Itens por página",
+            "example": 10
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de itens encontrados",
+            "example": 42
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "Total de páginas",
+            "example": 5
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Se possui próxima página",
+            "example": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "Se possui página anterior",
+            "example": false
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "totalPages",
+          "hasNextPage",
+          "hasPreviousPage"
+        ]
+      },
+      "PaginatedCampaignsResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Lista de campanhas da página atual",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Campaign"
+            }
+          },
+          "meta": {
+            "description": "Metadados de paginação",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
       "Content": {
         "type": "object",
         "properties": {
@@ -11452,10 +11907,6 @@
       "TransactionUserSummaryDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID do usuário"
-          },
           "name": {
             "type": "string",
             "description": "Nome do usuário"
@@ -11464,29 +11915,16 @@
             "type": "string",
             "description": "Email do usuário"
           }
-        },
-        "required": [
-          "id",
-          "name",
-          "email"
-        ]
+        }
       },
-      "TransactionCampaignSummaryDto": {
+      "TransactionTenantSummaryDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID da campanha"
-          },
           "name": {
             "type": "string",
-            "description": "Nome da campanha"
+            "description": "Nome do tenant"
           }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
+        }
       },
       "EnrichedCreditTransactionDto": {
         "type": "object",
@@ -11495,17 +11933,9 @@
             "type": "string",
             "description": "UUID da transação"
           },
-          "tenantId": {
-            "type": "string",
-            "description": "ID do tenant"
-          },
-          "userId": {
-            "type": "string",
-            "description": "ID do usuário"
-          },
           "type": {
             "type": "string",
-            "description": "Tipo do lançamento:\n- `add` — crédito comprado ou concedido\n- `subtract` — débito direto\n- `refund` — estorno\n- `lock` — valor travado em operação em andamento (entra no `lockedBalance`)\n- `unlock` — destrava o valor sem gastá-lo (oferta recusada ou expirada)\n- `consume` — consome um valor travado (a operação se concretizou)\n- `compensation` — crédito de cortesia; veja `isNonRefundable` e `expiresAt`\n\n`amount` é sempre POSITIVO — é magnitude, não sinal: use o `type` para saber se soma ou subtrai do saldo.",
+            "description": "Tipo do lançamento de crédito",
             "enum": [
               "add",
               "subtract",
@@ -11520,31 +11950,6 @@
             "type": "number",
             "description": "Valor em centavos"
           },
-          "currency": {
-            "type": "string",
-            "description": "Moeda"
-          },
-          "provider": {
-            "type": "string",
-            "description": "Origem da transação. Valores possíveis: `stripe` (compra de créditos via checkout), `internal` (movimentos internos: subtract/lock/unlock/consume), `admin_grant` (créditos concedidos manualmente por admin), `credit_refund` (reembolso devolvido em créditos), `stripe_refund` (estorno no cartão via Stripe), `campaign_cancel_compensation` (créditos compensatórios por campanha cancelada — modelo ANTIGO, não-reembolsável e com validade; substituído por `campaign_cancel_refund`), `campaign_cancel_refund` (crédito escolhido pelo usuário como forma de receber de volta o que gastou numa campanha cancelada — crédito NORMAL: sem validade e sem restrição), `pix_simulated` (diferença de uma oferta P2P paga por PIX SIMULADO — **sem dinheiro real por trás, apenas homologação**), `pix_simulated_reversal` (reversão desse crédito quando a oferta é cancelada/recusada/expira).",
-            "enum": [
-              "stripe",
-              "internal",
-              "admin_grant",
-              "credit_refund",
-              "stripe_refund",
-              "campaign_cancel_compensation",
-              "campaign_cancel_refund",
-              "pix_simulated",
-              "pix_simulated_reversal"
-            ],
-            "nullable": true
-          },
-          "providerTransactionId": {
-            "type": "string",
-            "description": "ID da transação no provider",
-            "nullable": true
-          },
           "status": {
             "type": "string",
             "description": "Status da transação",
@@ -11555,98 +11960,79 @@
               "refunded"
             ]
           },
-          "metadata": {
-            "type": "object",
-            "description": "Metadata adicional; o formato varia por tipo/origem. add via checkout Stripe: objeto da sessão de checkout do Stripe (bruto). add via admin_grant: `{ reason, grantedBy }`. lock (compra de chave): `{ type: \"key_purchase\" }`. lock (oferta P2P): `{ kind: \"marketplace_offer\", listingId, offerId? }`. unlock: `{ reason, originalLockTransactionId, offerId?, listingId? }`. consume: `{ lockedAmount, originalLockTransactionId, offerId?, listingId? }`. refund (créditos): `{ reason, originalTransactionId }`. refund (Stripe): `{ reason, stripeRefundId, originalTransactionId }`. refund (compra de chave): `{ reason, keyPurchaseTransactionId, provider }`. compensation: `{ reason, originalTransactionId, originalProvider }`. add via pix_simulated: `{ simulated: true, rail: \"pix\", kind: \"offer_funding\", listingId, price, shortfall, idempotencyKey }`. refund via pix_simulated_reversal: `{ simulated: true, rail: \"pix\", reason, originalTransactionId, offerId, note }`.",
-            "nullable": true
-          },
-          "balanceAfter": {
-            "type": "number",
-            "description": "Saldo do usuário (em centavos) imediatamente após esta transação. Snapshot gravado na criação; null em transações anteriores à existência do campo e em transações pending ainda não aprovadas.",
-            "nullable": true
-          },
-          "campaignId": {
+          "provider": {
             "type": "string",
-            "description": "ID da campanha associada",
-            "nullable": true
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de expiração (para créditos compensatórios)",
-            "nullable": true
-          },
-          "isNonRefundable": {
-            "type": "boolean",
-            "description": "Créditos não reembolsáveis (compensatórios)",
-            "default": false
-          },
-          "refundedTransactionId": {
-            "type": "string",
-            "description": "ID da transação original (em caso de reembolso)",
-            "nullable": true
-          },
-          "xionTransactionHash": {
-            "type": "string",
-            "description": "Hash da transação on-chain na Xion",
-            "nullable": true
-          },
-          "xionExplorerUrl": {
-            "type": "string",
-            "description": "URL do explorer Xion",
-            "nullable": true
+            "description": "Origem da transação"
           },
           "createdAt": {
             "format": "date-time",
             "type": "string",
             "description": "Data de criação"
           },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de atualização"
-          },
           "user": {
             "description": "Resumo do usuário da transação",
-            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/TransactionUserSummaryDto"
               }
             ]
           },
-          "campaign": {
-            "description": "Resumo da campanha associada (null quando a transação não tem campaignId ou a campanha não existe mais)",
-            "nullable": true,
+          "tenant": {
+            "description": "Resumo do tenant (visão superadmin)",
             "allOf": [
               {
-                "$ref": "#/components/schemas/TransactionCampaignSummaryDto"
+                "$ref": "#/components/schemas/TransactionTenantSummaryDto"
+              }
+            ]
+          },
+          "xionTransactionHash": {
+            "type": "string",
+            "description": "Hash da transação na Xion"
+          },
+          "xionExplorerUrl": {
+            "type": "string",
+            "description": "Explorer URL na Xion"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de expiração (para créditos compensatórios)"
+          },
+          "isNonRefundable": {
+            "type": "boolean",
+            "description": "Crédito não-reembolsável"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "amount",
+          "status",
+          "createdAt"
+        ]
+      },
+      "PaginatedCreditTransactionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Lista de transações da página atual",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnrichedCreditTransactionDto"
+            }
+          },
+          "meta": {
+            "description": "Metadados de paginação",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
               }
             ]
           }
         },
         "required": [
-          "id",
-          "tenantId",
-          "userId",
-          "type",
-          "amount",
-          "currency",
-          "provider",
-          "providerTransactionId",
-          "status",
-          "metadata",
-          "balanceAfter",
-          "campaignId",
-          "expiresAt",
-          "isNonRefundable",
-          "refundedTransactionId",
-          "xionTransactionHash",
-          "xionExplorerUrl",
-          "createdAt",
-          "updatedAt",
-          "user",
-          "campaign"
+          "data",
+          "meta"
         ]
       },
       "GrantCreditsDto": {
@@ -11799,7 +12185,6 @@
           "provider",
           "providerTransactionId",
           "status",
-          "metadata",
           "balanceAfter",
           "campaignId",
           "expiresAt",
@@ -13773,150 +14158,141 @@
           "isRead"
         ]
       },
-      "ActiveListingViewDto": {
+      "CampaignOfferViewDto": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "description": "UUID do anúncio"
+            "description": "UUID da oferta",
+            "format": "uuid"
+          },
+          "listingId": {
+            "type": "string",
+            "description": "UUID do anúncio (listing) alvo da oferta",
+            "format": "uuid"
           },
           "transactionId": {
             "type": "string",
-            "description": "UUID da transação (chave) anunciada"
-          },
-          "sellerId": {
-            "type": "string",
-            "description": "UUID do vendedor"
-          },
-          "sellerEmail": {
-            "type": "string",
-            "description": "E-mail do vendedor no momento em que o anúncio foi criado. `null` em anúncios antigos, criados antes de o campo passar a ser preenchido.",
-            "example": "maria.souza@exemplo.com",
-            "nullable": true
-          },
-          "sellerName": {
-            "type": "string",
-            "description": "Nome do vendedor no momento em que o anúncio foi criado — snapshot, não acompanha alteração posterior do cadastro. `null` em anúncios antigos.",
-            "example": "Maria Souza",
-            "nullable": true
+            "description": "UUID da chave (transação) ofertada",
+            "format": "uuid"
           },
           "campaignId": {
             "type": "string",
-            "description": "UUID da campanha"
-          },
-          "tenantId": {
-            "type": "string",
-            "description": "UUID do tenant do anúncio. `null` em anúncios cuja campanha não tinha tenant vinculado.",
-            "format": "uuid",
-            "nullable": true
+            "description": "UUID da campanha",
+            "format": "uuid"
           },
           "price": {
             "type": "number",
-            "description": "Preço do anúncio em centavos (BRL)",
-            "example": 1500
+            "description": "Valor da oferta em CENTAVOS (BRL) — mesma unidade do `price` dos anúncios, e diferente dos preços de `accesses`, que vêm em reais.",
+            "example": 150000
+          },
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor, em centavos. `null` se não houve.",
+            "nullable": true
           },
           "status": {
             "type": "string",
-            "description": "Status do anúncio",
             "enum": [
-              "active",
-              "sold",
-              "cancelled"
-            ]
+              "pending",
+              "countered",
+              "accepted",
+              "rejected",
+              "cancelled",
+              "expired"
+            ],
+            "description": "Status APRESENTADO: uma oferta ainda `pending`/`countered` cujo `expiresAt` já passou aparece como `expired` antes de a varredura persistir a transição. Esta listagem só devolve ofertas vivas, então na prática vem `pending` ou `countered`."
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de expiração da oferta"
           },
           "createdAt": {
             "format": "date-time",
             "type": "string",
-            "description": "Data de criação do anúncio"
+            "description": "Data de criação da oferta — a coluna DATA da tabela"
           },
-          "campaignName": {
+          "accessId": {
             "type": "string",
-            "description": "Nome da campanha",
+            "format": "uuid",
+            "description": "UUID do tier da chave ofertada. `null` em chaves legadas.",
             "nullable": true
           },
-          "campaignKeyImage": {
+          "tierLevel": {
             "type": "string",
-            "description": "URL da arte da chave (key_image da campanha, servível) — imagem principal do card no marketplace de revenda",
+            "description": "Nome do tier (`accesses.level`) — a coluna TIPO da tabela",
+            "example": "VIP",
             "nullable": true
           },
-          "campaignCoverImage": {
+          "tierTypeTitle": {
             "type": "string",
-            "description": "URL da capa isolada da campanha (cover_image, servível) — fallback visual quando a campanha não tem key_image",
+            "description": "Título do tipo de acesso do tier (`access_types.title`), quando houver",
             "nullable": true
           },
-          "campaignEssayTitle": {
+          "buyerId": {
             "type": "string",
-            "description": "Título do ensaio fotográfico da campanha",
-            "nullable": true
+            "description": "UUID de quem fez a oferta",
+            "format": "uuid"
           },
-          "modelName": {
+          "buyerName": {
             "type": "string",
-            "description": "Nome da modelo (main_star) da campanha",
+            "description": "Nome do comprador. **Só preenchido para quem é parte na oferta** (o próprio comprador ou o vendedor do anúncio); `null` para os demais.",
             "nullable": true
           },
-          "campaignDescription": {
+          "buyerEmail": {
             "type": "string",
-            "description": "Descrição da campanha",
+            "description": "E-mail do comprador. Mesma régua de `buyerName`: `null` para quem não é parte.",
             "nullable": true
           },
-          "sellPriceMin": {
-            "type": "number",
-            "description": "Menor preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
-            "example": 1500,
-            "nullable": true
+          "sellerId": {
+            "type": "string",
+            "description": "UUID do vendedor (dono do anúncio ofertado)",
+            "format": "uuid"
           },
-          "sellPriceMax": {
-            "type": "number",
-            "description": "Maior preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
-            "example": 5000,
-            "nullable": true
+          "isMine": {
+            "type": "boolean",
+            "description": "Oferta feita pelo próprio requisitante — o selo \"MINHA\". `false` para anônimo."
           },
-          "sellOffersCount": {
-            "type": "number",
-            "description": "Quantidade de anúncios de venda ativos da campanha",
-            "example": 4
+          "viewerIsSeller": {
+            "type": "boolean",
+            "description": "O requisitante é o vendedor do anúncio que esta oferta mira. É ELE quem pode aceitar, contra-ofertar ou recusar."
           },
-          "buyPriceMin": {
-            "type": "number",
-            "description": "Menor preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
-            "example": 1200,
-            "nullable": true
+          "viewerHasKey": {
+            "type": "boolean",
+            "description": "O requisitante possui alguma chave desta campanha. Repetido em toda linha (é uma propriedade do requisitante, não da oferta) para a tabela não precisar cruzar com `GET /marketplace/:campaignId/hasKey`. É o que distingue o botão desabilitado \"SEM CHAVE\" de uma linha simplesmente não-aceitável."
           },
-          "buyPriceMax": {
-            "type": "number",
-            "description": "Maior preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
-            "example": 4800,
-            "nullable": true
+          "canAccept": {
+            "type": "boolean",
+            "description": "Se `POST /marketplace/offers/:offerId/accept` vai passar para este requisitante. ⚠️ **Ter chave da campanha não basta**: a oferta mira um ANÚNCIO específico e só o dono daquele anúncio liquida a venda. Um portador de chave que não anunciou ESTA chave vê `viewerHasKey: true` e `canAccept: false` — para aceitar, precisa antes criar o próprio anúncio (`POST /marketplace/list`) e receber a oferta nele. Renderize o botão ACEITAR por `canAccept`, nunca por `viewerHasKey`."
           },
-          "buyOffersCount": {
-            "type": "number",
-            "description": "Quantidade de ofertas de compra vivas (pending/countered) da campanha",
-            "example": 2
+          "canCancel": {
+            "type": "boolean",
+            "description": "Se `POST /marketplace/offers/:offerId/cancel` vai passar — ou seja, é a minha oferta e ela ainda está viva. É o botão CANCELAR PROPOSTA."
           }
         },
         "required": [
           "id",
+          "listingId",
           "transactionId",
-          "sellerId",
-          "sellerEmail",
-          "sellerName",
           "campaignId",
-          "tenantId",
           "price",
+          "counterPrice",
           "status",
+          "expiresAt",
           "createdAt",
-          "campaignName",
-          "campaignKeyImage",
-          "campaignCoverImage",
-          "campaignEssayTitle",
-          "modelName",
-          "campaignDescription",
-          "sellPriceMin",
-          "sellPriceMax",
-          "sellOffersCount",
-          "buyPriceMin",
-          "buyPriceMax",
-          "buyOffersCount"
+          "accessId",
+          "tierLevel",
+          "tierTypeTitle",
+          "buyerId",
+          "buyerName",
+          "buyerEmail",
+          "sellerId",
+          "isMine",
+          "viewerIsSeller",
+          "viewerHasKey",
+          "canAccept",
+          "canCancel"
         ]
       },
       "CampaignEmbedDto": {
@@ -14070,6 +14446,361 @@
           "completionDate",
           "keyImage",
           "nftContractAddress"
+        ]
+      },
+      "MarketplaceCampaignTierDto": {
+        "type": "object",
+        "properties": {
+          "accessId": {
+            "type": "string",
+            "description": "UUID do tier (`accesses.id`)",
+            "format": "uuid"
+          },
+          "level": {
+            "type": "string",
+            "description": "Nome do tier exibido ao usuário (`accesses.level`)",
+            "example": "VIP"
+          },
+          "typeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso (`access_types.title`), quando houver",
+            "example": "Acesso total",
+            "nullable": true
+          },
+          "benefits": {
+            "type": "array",
+            "description": "Benefícios do tier (bullets)",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Estoque TOTAL do tier no mercado primário. `null` = ilimitado. Não é o disponível.",
+            "nullable": true
+          },
+          "sold": {
+            "type": "number",
+            "description": "Chaves já vendidas deste tier",
+            "example": 12
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço BASE do tier em REAIS (`accesses.price`). É a base do split das estrelas, não o que o comprador paga.",
+            "example": 500,
+            "nullable": true
+          },
+          "priceFinal": {
+            "type": "number",
+            "description": "Preço FINAL ao comprador no mercado PRIMÁRIO, em reais (base + taxa de `primaryMarketFeePercent`). Serve de referência de preço na tela; a revenda P2P NÃO usa este valor — lá quem define o preço é o anúncio/oferta, em centavos.",
+            "example": 600,
+            "nullable": true
+          },
+          "pricePixFinal": {
+            "type": "number",
+            "description": "Preço final via PIX, em reais. `null` quando o tier não tem `price_pix`.",
+            "nullable": true
+          },
+          "priceCardFinal": {
+            "type": "number",
+            "description": "Preço final via cartão, em reais. `null` quando o tier não tem `price_card`.",
+            "nullable": true
+          },
+          "primaryMarketFeePercent": {
+            "type": "number",
+            "description": "Percentual da taxa do mercado primário embutida nos campos `*Final`",
+            "example": 20
+          }
+        },
+        "required": [
+          "accessId",
+          "level",
+          "typeTitle",
+          "benefits",
+          "quantity",
+          "sold",
+          "price",
+          "priceFinal",
+          "pricePixFinal",
+          "priceCardFinal",
+          "primaryMarketFeePercent"
+        ]
+      },
+      "MarketplaceCampaignSummaryDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "UUID da campanha consultada",
+            "format": "uuid"
+          },
+          "campaignStatus": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Ended",
+              "Scheduled",
+              "Cancelled"
+            ],
+            "description": "Status editorial da campanha. **Informativo, não é filtro**: este endpoint responde em qualquer status (inclusive `Ended` e `Cancelled`). `null` quando a campanha não existe mais e só sobraram anúncios/ofertas.",
+            "nullable": true
+          },
+          "completionDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora em que a campanha foi encerrada (`ended_at`). `null` se não encerrou.",
+            "nullable": true
+          },
+          "campaign": {
+            "description": "Cabeçalho da campanha já embutido — nome, tema do ensaio (`essayTitle`), modelo (`modelName`/`modelProfession`/`modelProfilePhoto`) e artes (`keyImage`/`coverImage`). `null` quando a campanha não existe mais (não há FK em `campaign_id`): nesse caso os agregados de mercado ainda vêm preenchidos e o front monta o cabeçalho pelas listings.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignEmbedDto"
+              }
+            ]
+          },
+          "tiers": {
+            "description": "Tiers da campanha, ordenados por `level`. É esta a fonte do dropdown \"Tipo de chave\" do formulário de proposta. Lista vazia quando a campanha não existe mais.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketplaceCampaignTierDto"
+            }
+          },
+          "sellPriceMin": {
+            "type": "number",
+            "description": "Menor preço de VENDA (ask) ativo da campanha, em centavos",
+            "nullable": true
+          },
+          "sellPriceMax": {
+            "type": "number",
+            "description": "Maior preço de VENDA (ask) ativo da campanha, em centavos",
+            "nullable": true
+          },
+          "sellOffersCount": {
+            "type": "number",
+            "description": "Quantidade de anúncios de venda ativos",
+            "example": 4
+          },
+          "buyPriceMin": {
+            "type": "number",
+            "description": "Menor preço de COMPRA (bid vivo) da campanha, em centavos",
+            "nullable": true
+          },
+          "buyPriceMax": {
+            "type": "number",
+            "description": "Maior preço de COMPRA (bid vivo) da campanha, em centavos",
+            "nullable": true
+          },
+          "buyOffersCount": {
+            "type": "number",
+            "description": "Quantidade de ofertas de compra vivas (pending/countered, não vencidas)",
+            "example": 2
+          },
+          "viewerHasKey": {
+            "type": "boolean",
+            "description": "Se o requisitante possui alguma chave desta campanha. `false` para anônimo. É o que separa ACEITAR PROPOSTA do estado desabilitado \"SEM CHAVE\"."
+          },
+          "viewerKeyCount": {
+            "type": "number",
+            "description": "Quantas chaves desta campanha o requisitante possui",
+            "example": 2
+          },
+          "viewerListingCount": {
+            "type": "number",
+            "description": "Quantos anúncios de venda ATIVOS o requisitante tem nesta campanha",
+            "example": 1
+          }
+        },
+        "required": [
+          "campaignId",
+          "campaignStatus",
+          "completionDate",
+          "campaign",
+          "tiers",
+          "sellPriceMin",
+          "sellPriceMax",
+          "sellOffersCount",
+          "buyPriceMin",
+          "buyPriceMax",
+          "buyOffersCount",
+          "viewerHasKey",
+          "viewerKeyCount",
+          "viewerListingCount"
+        ]
+      },
+      "ActiveListingViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do anúncio"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "UUID da transação (chave) anunciada"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "UUID do vendedor"
+          },
+          "sellerEmail": {
+            "type": "string",
+            "description": "E-mail do vendedor no momento em que o anúncio foi criado. `null` em anúncios antigos, criados antes de o campo passar a ser preenchido.",
+            "example": "maria.souza@exemplo.com",
+            "nullable": true
+          },
+          "sellerName": {
+            "type": "string",
+            "description": "Nome do vendedor no momento em que o anúncio foi criado — snapshot, não acompanha alteração posterior do cadastro. `null` em anúncios antigos.",
+            "example": "Maria Souza",
+            "nullable": true
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "UUID da campanha"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "UUID do tenant do anúncio. `null` em anúncios cuja campanha não tinha tenant vinculado.",
+            "format": "uuid",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Preço do anúncio em centavos (BRL)",
+            "example": 1500
+          },
+          "status": {
+            "type": "string",
+            "description": "Status do anúncio",
+            "enum": [
+              "active",
+              "sold",
+              "cancelled"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação do anúncio"
+          },
+          "isMine": {
+            "type": "boolean",
+            "description": "Anúncio do próprio requisitante. Só pode vir `true` quando a busca usou `includeMine=true` — por padrão o próprio anúncio nem entra na listagem. Renderize \"meu anúncio\" em vez de COMPRAR: `POST /marketplace/buy/:id` recusa a compra da própria chave."
+          },
+          "accessId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID do tier (`accesses.id`) da chave anunciada, resolvido por `transaction_id` → `transactions.access_id`. `null` em chaves legadas, sem tier.",
+            "nullable": true
+          },
+          "tierLevel": {
+            "type": "string",
+            "description": "Nome do tier da chave anunciada (`accesses.level`) — a coluna TIPO da tabela de ofertas de venda. `null` quando a chave não tem tier resolvível; o rótulo de fallback é do front.",
+            "example": "VIP",
+            "nullable": true
+          },
+          "tierTypeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso do tier (`access_types.title`), quando o tier tiver tipo",
+            "example": "Acesso total",
+            "nullable": true
+          },
+          "campaignName": {
+            "type": "string",
+            "description": "Nome da campanha",
+            "nullable": true
+          },
+          "campaignKeyImage": {
+            "type": "string",
+            "description": "URL da arte da chave (key_image da campanha, servível) — imagem principal do card no marketplace de revenda",
+            "nullable": true
+          },
+          "campaignCoverImage": {
+            "type": "string",
+            "description": "URL da capa isolada da campanha (cover_image, servível) — fallback visual quando a campanha não tem key_image",
+            "nullable": true
+          },
+          "campaignEssayTitle": {
+            "type": "string",
+            "description": "Título do ensaio fotográfico da campanha",
+            "nullable": true
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Nome da modelo (main_star) da campanha",
+            "nullable": true
+          },
+          "campaignDescription": {
+            "type": "string",
+            "description": "Descrição da campanha",
+            "nullable": true
+          },
+          "sellPriceMin": {
+            "type": "number",
+            "description": "Menor preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
+            "example": 1500,
+            "nullable": true
+          },
+          "sellPriceMax": {
+            "type": "number",
+            "description": "Maior preço de VENDA (ask) ativo da campanha em centavos, ou null se nenhum",
+            "example": 5000,
+            "nullable": true
+          },
+          "sellOffersCount": {
+            "type": "number",
+            "description": "Quantidade de anúncios de venda ativos da campanha",
+            "example": 4
+          },
+          "buyPriceMin": {
+            "type": "number",
+            "description": "Menor preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
+            "example": 1200,
+            "nullable": true
+          },
+          "buyPriceMax": {
+            "type": "number",
+            "description": "Maior preço de COMPRA (bid/oferta viva) da campanha em centavos, ou null se nenhum",
+            "example": 4800,
+            "nullable": true
+          },
+          "buyOffersCount": {
+            "type": "number",
+            "description": "Quantidade de ofertas de compra vivas (pending/countered) da campanha",
+            "example": 2
+          }
+        },
+        "required": [
+          "id",
+          "transactionId",
+          "sellerId",
+          "sellerEmail",
+          "sellerName",
+          "campaignId",
+          "tenantId",
+          "price",
+          "status",
+          "createdAt",
+          "isMine",
+          "accessId",
+          "tierLevel",
+          "tierTypeTitle",
+          "campaignName",
+          "campaignKeyImage",
+          "campaignCoverImage",
+          "campaignEssayTitle",
+          "modelName",
+          "campaignDescription",
+          "sellPriceMin",
+          "sellPriceMax",
+          "sellOffersCount",
+          "buyPriceMin",
+          "buyPriceMax",
+          "buyOffersCount"
         ]
       },
       "MyListingViewDto": {
@@ -14709,6 +15440,155 @@
           "failed",
           "skipped",
           "offerIds"
+        ]
+      },
+      "OfferViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID da oferta"
+          },
+          "listingId": {
+            "type": "string",
+            "description": "ID do anúncio (listing) alvo da oferta"
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "ID da transação (chave) sendo ofertada (denormalizado)"
+          },
+          "campaignId": {
+            "type": "string",
+            "description": "ID da campanha (denormalizado)"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID do tenant do COMPRADOR (contexto do escrow)",
+            "nullable": true
+          },
+          "buyerId": {
+            "type": "string",
+            "description": "ID do comprador que fez a oferta"
+          },
+          "buyerEmail": {
+            "type": "string",
+            "description": "Email do comprador",
+            "nullable": true
+          },
+          "buyerName": {
+            "type": "string",
+            "description": "Nome do comprador",
+            "nullable": true
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "ID do vendedor (dono do anúncio, denormalizado)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Valor da oferta em centavos (BRL) — valor travado em escrow"
+          },
+          "counterPrice": {
+            "type": "number",
+            "description": "Valor da contra-oferta do vendedor em centavos",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da oferta. Nas listagens (`/marketplace/offers/sent|received`) uma oferta ainda `pending`/`countered` cujo `expiresAt` já passou é APRESENTADA como `expired` antes de a varredura persistir a transição — a transição real (com o destravamento do crédito) é feita pela varredura ou por `POST /marketplace/offers/expire-due`.",
+            "enum": [
+              "pending",
+              "countered",
+              "accepted",
+              "rejected",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de expiração da oferta (instante absoluto). Vem de `expiresInDays` ou, em homologação, de `expiresInMinutes` — a coluna guarda o instante, não a duração."
+          },
+          "lockCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction de lock (escrow)",
+            "nullable": true
+          },
+          "stripeFundedAmount": {
+            "type": "number",
+            "description": "Parcela do `price` que foi FINANCIADA para esta oferta (centavos), por qualquer trilho — `0` quando o saldo pré-existente cobria tudo. **O nome da coluna é histórico**: hoje ela guarda tanto o valor pago no cartão (trilho legado) quanto o do PIX. Qual trilho foi está no `provider` da transação apontada por `fundingCreditTxId`. É o valor devolvido quando a oferta é recusada, expira ou é cancelada.",
+            "default": 0
+          },
+          "fundingCreditTxId": {
+            "type": "string",
+            "description": "ID da CreditTransaction (`type=add`) que financiou a diferença. O `provider` dela é a fonte de verdade do trilho e decide como o release devolve o valor: `stripe` → estorno real no cartão (`refundStripe`), `pix_simulated` → reversão interna do crédito cunhado.",
+            "nullable": true
+          },
+          "fundingSessionId": {
+            "type": "string",
+            "description": "Chave de idempotência do financiamento: `sessionId` do checkout Stripe (trilho legado) ou `pixsim:`idempotencyKey`` no PIX simulado. Índice único parcial — é o que faz um reenvio devolver a mesma oferta em vez de financiar de novo.",
+            "nullable": true
+          },
+          "acceptedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data/hora de aceitação",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de criação"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data de atualização"
+          },
+          "accessId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID do tier (`accesses.id`) da chave ofertada, resolvido por `transaction_id` → `transactions.access_id`. `null` em chaves legadas.",
+            "nullable": true
+          },
+          "tierLevel": {
+            "type": "string",
+            "description": "Nome do tier da chave ofertada (`accesses.level`)",
+            "example": "VIP",
+            "nullable": true
+          },
+          "tierTypeTitle": {
+            "type": "string",
+            "description": "Título do tipo de acesso do tier (`access_types.title`), quando houver",
+            "example": "Acesso total",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "transactionId",
+          "campaignId",
+          "tenantId",
+          "buyerId",
+          "buyerEmail",
+          "buyerName",
+          "sellerId",
+          "price",
+          "counterPrice",
+          "status",
+          "expiresAt",
+          "lockCreditTxId",
+          "stripeFundedAmount",
+          "fundingCreditTxId",
+          "fundingSessionId",
+          "acceptedAt",
+          "createdAt",
+          "updatedAt",
+          "accessId",
+          "tierLevel",
+          "tierTypeTitle"
         ]
       },
       "UpdateOfferDto": {

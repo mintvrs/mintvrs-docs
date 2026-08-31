@@ -275,7 +275,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/list-campaigns",
-          label: "Listar campanhas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
+          label: "Listar campanhas paginadas (filtrado por role: SA=todas, Admin=tenants dele, TA=tenant)",
           className: "api-method get",
         },
         {
@@ -341,7 +341,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/get-buttons",
-          label: "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Público.",
+          label: "Obter a tela de ensaio da campanha: imagem de fundo e tags interativas. Autenticação opcional.",
           className: "api-method get",
         },
         {
@@ -353,13 +353,13 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/set-button-layout-image",
-          label: "Upload da imagem de fundo do editor de botões para bucket público (apenas dono/admin)",
+          label: "Upload da imagem de fundo do editor de botões (apenas dono/admin)",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/upload-button-file",
-          label: "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) para o bucket público (apenas dono/admin)",
+          label: "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) (apenas dono/admin)",
           className: "api-method post",
         },
         {
@@ -521,50 +521,50 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/deploy-contract",
-          label: "Deploy a new NFT contract on XION (legacy single-tenant)",
-          className: "api-method post",
+          label: "[Deprecado] Deploy de contrato — hoje é operação de infraestrutura",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/register-web-2-purchase",
-          label: "Registrar compra Web2 on-chain via CW20 (legacy single-tenant)",
+          label: "Registrar compra Web2 no ledger Soroban",
           className: "api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/deploy-cw-20-utility",
-          label: "Deploy do CW20 utilitário (legacy single-tenant)",
-          className: "api-method post",
+          label: "[Deprecado] No-op — o ledger Soroban é único e global",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/deploy-factory",
-          label: "Deploy the CW20 Factory contract (one-time setup, SuperAdmin only)",
-          className: "api-method post",
+          label: "[Deprecado] No-op — não existe factory na Stellar",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/deploy-tenant-cw-20",
-          label: "Deploy isolated CW20 for a tenant via Factory (SuperAdmin only)",
-          className: "api-method post",
+          label: "[Deprecado] No-op — o tenant é campo do registro, não contrato",
+          className: "menu__list-item--deprecated api-method post",
         },
         {
           type: "doc",
           id: "api/admin-backend/get-tenant-cw-20-address",
-          label: "Query the CW20 contract address for a specific tenant",
+          label: "Contrato do ledger em uso por um tenant",
           className: "api-method get",
         },
         {
           type: "doc",
           id: "api/admin-backend/get-factory-tenants",
-          label: "List all tenants registered in the factory (SuperAdmin only)",
-          className: "api-method get",
+          label: "[Deprecado] Não há factory; o tenant é campo do registro",
+          className: "menu__list-item--deprecated api-method get",
         },
         {
           type: "doc",
           id: "api/admin-backend/get-factory-token-count",
-          label: "Get total number of deployed tenant tokens",
-          className: "api-method get",
+          label: "[Deprecado] Não há factory; o tenant é campo do registro",
+          className: "menu__list-item--deprecated api-method get",
         },
         {
           type: "doc",
@@ -575,7 +575,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "api/admin-backend/register-tenant-purchase",
-          label: "Register Web2 purchase on tenant-specific CW20 ledger",
+          label: "Register Web2 purchase on the tenant ledger",
           className: "api-method post",
         },
       ],
@@ -768,6 +768,18 @@ const sidebar: SidebarsConfig = {
         id: "api/admin-backend/marketplace",
       },
       items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/list-campaign-offers",
+          label: "Livro de ofertas de compra de uma campanha (todas as vivas)",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "api/admin-backend/get-marketplace-campaign-summary",
+          label: "Cabeçalho, tiers e agregados de mercado de uma campanha",
+          className: "api-method get",
+        },
         {
           type: "doc",
           id: "api/admin-backend/list-active",
@@ -1056,6 +1068,12 @@ const sidebar: SidebarsConfig = {
         id: "api/admin-backend/main-stars",
       },
       items: [
+        {
+          type: "doc",
+          id: "api/admin-backend/upload-main-star-photo",
+          label: "Upload de foto de modelo/artista",
+          className: "api-method post",
+        },
         {
           type: "doc",
           id: "api/admin-backend/create-main-star",

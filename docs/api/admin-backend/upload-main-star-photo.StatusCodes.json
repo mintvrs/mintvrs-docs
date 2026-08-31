@@ -1,0 +1,1 @@
+{"responses":{"200":{"description":"Foto enviada com sucesso"},"401":{"description":"Não autorizado"},"403":{"description":"Sem permissão"}}}
