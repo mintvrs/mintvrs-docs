@@ -1,0 +1,71 @@
+---
+id: mark-credit-buyback-request-paid
+title: "[ADMIN] Registrar que o PIX da recompra foi pago"
+description: "A operação pagou o PIX por fora (não há BaaS ainda) e registra aqui. É o momento em que o crédito SAI do saldo: a trava é consumida (`consume` em `credit_transactions`). Guarde o comprovante em `providerReference` (end-to-end do PIX) — quando houver BaaS, esta chamada vira o webhook do pagamento."
+sidebar_label: "[ADMIN] Registrar que o PIX da recompra foi pago"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[ADMIN] Registrar que o PIX da recompra foi pago"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/credits/buyback-requests/{id}/mark-paid"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+A operação pagou o PIX por fora (não há BaaS ainda) e registra aqui. É o momento em que o crédito SAI do saldo: a trava é consumida (`consume` em `credit_transactions`). Guarde o comprovante em `providerReference` (end-to-end do PIX) — quando houver BaaS, esta chamada vira o webhook do pagamento.
+
+**Irreversível.** Um pedido `paid` não volta; se pagou errado, o caminho é `POST /credits/grant`.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./mark-credit-buyback-request-paid.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./mark-credit-buyback-request-paid.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./mark-credit-buyback-request-paid.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

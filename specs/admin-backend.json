@@ -1184,7 +1184,7 @@
     },
     "/campaigns/{campaignId}/buttons": {
       "get": {
-        "description": "Leitura da tela de ensaio finalizado: `backgroundImageUrl` (imagem de fundo, ou null) e `interactiveTags[]`, cada tag com `posX`/`posY` em percentual (0-100) e um objeto `media` com o que ela abre. `media.type` é IMAGE | VIDEO | AUDIO | TEXT | PROFILE — o app consumidor escolhe o ícone do círculo a partir dele. `media.mediaUrl` traz o arquivo (null em PROFILE e enquanto não há arquivo), `media.profile` traz a ficha da modelo em PROFILE, e `media.article` é sempre null nesta versão (não há entidade de artigo). Só entram tags habilitadas: botões com `enabled: false` são omitidos e, com a etapa desligada na campanha (`interactive_buttons_enabled: false`), `interactiveTags` vem vazio. Sem filtro de status — a tela é a do ensaio finalizado. AUTENTICAÇÃO OPCIONAL: a rota responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401), mas `backgroundImageUrl` e `media.mediaUrl` só vêm preenchidos para quem tem direito à mídia — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, esses campos vêm `null`; o restante da resposta é idêntico. Quando preenchidas, essas URLs são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. ATENÇÃO: o PUT nesta mesma rota devolve outro shape (o do editor). Quem precisa do layout CRU — `id` do ícone, `enabled`, `order`, `fields` — deve ler `GET /campaigns/:campaignId`, que traz `interactive_buttons`, `button_layout_image` e a flag.",
+        "description": "Leitura da tela de ensaio finalizado: `backgroundImageUrl` (imagem de fundo, ou null) e `interactiveTags[]`, cada tag com `posX`/`posY` em percentual (0-100) e um objeto `media` com o que ela abre. `media.type` é IMAGE | VIDEO | AUDIO | TEXT | PROFILE — o app consumidor escolhe o ícone do círculo a partir dele. `media.mediaUrl` traz o arquivo (null em PROFILE e enquanto não há arquivo), `media.profile` traz a ficha da modelo em PROFILE, e `media.article` é sempre null nesta versão (não há entidade de artigo). Só entram tags habilitadas: botões com `enabled: false` são omitidos e, com a etapa desligada na campanha (`interactive_buttons_enabled: false`), `interactiveTags` vem vazio. Sem filtro de status — a tela é a do ensaio finalizado. AUTENTICAÇÃO OPCIONAL: a rota responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401), mas `backgroundImageUrl` e `media.mediaUrl` só vêm preenchidos para quem tem direito à mídia — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, esses campos vêm `null`; o restante da resposta é idêntico. Quando preenchidas, essas URLs são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. A mídia fica num bucket sem leitura anônima: sem a assinatura o arquivo não abre, então não receber a URL é não ter acesso ao conteúdo, e não apenas não ter o link. ATENÇÃO: o PUT nesta mesma rota devolve outro shape (o do editor). Quem precisa do layout CRU — `id` do ícone, `enabled`, `order`, `fields` — deve ler `GET /campaigns/:campaignId`, que traz `interactive_buttons`, `button_layout_image` e a flag.",
         "operationId": "getButtons",
         "parameters": [
           {
@@ -1546,6 +1546,390 @@
           }
         ],
         "summary": "Upload do arquivo de um botão (imagem/vídeo/áudio/arquivo) (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/essay-gallery/public": {
+      "get": {
+        "description": "Fotos e vídeos extras do ensaio, na ordem definida pelo dono da campanha. Itens crus: não têm título nem descrição — só o arquivo, o tipo (`kind`) e o nome original. AUTENTICAÇÃO OPCIONAL: responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401). Mesma regra de acesso de `GET /campaigns/:campaignId/buttons` — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, `items` vem VAZIO — mas `total` continua trazendo a contagem, para o app poder anunciar \"N mídias neste ensaio\" sem receber nenhuma URL. Quando preenchidas, as `fileUrl` são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. A mídia fica num bucket sem leitura anônima: sem a assinatura o arquivo não abre, então não receber a URL é não ter acesso ao conteúdo, e não apenas não ter o link.",
+        "operationId": "getPublicEssayGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "example": "b5a1a6c8-7c33-4c3b-8a0e-ef2f1d9e3b9f",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Galeria do ensaio. `items` vazio (com `total` preenchido) para quem não tem direito à mídia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EssayGalleryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "campaignId malformado (UUID esperado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Galeria de fotos e vídeos do ensaio para o app consumidor. Autenticação opcional.",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/essay-gallery": {
+      "get": {
+        "description": "Itens na ordem de exibição, com as `fileUrl` já assinadas (900s) para o painel renderizar as miniaturas na hora. É a rota do editor; quem consome a galeria no app usa `GET /campaigns/:campaignId/essay-gallery/public`. A galeria NÃO sai em `GET /campaigns/:campaignId` — lá o campo é omitido, porque os caminhos guardados são do bucket privado.",
+        "operationId": "listEssayGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EssayGalleryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar a galeria do ensaio para edição (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      },
+      "post": {
+        "description": "Recebe um ou mais arquivos via `multipart/form-data` (campo `files`) e os acrescenta ao FIM da galeria, no bucket PRIVADO. A galeria NÃO tem limite de itens; o teto por requisição existe só por conta do multer. Ao contrário da foto de ensaio e do arquivo de botão, aqui NÃO há exigência de dimensão nem de proporção — travar a resolução de um acervo ilimitado só reprovaria material bom. Extensão, mimetype, peso e a leitura dos bytes continuam valendo. Formatos aceitos — Foto da galeria do ensaio: webp, png ou jpg, webp, png ou jpg, máx 25MB (guia: Galeria do ensaio); Vídeo da galeria do ensaio: webm ou mp4, webm ou mp4, máx 200MB (guia: Galeria do ensaio). Os arquivos do lote são validados ANTES de qualquer upload: se um for recusado, nenhum sobe e a resposta é 400 citando o nome do arquivo. Retorna a galeria inteira já reordenada e com as `fileUrl` assinadas (900s).",
+        "operationId": "addEssayGalleryItems",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Fotos e/ou vídeos, até 10 por requisição. Foto da galeria do ensaio: webp, png ou jpg, webp, png ou jpg, máx 25MB (guia: Galeria do ensaio); Vídeo da galeria do ensaio: webm ou mp4, webm ou mp4, máx 200MB (guia: Galeria do ensaio)"
+                  }
+                },
+                "required": [
+                  "files"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EssayGalleryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nenhum arquivo enviado, ou extensão/mimetype/tamanho fora do permitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adicionar fotos e vídeos à galeria do ensaio (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/essay-gallery/order": {
+      "put": {
+        "description": "A ordem do array é a ordem exibida no app. A lista precisa ser COMPLETA e sem repetições — uma lista parcial não diz onde entram os itens de fora, e adivinhar embaralharia o que já estava arrumado. Não mexe em arquivo nenhum no bucket. Retorna a galeria na nova ordem, assinada.",
+        "operationId": "reorderEssayGallery",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderEssayGalleryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EssayGalleryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lista incompleta, com repetições ou com id desconhecido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reordenar a galeria do ensaio (apenas dono/admin)",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/campaigns/{campaignId}/essay-gallery/{itemId}": {
+      "delete": {
+        "description": "Remove o item da campanha e apaga o objeto no bucket privado. A remoção no banco vem primeiro: se o apagamento no S3 falhar, o item já saiu da galeria e fica só um objeto órfão (registrado em log), em vez de o painel continuar mostrando algo que o usuário mandou excluir.",
+        "operationId": "removeEssayGalleryItem",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "required": true,
+            "in": "path",
+            "description": "UUID da campanha",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "description": "Id do item da galeria",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item removido."
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Não é o dono da campanha",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campanha ou item não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover um item da galeria do ensaio (apenas dono/admin)",
         "tags": [
           "campaigns"
         ]
@@ -2088,7 +2472,7 @@
     },
     "/credits/balance": {
       "get": {
-        "description": "Cria o saldo zerado na primeira consulta, então nunca dá 404 por usuário sem saldo.\n\n**Disponível para gastar = `balance - lockedBalance`.** Não existe campo com esse valor: `balance` é o TOTAL e já inclui o que está travado em ofertas P2P em aberto. Ambos em CENTAVOS.\n\nCrédito não se compra — ele entra por reembolso de campanha cancelada (`POST /refunds/{caseId}/choose`) ou por vender uma chave no marketplace.",
+        "description": "Cria o saldo zerado na primeira consulta, então nunca dá 404 por usuário sem saldo.\n\n**Disponível para gastar = `balance - lockedBalance`.** Não existe campo com esse valor: `balance` é o TOTAL e já inclui o que está travado em ofertas P2P em aberto. Ambos em CENTAVOS.\n\nCrédito não se compra — ele entra por reembolso de campanha cancelada (`POST /refunds/{caseId}/choose`) ou por vender uma chave no marketplace.\n\n**`available`** já vem calculado (`balance - lockedBalance`).\n\n**`buyback`** é o bloco da RECOMPRA de créditos (a tela \"Solicitar devolução de créditos\"): se dá para pedir agora (`enabled` + `unavailableReason`), o mínimo (`minAmount`, 5 créditos), o máximo (`maxAmount` = disponível), o destino do PIX (`pixKey` = CPF cadastrado, MASCARADO) e o prazo de análise. O pedido em si é `POST /credits/buyback-requests`.",
         "operationId": "getCreditBalance",
         "parameters": [
           {
@@ -2101,11 +2485,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Saldo atualizado",
+            "description": "Saldo atualizado, com o disponível calculado e o bloco `buyback` da recompra",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreditBalance"
+                  "$ref": "#/components/schemas/CreditBalanceResponseDto"
                 }
               }
             }
@@ -2872,6 +3256,523 @@
         ]
       }
     },
+    "/credits/buyback-requests": {
+      "post": {
+        "description": "Abre um pedido de recompra e TRAVA o valor pedido no saldo (`lockedBalance`) até a análise — pedir a recompra e gastar o mesmo crédito numa oferta P2P não é possível.\n\nRegras, na ordem em que são checadas (a mesma ordem de `GET /credits/balance` → `buyback.unavailableReason`):\n1. a conta precisa ter CPF cadastrado — a recompra vai exclusivamente para ele (422 `PIX_KEY_MISSING`);\n2. `amount` ≥ 500 centavos = 5 créditos (400 `BUYBACK_BELOW_MINIMUM`);\n3. um pedido em análise por vez (409 `BUYBACK_PENDING_EXISTS`) — cancele o atual para abrir outro;\n4. `amount` ≤ saldo disponível, `balance - lockedBalance` (400 `INSUFFICIENT_BALANCE`).\n\nNão há pagamento automático: o pedido nasce `pending_review` e a operação o encerra em `POST /credits/buyback-requests/{id}/mark-paid` (pagou o PIX) ou `/reject`. O usuário acompanha em `GET /credits/buyback-requests/me` e pode desistir em `/{id}/cancel` enquanto estiver em análise.\n\n`amount` em CENTAVOS (1 crédito = 100).",
+        "operationId": "createCreditBuybackRequest",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCreditBuybackRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pedido aberto, créditos travados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Abaixo do mínimo (`BUYBACK_BELOW_MINIMUM`) ou acima do disponível (`INSUFFICIENT_BALANCE`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Já existe um pedido em análise (`BUYBACK_PENDING_EXISTS`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Conta sem CPF cadastrado (`PIX_KEY_MISSING`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Solicitar a recompra de créditos (PIX no CPF cadastrado)",
+        "tags": [
+          "credits"
+        ]
+      },
+      "get": {
+        "description": "Visão da operação. Filtre por `status=pending_review` para ver o que está esperando análise. Tenant vê só o próprio tenant; SuperAdmin vê todos (ou um, via `tenantId`). Cada item traz `user` (id, e-mail e nome congelados na abertura) e `pixKey.masked` — o CPF inteiro NÃO existe neste serviço; o pagamento é feito por fora, no CPF que a conta tem no auth-service.",
+        "operationId": "listCreditBuybackRequests",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por estado. Sem filtro, vêm todos, mais recentes primeiro.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_review",
+                "paid",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Quantos pedidos devolver (1–200)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Fila de solicitações de recompra",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/buyback-requests/me": {
+      "get": {
+        "description": "Mais recentes primeiro (até 50). É onde o usuário acompanha o andamento: `pending_review` em análise, `paid` PIX enviado, `rejected`/`cancelled` créditos devolvidos ao saldo. `reviewNote` traz a observação da operação, quando houver.",
+        "operationId": "listMyCreditBuybackRequests",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Minhas solicitações de recompra",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/buyback-requests/{id}/cancel": {
+      "post": {
+        "description": "Só o dono, só enquanto `pending_review`. Destrava o valor — ele volta ao saldo disponível no mesmo ato. Pedido de outra pessoa responde 404, não 403.",
+        "operationId": "cancelMyCreditBuybackRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do pedido",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pedido cancelado, créditos devolvidos ao disponível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pedido inexistente — ou de outra pessoa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O pedido já foi encerrado (`BUYBACK_NOT_PENDING`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Desistir de uma solicitação de recompra em análise",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/buyback-requests/{id}/reject": {
+      "post": {
+        "description": "Destrava o valor — volta ao saldo disponível do usuário. `note` é mostrada a ele na listagem: escreva o motivo para ele, não para o log.",
+        "operationId": "rejectCreditBuybackRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do pedido",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreditBuybackRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pedido não encontrado neste tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O pedido já foi encerrado (`BUYBACK_NOT_PENDING`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Recusar uma solicitação de recompra",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
+    "/credits/buyback-requests/{id}/mark-paid": {
+      "post": {
+        "description": "A operação pagou o PIX por fora (não há BaaS ainda) e registra aqui. É o momento em que o crédito SAI do saldo: a trava é consumida (`consume` em `credit_transactions`). Guarde o comprovante em `providerReference` (end-to-end do PIX) — quando houver BaaS, esta chamada vira o webhook do pagamento.\n\n**Irreversível.** Um pedido `paid` não volta; se pagou errado, o caminho é `POST /credits/grant`.",
+        "operationId": "markCreditBuybackRequestPaid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do pedido",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tenantId",
+            "required": false,
+            "in": "query",
+            "description": "Só para SuperAdmin/Admin, que não têm tenant no token: diz sobre qual tenant a operação é. Tenant e User NÃO enviam — o tenant sai do próprio token e este parâmetro é ignorado.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreditBuybackRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackRequestDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seu papel não tem acesso a este recurso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pedido não encontrado neste tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O pedido já foi encerrado (`BUYBACK_NOT_PENDING`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBuybackErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[ADMIN] Registrar que o PIX da recompra foi pago",
+        "tags": [
+          "credits"
+        ]
+      }
+    },
     "/stellar/health": {
       "get": {
         "operationId": "getHealth",
@@ -3592,6 +4493,44 @@
           }
         ],
         "summary": "Confirmar checkout e creditar saldo (polling após retorno do Stripe)",
+        "tags": [
+          "payment-gateways"
+        ]
+      }
+    },
+    "/gateways/checkout/capabilities": {
+      "get": {
+        "description": "Diz à tela de compra quais trilhos estão ligados, no mesmo formato de `GET /marketplace/offers/capabilities` e dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre o botão desabilitado com o motivo, não o esconda.\n\n- `card` — Stripe Checkout, sempre ligado.\n- `pixSimulated` — PIX SIMULADO de homologação: `POST /gateways/checkout/key-purchase` com `paymentMethod: \"pix_simulated\"` liquida a compra no próprio request, sem gateway. Ligado só com `APP_ENV` fora de produção e `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`.\n- `pix` — PIX real (Asaas). Sempre desligado até a integração existir.",
+        "operationId": "getKeyPurchaseCapabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyPurchaseCapabilitiesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Meios de pagamento disponíveis para comprar chave nova neste ambiente",
         "tags": [
           "payment-gateways"
         ]
@@ -9956,6 +10895,53 @@
           "y"
         ]
       },
+      "EssayGalleryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do item. É a chave usada para reordenar e remover.",
+            "example": "f2b1c4d6-1111-4a11-9b11-aaaaaaaaaaaa"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Se o item é foto ou vídeo. Derivado da extensão no upload.",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ],
+            "example": "IMAGE"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL do arquivo, **assinada e temporária** (15 minutos). O objeto vive num bucket privado sem leitura anônima: quando a assinatura expira o link para de funcionar e é preciso reler a galeria. Não guardar em cache de longa duração."
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Nome original do arquivo enviado. Serve de tooltip/alt no painel; não é título nem descrição do item.",
+            "example": "praia-07.jpg"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Mimetype do arquivo"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "Tamanho em bytes"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Data do upload (ISO)"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "fileUrl",
+          "fileName",
+          "createdAt"
+        ]
+      },
       "Campaign": {
         "type": "object",
         "properties": {
@@ -10135,6 +11121,14 @@
               "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
+          "essay_gallery": {
+            "description": "Galeria privada do ensaio: fotos e vídeos extras, em quantidade ilimitada, sem título nem descrição. É a alternativa OPCIONAL aos botões interativos — não substitui nem depende deles. A ordem do array É a ordem exibida. `null` quando a campanha não tem galeria.\n\n**Nunca sai por esta entidade.** `toServableCampaign` zera o campo em `GET /campaigns/:id` e nas listagens, porque os `fileUrl` guardados aqui são caminhos crus do bucket privado. A leitura é exclusiva de `GET /campaigns/:id/essay-gallery` (dono/admin) e `GET /campaigns/:id/essay-gallery/public` (dono da chave), que devolvem URLs assinadas.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayGalleryItemDto"
+            }
+          },
           "platform_fee": {
             "type": "string",
             "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
@@ -10181,6 +11175,7 @@
           "interactive_buttons_enabled",
           "button_layout_image",
           "interactive_buttons",
+          "essay_gallery",
           "platform_fee",
           "created_at",
           "updated_at"
@@ -10423,6 +11418,14 @@
               "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
+          "essay_gallery": {
+            "description": "Galeria privada do ensaio: fotos e vídeos extras, em quantidade ilimitada, sem título nem descrição. É a alternativa OPCIONAL aos botões interativos — não substitui nem depende deles. A ordem do array É a ordem exibida. `null` quando a campanha não tem galeria.\n\n**Nunca sai por esta entidade.** `toServableCampaign` zera o campo em `GET /campaigns/:id` e nas listagens, porque os `fileUrl` guardados aqui são caminhos crus do bucket privado. A leitura é exclusiva de `GET /campaigns/:id/essay-gallery` (dono/admin) e `GET /campaigns/:id/essay-gallery/public` (dono da chave), que devolvem URLs assinadas.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayGalleryItemDto"
+            }
+          },
           "platform_fee": {
             "type": "string",
             "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
@@ -10545,6 +11548,7 @@
           "interactive_buttons_enabled",
           "button_layout_image",
           "interactive_buttons",
+          "essay_gallery",
           "platform_fee",
           "created_at",
           "updated_at",
@@ -11279,6 +12283,14 @@
               "$ref": "#/components/schemas/InteractiveButtonDto"
             }
           },
+          "essay_gallery": {
+            "description": "Galeria privada do ensaio: fotos e vídeos extras, em quantidade ilimitada, sem título nem descrição. É a alternativa OPCIONAL aos botões interativos — não substitui nem depende deles. A ordem do array É a ordem exibida. `null` quando a campanha não tem galeria.\n\n**Nunca sai por esta entidade.** `toServableCampaign` zera o campo em `GET /campaigns/:id` e nas listagens, porque os `fileUrl` guardados aqui são caminhos crus do bucket privado. A leitura é exclusiva de `GET /campaigns/:id/essay-gallery` (dono/admin) e `GET /campaigns/:id/essay-gallery/public` (dono da chave), que devolvem URLs assinadas.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayGalleryItemDto"
+            }
+          },
           "platform_fee": {
             "type": "string",
             "description": "Taxa da plataforma sobre o royalty de revenda, em **percentual** (não em dinheiro). String decimal: `\"3.00\"` = 3%.",
@@ -11335,6 +12347,7 @@
           "main_star_id",
           "interactive_buttons_enabled",
           "interactive_buttons",
+          "essay_gallery",
           "platform_fee",
           "created_at",
           "updated_at",
@@ -11834,6 +12847,46 @@
           "buttons"
         ]
       },
+      "EssayGalleryResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Itens na ordem de exibição. Na rota pública vem **vazio** para quem não tem direito à mídia (anônimo ou usuário sem a chave) — assinar é entregar.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EssayGalleryItemDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Quantidade total de itens da galeria. Sai preenchido MESMO quando `items` vem vazio por falta de acesso, para o app poder anunciar \"12 mídias neste ensaio\" sem receber nenhuma URL.",
+            "example": 12
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ReorderEssayGalleryDto": {
+        "type": "object",
+        "properties": {
+          "itemIds": {
+            "description": "Lista COMPLETA dos ids da galeria, na ordem desejada. Precisa conter exatamente os ids existentes, sem repetição — uma lista parcial apagaria a ordem dos itens de fora.",
+            "example": [
+              "f2b1c4d6-1111-4a11-9b11-aaaaaaaaaaaa",
+              "f2b1c4d6-2222-4a22-9b22-bbbbbbbbbbbb"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "itemIds"
+        ]
+      },
       "ReorderGalleryDto": {
         "type": "object",
         "properties": {
@@ -11853,7 +12906,128 @@
           "contentIds"
         ]
       },
-      "CreditBalance": {
+      "CreditBuybackPixKeyDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Tipo da chave. Hoje sempre `cpf` — a recompra só vai para o CPF cadastrado, por segurança.",
+            "example": "cpf"
+          },
+          "masked": {
+            "type": "string",
+            "description": "Chave mascarada, pronta para exibir. O documento inteiro nunca sai do auth-service.",
+            "example": "390.***.***-**",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "masked"
+        ]
+      },
+      "CreditBuybackBusinessDaysDto": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "number",
+            "description": "Prazo mínimo de análise, em dias úteis",
+            "example": 5
+          },
+          "max": {
+            "type": "number",
+            "description": "Prazo máximo de análise, em dias úteis",
+            "example": 10
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ]
+      },
+      "CreditBuybackPendingSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do pedido em análise"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor travado por ele, **em CENTAVOS**",
+            "example": 125000
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando foi aberto"
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "createdAt"
+        ]
+      },
+      "CreditBuybackOptionsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Se o usuário pode abrir um pedido AGORA. `false` quando não há CPF cadastrado, quando já existe um pedido em análise, ou quando o saldo disponível está abaixo do mínimo. Renderize o botão visível porém desabilitado e mostre `unavailableReason`.",
+            "example": true
+          },
+          "unavailableReason": {
+            "type": "string",
+            "description": "Por que está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
+            "nullable": true,
+            "example": null
+          },
+          "minAmount": {
+            "type": "number",
+            "description": "Menor valor aceito num pedido, **em CENTAVOS** (5 créditos)",
+            "example": 500
+          },
+          "maxAmount": {
+            "type": "number",
+            "description": "Maior valor aceito num pedido, **em CENTAVOS** = saldo disponível (`balance - lockedBalance`). É o \"Créditos disponíveis\" da tela.",
+            "example": 125000
+          },
+          "pixKey": {
+            "description": "Chave PIX de destino — o CPF cadastrado, mascarado. `null` quando a conta não tem CPF; nesse caso `enabled` é false.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditBuybackPixKeyDto"
+              }
+            ]
+          },
+          "analysisBusinessDays": {
+            "description": "Prazo de análise anunciado ao usuário, em dias úteis",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditBuybackBusinessDaysDto"
+              }
+            ]
+          },
+          "pendingRequest": {
+            "description": "O pedido em análise, quando existe (um por vez). Enquanto ele estiver aberto, `enabled` é false; o usuário pode cancelá-lo em `POST /credits/buyback-requests/{id}/cancel`.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditBuybackPendingSummaryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "enabled",
+          "minAmount",
+          "maxAmount",
+          "analysisBusinessDays"
+        ]
+      },
+      "CreditBalanceResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -11891,6 +13065,19 @@
             "format": "date-time",
             "type": "string",
             "description": "Data de atualização"
+          },
+          "available": {
+            "type": "number",
+            "description": "Disponível para gastar ou recomprar, **em CENTAVOS** = `balance - lockedBalance`. Calculado aqui para a tela não ter que refazer a conta (e errar mostrando `balance` cru como disponível).",
+            "example": 1965000
+          },
+          "buyback": {
+            "description": "Recompra de créditos (PIX no CPF cadastrado): se pode pedir agora, limites e destino.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditBuybackOptionsDto"
+              }
+            ]
           }
         },
         "required": [
@@ -11901,7 +13088,9 @@
           "lockedBalance",
           "currency",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
+          "available",
+          "buyback"
         ]
       },
       "TransactionUserSummaryDto": {
@@ -12249,6 +13438,162 @@
           "transactionId",
           "userId"
         ]
+      },
+      "CreateCreditBuybackRequestDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Valor a recomprar, **em CENTAVOS** (1 crédito = 100). Mínimo 500 (5 créditos); máximo o saldo disponível (`balance - lockedBalance`). O valor fica TRAVADO enquanto o pedido está em análise.",
+            "example": 125000,
+            "minimum": 500
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "CreditBuybackRequestUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID do usuário (auth-service)"
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail, congelado na abertura",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome, congelado na abertura",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "CreditBuybackRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID do pedido"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Valor pedido, **em CENTAVOS** (1 crédito = 100)",
+            "example": 125000
+          },
+          "currency": {
+            "type": "string",
+            "description": "Moeda",
+            "example": "brl"
+          },
+          "status": {
+            "type": "string",
+            "description": "Estado do pedido. `pending_review` = em análise (créditos travados); `paid` = PIX enviado e créditos consumidos; `rejected` = recusado pela operação; `cancelled` = desistência do usuário. Nos dois últimos os créditos voltaram ao saldo disponível.",
+            "enum": [
+              "pending_review",
+              "paid",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "pixKey": {
+            "$ref": "#/components/schemas/CreditBuybackPixKeyDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Data do pedido"
+          },
+          "reviewedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Quando o pedido saiu de `pending_review`",
+            "nullable": true
+          },
+          "reviewNote": {
+            "type": "string",
+            "description": "Observação da análise, quando houver",
+            "nullable": true
+          },
+          "providerReference": {
+            "type": "string",
+            "description": "Identificador do pagamento no provedor, quando pago",
+            "nullable": true
+          },
+          "user": {
+            "description": "Quem pediu. Só nas rotas administrativas.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreditBuybackRequestUserDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "currency",
+          "status",
+          "pixKey",
+          "createdAt"
+        ]
+      },
+      "CreditBuybackErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "Código HTTP do erro",
+            "example": 409
+          },
+          "error": {
+            "type": "string",
+            "description": "Código estável de máquina — trate por ele, nunca pelo texto de `message`.",
+            "enum": [
+              "PIX_KEY_MISSING",
+              "BUYBACK_PENDING_EXISTS",
+              "BUYBACK_NOT_PENDING",
+              "BUYBACK_BELOW_MINIMUM",
+              "INSUFFICIENT_BALANCE"
+            ],
+            "example": "BUYBACK_PENDING_EXISTS"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem legível, em português, pronta para exibir",
+            "example": "Você já tem uma solicitação de recompra em análise. Aguarde a resposta ou cancele-a antes de abrir outra."
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message"
+        ]
+      },
+      "ReviewCreditBuybackRequestDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "Observação da análise: o motivo da recusa, ou a referência do comprovante quando marcado como pago. Vai para o usuário na listagem dele — escreva para ele.",
+            "maxLength": 500,
+            "example": "Comprovante PIX E2E123... enviado em 02/09."
+          },
+          "providerReference": {
+            "type": "string",
+            "description": "Só em `mark-paid`: identificador do pagamento no provedor (end-to-end do PIX). Hoje é preenchido à mão pela operação; quando houver BaaS, vem do webhook.",
+            "maxLength": 120,
+            "example": "E18236120202509021200s0123456789"
+          }
+        }
       },
       "MintNftDto": {
         "type": "object",
@@ -12660,6 +14005,59 @@
         },
         "required": [
           "confirmed"
+        ]
+      },
+      "OfferCapabilityDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Se o recurso pode ser usado AGORA. Quando `false`, renderize a opção visível porém desabilitada e mostre `unavailableReason` — mesma regra dos meios de reembolso.",
+            "example": true
+          },
+          "unavailableReason": {
+            "type": "string",
+            "description": "Por que está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "KeyPurchaseCapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "card": {
+            "description": "Cartão via Stripe Checkout. Sempre ligado.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OfferCapabilityDto"
+              }
+            ]
+          },
+          "pixSimulated": {
+            "description": "PIX SIMULADO: liquida a compra no próprio request, sem gateway e sem cobrança real (`paymentMethod: \"pix_simulated\"`). Só em homologação (`APP_ENV` fora de produção + `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`). É o que o cliente pediu para simular a compra com PIX.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OfferCapabilityDto"
+              }
+            ]
+          },
+          "pix": {
+            "description": "PIX REAL (Asaas). Sempre `enabled: false` até a integração existir — aparece no contrato para a tela mostrar o método desligado com o motivo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OfferCapabilityDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "card",
+          "pixSimulated",
+          "pix"
         ]
       },
       "KeyPurchaseCheckoutDto": {
@@ -15323,25 +16721,6 @@
           "fundedFromBalance",
           "simulated",
           "reused"
-        ]
-      },
-      "OfferCapabilityDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean",
-            "description": "Se o recurso pode ser usado AGORA. Quando `false`, renderize a opção visível porém desabilitada e mostre `unavailableReason` — mesma regra dos meios de reembolso.",
-            "example": true
-          },
-          "unavailableReason": {
-            "type": "string",
-            "description": "Por que está indisponível, em texto pronto para exibir. `null` quando `enabled` é true.",
-            "nullable": true,
-            "example": null
-          }
-        },
-        "required": [
-          "enabled"
         ]
       },
       "ShortExpiryCapabilityDto": {

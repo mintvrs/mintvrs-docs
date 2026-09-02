@@ -1,0 +1,69 @@
+---
+id: reject-credit-buyback-request
+title: "[ADMIN] Recusar uma solicitação de recompra"
+description: "Destrava o valor — volta ao saldo disponível do usuário. `note` é mostrada a ele na listagem: escreva o motivo para ele, não para o log."
+sidebar_label: "[ADMIN] Recusar uma solicitação de recompra"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[ADMIN] Recusar uma solicitação de recompra"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/credits/buyback-requests/{id}/reject"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Destrava o valor — volta ao saldo disponível do usuário. `note` é mostrada a ele na listagem: escreva o motivo para ele, não para o log.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./reject-credit-buyback-request.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./reject-credit-buyback-request.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./reject-credit-buyback-request.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

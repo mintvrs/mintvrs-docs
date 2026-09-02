@@ -1,0 +1,69 @@
+---
+id: revoke-tenant-role
+title: "Reverter o papel de gestor de uma conta (SuperAdmin ou Admin)"
+description: "Contraparte de `POST /auth/users/tenant-admin`. Chamado pelo admin-backend ao desassociar um usuário do último tenant dele: devolve a conta a `User` e zera o `tenant_id`. É no-op idempotente quando a conta é `Admin`, `User` ou `Star` — só quem a associação promoveu a `Tenant` é rebaixado. Recusa SuperAdmin. Quem decide SE deve rebaixar é o admin-backend, que é quem sabe se sobrou alguma membership; as regras aqui são a segunda linha de defesa."
+sidebar_label: "Reverter o papel de gestor de uma conta (SuperAdmin ou Admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/auth-service/mintvrs-auth-service
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Reverter o papel de gestor de uma conta (SuperAdmin ou Admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/auth/users/{id}/revoke-tenant"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Contraparte de `POST /auth/users/tenant-admin`. Chamado pelo admin-backend ao desassociar um usuário do último tenant dele: devolve a conta a `User` e zera o `tenant_id`. É no-op idempotente quando a conta é `Admin`, `User` ou `Star` — só quem a associação promoveu a `Tenant` é rebaixado. Recusa SuperAdmin. Quem decide SE deve rebaixar é o admin-backend, que é quem sabe se sobrou alguma membership; as regras aqui são a segunda linha de defesa.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./revoke-tenant-role.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./revoke-tenant-role.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./revoke-tenant-role.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

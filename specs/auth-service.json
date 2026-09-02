@@ -301,42 +301,6 @@
         ]
       }
     },
-    "/auth/register": {
-      "post": {
-        "operationId": "register",
-        "summary": "Registrar novo usuário",
-        "description": "Cria conta com email e senha. O usuário é criado com role User. Para SuperAdmin/TenantAdmin é necessário atualizar no banco ou via processo interno.",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Usuário criado (sem password)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Email já cadastrado"
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
     "/auth/password/request-reset": {
       "post": {
         "operationId": "requestPasswordReset",
@@ -477,6 +441,49 @@
         ]
       }
     },
+    "/auth/users/{id}/revoke-tenant": {
+      "post": {
+        "operationId": "revokeTenantRole",
+        "summary": "Reverter o papel de gestor de uma conta (SuperAdmin ou Admin)",
+        "description": "Contraparte de `POST /auth/users/tenant-admin`. Chamado pelo admin-backend ao desassociar um usuário do último tenant dele: devolve a conta a `User` e zera o `tenant_id`. É no-op idempotente quando a conta é `Admin`, `User` ou `Star` — só quem a associação promoveu a `Tenant` é rebaixado. Recusa SuperAdmin. Quem decide SE deve rebaixar é o admin-backend, que é quem sabe se sobrou alguma membership; as regras aqui são a segunda linha de defesa.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel avaliado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantRoleRevokedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido"
+          },
+          "403": {
+            "description": "Apenas SuperAdmin ou Admin"
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/auth/users/admin": {
       "post": {
         "operationId": "createOrPromoteAdmin",
@@ -568,7 +575,7 @@
       "post": {
         "operationId": "verifyIdentity",
         "summary": "Cadastro passo 1: verifica a identidade (nome + CPF + data de nascimento)",
-        "description": "Valida os dados contra a Receita Federal ANTES da criação da conta. Quando `code=VALID`, retorna um `verificationToken` de uso único (validade de 30 minutos) que deve ser enviado no POST /auth/signup/register. Não retorna nome/data da Receita. Limites: 3 req/min e 10 req/h por IP; 5 tentativas por CPF a cada 24h.",
+        "description": "Valida os dados contra a Receita Federal ANTES da criação da conta. Quando `code=VALID`, retorna um `verificationToken` de uso único (validade de 30 minutos) que deve ser enviado no POST /auth/signup/register. Não retorna nome/data da Receita. Limites: 10 req/min e 30 req/h por IP; 5 tentativas por CPF a cada 24h.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -979,6 +986,12 @@
             "type": "boolean",
             "description": "true quando a conta usa senha temporária e precisa definir uma nova antes de usar a plataforma.",
             "example": false
+          },
+          "cpf_masked": {
+            "type": "string",
+            "description": "CPF cadastrado, MASCARADO (`123.***.***-**`) — o documento inteiro nunca sai deste serviço. É o destino do PIX na recompra de créditos (`GET /credits/balance` do admin-backend repassa). `null` quando a conta não tem CPF (provisionada pelo painel ou anterior ao KYC) e em tokens emitidos antes desta claim existir — nesse caso aparece após o refresh.",
+            "nullable": true,
+            "example": "390.***.***-**"
           }
         },
         "required": [
@@ -986,7 +999,8 @@
           "email",
           "role",
           "tenant_id",
-          "must_change_password"
+          "must_change_password",
+          "cpf_masked"
         ]
       },
       "UpdateUserTenantDto": {
@@ -1001,80 +1015,6 @@
         },
         "required": [
           "tenant_id"
-        ]
-      },
-      "RegisterDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Jane Doe"
-          },
-          "email": {
-            "type": "string",
-            "example": "jane@example.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "StrongPassw0rd!"
-          }
-        },
-        "required": [
-          "name",
-          "email",
-          "password"
-        ]
-      },
-      "UserDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "ID do usuário (UUID)"
-          },
-          "name": {
-            "type": "string",
-            "description": "Nome do usuário"
-          },
-          "email": {
-            "type": "string",
-            "description": "Email do usuário"
-          },
-          "provider": {
-            "type": "string",
-            "description": "Provedor de login",
-            "enum": [
-              "local",
-              "google"
-            ]
-          },
-          "provider_id": {
-            "type": "string",
-            "description": "ID do provedor OAuth (Google)"
-          },
-          "access_role": {
-            "type": "string",
-            "description": "Role de acesso",
-            "enum": [
-              "SuperAdmin",
-              "Tenant",
-              "Admin",
-              "User"
-            ]
-          },
-          "created_at": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Data de criação"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "email",
-          "provider",
-          "access_role",
-          "created_at"
         ]
       },
       "RequestPasswordResetDto": {
@@ -1185,6 +1125,36 @@
           "name",
           "tenant_id",
           "emailSent"
+        ]
+      },
+      "TenantRoleRevokedDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID do usuário (UUID)"
+          },
+          "access_role": {
+            "type": "string",
+            "description": "Papel da conta DEPOIS da operação. `User` quando o rebaixamento ocorreu; o papel original quando foi no-op (Admin, User ou Star).",
+            "example": "User"
+          },
+          "tenant_id": {
+            "type": "string",
+            "description": "Tenant casa da conta; zerado junto com o rebaixamento.",
+            "nullable": true
+          },
+          "revoked": {
+            "type": "boolean",
+            "description": "true quando o papel realmente mudou. `false` num no-op — a conta não era `Tenant`.",
+            "example": true
+          }
+        },
+        "required": [
+          "userId",
+          "access_role",
+          "tenant_id",
+          "revoked"
         ]
       },
       "CreateAdminDto": {

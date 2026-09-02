@@ -1,0 +1,73 @@
+---
+id: get-key-purchase-capabilities
+title: "Meios de pagamento disponíveis para comprar chave nova neste ambiente"
+description: "Diz à tela de compra quais trilhos estão ligados, no mesmo formato de `GET /marketplace/offers/capabilities` e dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre o botão desabilitado com o motivo, não o esconda."
+sidebar_label: "Meios de pagamento disponíveis para comprar chave nova neste ambiente"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Meios de pagamento disponíveis para comprar chave nova neste ambiente"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/gateways/checkout/capabilities"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Diz à tela de compra quais trilhos estão ligados, no mesmo formato de `GET /marketplace/offers/capabilities` e dos meios de reembolso: `enabled` + `unavailableReason`. Use isto em vez de deduzir o ambiente no cliente — quando `enabled` é `false`, mostre o botão desabilitado com o motivo, não o esconda.
+
+- `card` — Stripe Checkout, sempre ligado.
+- `pixSimulated` — PIX SIMULADO de homologação: `POST /gateways/checkout/key-purchase` com `paymentMethod: "pix_simulated"` liquida a compra no próprio request, sem gateway. Ligado só com `APP_ENV` fora de produção e `OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`.
+- `pix` — PIX real (Asaas). Sempre desligado até a integração existir.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-key-purchase-capabilities.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-key-purchase-capabilities.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-key-purchase-capabilities.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

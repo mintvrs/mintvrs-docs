@@ -1,0 +1,69 @@
+---
+id: remove-essay-gallery-item
+title: "Remover um item da galeria do ensaio (apenas dono/admin)"
+description: "Remove o item da campanha e apaga o objeto no bucket privado. A remoção no banco vem primeiro: se o apagamento no S3 falhar, o item já saiu da galeria e fica só um objeto órfão (registrado em log), em vez de o painel continuar mostrando algo que o usuário mandou excluir."
+sidebar_label: "Remover um item da galeria do ensaio (apenas dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "delete api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Remover um item da galeria do ensaio (apenas dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/campaigns/{campaignId}/essay-gallery/{itemId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Remove o item da campanha e apaga o objeto no bucket privado. A remoção no banco vem primeiro: se o apagamento no S3 falhar, o item já saiu da galeria e fica só um objeto órfão (registrado em log), em vez de o painel continuar mostrando algo que o usuário mandou excluir.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./remove-essay-gallery-item.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./remove-essay-gallery-item.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./remove-essay-gallery-item.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

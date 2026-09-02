@@ -100,6 +100,48 @@ Mande `items: [{ campaignId, accessId, quantity }]`. **O preço é derivado do t
 - Custou menos: a sobra vira crédito, resolvido na hora.
 - Custou mais: a resposta vem com `checkoutRequired: true` e `shortfallAmount`. Chame `POST /refunds/:caseId/reallocation-checkout` com `successUrl`/`cancelUrl`, redirecione para o `checkoutUrl` do Stripe e confirme depois com `POST /refunds/:caseId/confirm-reallocation` mandando o `sessionId`. Nada é emitido antes da confirmação.
 
+## Depois do crédito: a devolução em dinheiro (recompra por PIX)
+
+Quem escolheu `credits` (ou foi convertido pelo prazo) pode pedir que a plataforma **compre de volta** os créditos e pague por PIX **no CPF cadastrado** — é a tela "Solicitar devolução de créditos" do app.
+
+:::caution Não é saque automático
+Ainda não existe BaaS com PIX. O pedido entra em análise (5 a 10 dias úteis), a operação paga por fora e registra o resultado. O que a API garante é a contabilidade: **o valor pedido fica travado** (`lockedBalance`) enquanto o pedido está em análise, é consumido quando marcado como pago e volta ao saldo quando recusado ou cancelado.
+:::
+
+Antes de mostrar o botão, leia o bloco `buyback` de `GET /credits/balance`:
+
+```json
+{
+  "balance": 200000,
+  "lockedBalance": 75000,
+  "available": 125000,
+  "buyback": {
+    "enabled": true,
+    "unavailableReason": null,
+    "minAmount": 500,
+    "maxAmount": 125000,
+    "pixKey": { "type": "cpf", "masked": "390.***.***-**" },
+    "analysisBusinessDays": { "min": 5, "max": 10 },
+    "pendingRequest": null
+  }
+}
+```
+
+- `enabled: false` vem com o motivo pronto em `unavailableReason` — renderize o botão cinza, não o esconda. Os três motivos, na ordem em que o servidor checa: conta sem CPF, pedido já em análise (`pendingRequest` preenchido), saldo disponível abaixo do mínimo.
+- `pixKey.masked` é o CPF **mascarado pelo auth-service** (`cpf_masked` em `GET /auth/profile`). O documento inteiro não existe no admin-backend — a tela mostra a máscara e o usuário não digita chave nenhuma: a recompra vai exclusivamente para o CPF cadastrado.
+- `minAmount`/`maxAmount` em **centavos** (1 crédito = 100). A tela pede "quantidade de créditos"; multiplique por 100.
+
+| Método | Rota | O que faz |
+|---|---|---|
+| `POST` | `/credits/buyback-requests` | `{ amount }` em centavos. Trava o valor e abre o pedido (`pending_review`). Um por vez. |
+| `GET` | `/credits/buyback-requests/me` | Acompanhamento: status, observação da análise, referência do PIX quando pago. |
+| `POST` | `/credits/buyback-requests/{id}/cancel` | Desistir enquanto em análise — o valor volta ao disponível. |
+| `GET` | `/credits/buyback-requests` | Admin: fila (filtre `status=pending_review`). |
+| `POST` | `/credits/buyback-requests/{id}/reject` | Admin: recusa com `note` (mostrada ao usuário); destrava. |
+| `POST` | `/credits/buyback-requests/{id}/mark-paid` | Admin: PIX pago por fora; consome os créditos. Irreversível. |
+
+Códigos estáveis no campo `error`: `PIX_KEY_MISSING` (422), `BUYBACK_PENDING_EXISTS` (409), `BUYBACK_NOT_PENDING` (409), `BUYBACK_BELOW_MINIMUM` (400), `INSUFFICIENT_BALANCE` (400).
+
 ## Configuração necessária no backend
 
 O link do e-mail é montado a partir de `REFUND_PAGE_URL_BASE`. Sem ela o servidor cai num default `http://localhost:3000/reembolso` e o link sai apontando para a máquina de quem gerou — o e-mail parece correto e não leva a lugar nenhum.
@@ -112,6 +154,10 @@ MAIL_FROM_NAME=MintVRS
 ```
 
 Sem `RESEND_API_KEY` nenhum e-mail sai. Nesse caso a resposta do cancelamento traz `mailConfigured: false` e um `debugLink` por caso, para envio manual — o campo some sozinho quando a chave existir.
+
+### `APP_ENV` e o PIX simulado
+
+A imagem Docker fixa `NODE_ENV=production` também na homologação, então as ferramentas de teste não podem depender dele. O backend lê **`APP_ENV`** (`development` | `test` | `homolog` | `production`): só fora de `production` o PIX simulado (`OFFER_FUNDING_PIX_SIMULATED_ENABLED=true`) e a validade em minutos ligam. Ausente, `APP_ENV` deriva do `NODE_ENV`; um valor desconhecido é tratado como `production`. Na homolog: `APP_ENV=homolog`. As telas descobrem o que está ligado em `GET /gateways/checkout/capabilities` (compra de chave nova) e `GET /marketplace/offers/capabilities` (revenda).
 
 ## Referência das rotas
 

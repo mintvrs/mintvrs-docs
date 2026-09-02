@@ -1,0 +1,69 @@
+---
+id: list-essay-gallery
+title: "Listar a galeria do ensaio para edição (apenas dono/admin)"
+description: "Itens na ordem de exibição, com as `fileUrl` já assinadas (900s) para o painel renderizar as miniaturas na hora. É a rota do editor; quem consome a galeria no app usa `GET /campaigns/:campaignId/essay-gallery/public`. A galeria NÃO sai em `GET /campaigns/:campaignId` — lá o campo é omitido, porque os caminhos guardados são do bucket privado."
+sidebar_label: "Listar a galeria do ensaio para edição (apenas dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Listar a galeria do ensaio para edição (apenas dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/{campaignId}/essay-gallery"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Itens na ordem de exibição, com as `fileUrl` já assinadas (900s) para o painel renderizar as miniaturas na hora. É a rota do editor; quem consome a galeria no app usa `GET /campaigns/:campaignId/essay-gallery/public`. A galeria NÃO sai em `GET /campaigns/:campaignId` — lá o campo é omitido, porque os caminhos guardados são do bucket privado.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./list-essay-gallery.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./list-essay-gallery.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./list-essay-gallery.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

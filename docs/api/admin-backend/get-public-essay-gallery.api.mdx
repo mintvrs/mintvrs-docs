@@ -1,0 +1,69 @@
+---
+id: get-public-essay-gallery
+title: "Galeria de fotos e vídeos do ensaio para o app consumidor. Autenticação opcional."
+description: "Fotos e vídeos extras do ensaio, na ordem definida pelo dono da campanha. Itens crus: não têm título nem descrição — só o arquivo, o tipo (`kind`) e o nome original. AUTENTICAÇÃO OPCIONAL: responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401). Mesma regra de acesso de `GET /campaigns/:campaignId/buttons` — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, `items` vem VAZIO — mas `total` continua trazendo a contagem, para o app poder anunciar 'N mídias neste ensaio' sem receber nenhuma URL. Quando preenchidas, as `fileUrl` são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. A mídia fica num bucket sem leitura anônima: sem a assinatura o arquivo não abre, então não receber a URL é não ter acesso ao conteúdo, e não apenas não ter o link."
+sidebar_label: "Galeria de fotos e vídeos do ensaio para o app consumidor. Autenticação opcional."
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Galeria de fotos e vídeos do ensaio para o app consumidor. Autenticação opcional."}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/campaigns/{campaignId}/essay-gallery/public"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fotos e vídeos extras do ensaio, na ordem definida pelo dono da campanha. Itens crus: não têm título nem descrição — só o arquivo, o tipo (`kind`) e o nome original. AUTENTICAÇÃO OPCIONAL: responde 200 com ou sem Bearer (token ausente, inválido ou expirado = anônimo, nunca 401). Mesma regra de acesso de `GET /campaigns/:campaignId/buttons` — SuperAdmin (qualquer campanha), Admin (campanha de um tenant subordinado), Tenant (campanha do próprio tenant) ou usuário que possui a chave desta campanha (transação `completed`). Para todos os demais, inclusive anônimo, `items` vem VAZIO — mas `total` continua trazendo a contagem, para o app poder anunciar "N mídias neste ensaio" sem receber nenhuma URL. Quando preenchidas, as `fileUrl` são ASSINADAS e TEMPORÁRIAS (validade de 900s) — consuma na hora, não persista. A mídia fica num bucket sem leitura anônima: sem a assinatura o arquivo não abre, então não receber a URL é não ter acesso ao conteúdo, e não apenas não ter o link.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-public-essay-gallery.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-public-essay-gallery.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-public-essay-gallery.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

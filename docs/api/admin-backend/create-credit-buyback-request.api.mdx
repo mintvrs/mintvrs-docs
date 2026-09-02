@@ -1,0 +1,79 @@
+---
+id: create-credit-buyback-request
+title: "Solicitar a recompra de créditos (PIX no CPF cadastrado)"
+description: "Abre um pedido de recompra e TRAVA o valor pedido no saldo (`lockedBalance`) até a análise — pedir a recompra e gastar o mesmo crédito numa oferta P2P não é possível."
+sidebar_label: "Solicitar a recompra de créditos (PIX no CPF cadastrado)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Solicitar a recompra de créditos (PIX no CPF cadastrado)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/credits/buyback-requests"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Abre um pedido de recompra e TRAVA o valor pedido no saldo (`lockedBalance`) até a análise — pedir a recompra e gastar o mesmo crédito numa oferta P2P não é possível.
+
+Regras, na ordem em que são checadas (a mesma ordem de `GET /credits/balance` → `buyback.unavailableReason`):
+1. a conta precisa ter CPF cadastrado — a recompra vai exclusivamente para ele (422 `PIX_KEY_MISSING`);
+2. `amount` ≥ 500 centavos = 5 créditos (400 `BUYBACK_BELOW_MINIMUM`);
+3. um pedido em análise por vez (409 `BUYBACK_PENDING_EXISTS`) — cancele o atual para abrir outro;
+4. `amount` ≤ saldo disponível, `balance - lockedBalance` (400 `INSUFFICIENT_BALANCE`).
+
+Não há pagamento automático: o pedido nasce `pending_review` e a operação o encerra em `POST /credits/buyback-requests/{id}/mark-paid` (pagou o PIX) ou `/reject`. O usuário acompanha em `GET /credits/buyback-requests/me` e pode desistir em `/{id}/cancel` enquanto estiver em análise.
+
+`amount` em CENTAVOS (1 crédito = 100).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./create-credit-buyback-request.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./create-credit-buyback-request.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./create-credit-buyback-request.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

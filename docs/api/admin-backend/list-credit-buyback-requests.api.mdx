@@ -1,0 +1,69 @@
+---
+id: list-credit-buyback-requests
+title: "[ADMIN] Fila de solicitações de recompra"
+description: "Visão da operação. Filtre por `status=pending_review` para ver o que está esperando análise. Tenant vê só o próprio tenant; SuperAdmin vê todos (ou um, via `tenantId`). Cada item traz `user` (id, e-mail e nome congelados na abertura) e `pixKey.masked` — o CPF inteiro NÃO existe neste serviço; o pagamento é feito por fora, no CPF que a conta tem no auth-service."
+sidebar_label: "[ADMIN] Fila de solicitações de recompra"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"[ADMIN] Fila de solicitações de recompra"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/credits/buyback-requests"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Visão da operação. Filtre por `status=pending_review` para ver o que está esperando análise. Tenant vê só o próprio tenant; SuperAdmin vê todos (ou um, via `tenantId`). Cada item traz `user` (id, e-mail e nome congelados na abertura) e `pixKey.masked` — o CPF inteiro NÃO existe neste serviço; o pagamento é feito por fora, no CPF que a conta tem no auth-service.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./list-credit-buyback-requests.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./list-credit-buyback-requests.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./list-credit-buyback-requests.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

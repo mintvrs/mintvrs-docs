@@ -1,0 +1,69 @@
+---
+id: add-essay-gallery-items
+title: "Adicionar fotos e vídeos à galeria do ensaio (apenas dono/admin)"
+description: "Recebe um ou mais arquivos via `multipart/form-data` (campo `files`) e os acrescenta ao FIM da galeria, no bucket PRIVADO. A galeria NÃO tem limite de itens; o teto por requisição existe só por conta do multer. Ao contrário da foto de ensaio e do arquivo de botão, aqui NÃO há exigência de dimensão nem de proporção — travar a resolução de um acervo ilimitado só reprovaria material bom. Extensão, mimetype, peso e a leitura dos bytes continuam valendo. Formatos aceitos — Foto da galeria do ensaio: webp, png ou jpg, webp, png ou jpg, máx 25MB (guia: Galeria do ensaio); Vídeo da galeria do ensaio: webm ou mp4, webm ou mp4, máx 200MB (guia: Galeria do ensaio). Os arquivos do lote são validados ANTES de qualquer upload: se um for recusado, nenhum sobe e a resposta é 400 citando o nome do arquivo. Retorna a galeria inteira já reordenada e com as `fileUrl` assinadas (900s)."
+sidebar_label: "Adicionar fotos e vídeos à galeria do ensaio (apenas dono/admin)"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: api/admin-backend/mkclub-admin-backend-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Adicionar fotos e vídeos à galeria do ensaio (apenas dono/admin)"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/campaigns/{campaignId}/essay-gallery"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Recebe um ou mais arquivos via `multipart/form-data` (campo `files`) e os acrescenta ao FIM da galeria, no bucket PRIVADO. A galeria NÃO tem limite de itens; o teto por requisição existe só por conta do multer. Ao contrário da foto de ensaio e do arquivo de botão, aqui NÃO há exigência de dimensão nem de proporção — travar a resolução de um acervo ilimitado só reprovaria material bom. Extensão, mimetype, peso e a leitura dos bytes continuam valendo. Formatos aceitos — Foto da galeria do ensaio: webp, png ou jpg, webp, png ou jpg, máx 25MB (guia: Galeria do ensaio); Vídeo da galeria do ensaio: webm ou mp4, webm ou mp4, máx 200MB (guia: Galeria do ensaio). Os arquivos do lote são validados ANTES de qualquer upload: se um for recusado, nenhum sobe e a resposta é 400 citando o nome do arquivo. Retorna a galeria inteira já reordenada e com as `fileUrl` assinadas (900s).
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./add-essay-gallery-items.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./add-essay-gallery-items.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./add-essay-gallery-items.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      
